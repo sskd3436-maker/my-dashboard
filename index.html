@@ -671,8 +671,8 @@ function doSearch() {
   }
 
   // 통계 숨기고 검색결과 테이블 표시
-  document.getElementById('statsSection').style.display = 'none';
-  document.getElementById('sheetStats').style.display = 'none';
+  document.getElementById('statsSection').style.display = '';
+  document.getElementById('sheetStats').style.display = '';
 
   var results = [];
   var sNames = Object.keys(allSheetsData);
