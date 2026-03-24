@@ -720,7 +720,65 @@ function doSearch() {
 }
 
 function drawSearchResultTable(results, q) {
-  // 헤더: 시트명 | 방문일자 | 사이트명 | 영업내용 | 감정 | 상세
+  // ===== 검색 결과로 통계 다시 계산 =====
+  var totals = { positive: 0, neutral: 0, negative: 0, etc: 0, all: 0 };
+  for (var i = 0; i < results.length; i++) {
+    var sent = results[i].sentiment;
+    if (sent) { totals[sent]++; totals.all++; }
+  }
+
+  // 통계 카드 업데이트
+  var grid = document.getElementById('statsGrid');
+  var items = [
+    { key: 'all', label: '전체', cls: 'total' },
+    { key: 'positive', label: '긍정', cls: 'positive' },
+    { key: 'neutral', label: '중립', cls: 'neutral' },
+    { key: 'negative', label: '부정', cls: 'negative' },
+    { key: 'etc', label: '기타', cls: 'etc' }
+  ];
+  var statsHtml = '';
+  for (var i = 0; i < items.length; i++) {
+    var it = items[i];
+    var cnt = totals[it.key];
+    var pct = totals.all > 0 ? Math.round(cnt / totals.all * 100) : 0;
+    if (it.key === 'all') pct = 100;
+    statsHtml += '<div class="stat-card ' + it.cls + '">';
+    statsHtml += '<div class="stat-label">' + it.label + '</div>';
+    statsHtml += '<div class="stat-number">' + cnt + '</div>';
+    statsHtml += '<div class="stat-percent">' + pct + '%</div>';
+    statsHtml += '<div class="stat-bar"><div class="stat-bar-fill" style="width:' + pct + '%"></div></div>';
+    statsHtml += '</div>';
+  }
+  grid.innerHTML = statsHtml;
+
+  // 시트별 통계도 검색 결과 기준으로 업데이트
+  var sheetCounts = {};
+  for (var i = 0; i < results.length; i++) {
+    var sn = results[i].sheet;
+    if (!sheetCounts[sn]) sheetCounts[sn] = { positive: 0, neutral: 0, negative: 0, etc: 0, total: 0 };
+    sheetCounts[sn].total++;
+    var sent = results[i].sentiment;
+    if (sent) sheetCounts[sn][sent]++;
+  }
+
+  var sheetHtml = '';
+  var sheetNames = Object.keys(sheetCounts);
+  for (var s = 0; s < sheetNames.length; s++) {
+    var nm = sheetNames[s];
+    var sc = sheetCounts[nm];
+    sheetHtml += '<div class="sheet-stat-row">';
+    sheetHtml += '<div class="sheet-stat-name" onclick="loadSheet(\'' + nm + '\')">' + nm + '</div>';
+    sheetHtml += '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">';
+    sheetHtml += '<span class="mini-badge pos">긍정 ' + sc.positive + '</span>';
+    sheetHtml += '<span class="mini-badge neu">중립 ' + sc.neutral + '</span>';
+    sheetHtml += '<span class="mini-badge neg">부정 ' + sc.negative + '</span>';
+    sheetHtml += '<span class="mini-badge etc2">기타 ' + sc.etc + '</span>';
+    sheetHtml += '<span style="font-size:12px;color:#999;">(총 ' + sc.total + '건)</span>';
+    sheetHtml += '</div></div>';
+  }
+  document.getElementById('sheetStatsBody').innerHTML = sheetHtml;
+
+  // ===== 검색 결과 테이블 =====
   var headHtml = '<tr>';
   headHtml += '<th>#</th>';
   headHtml += '<th>시트</th>';
@@ -745,7 +803,6 @@ function drawSearchResultTable(results, q) {
     var 영업내용 = findVal(row, item.headers, '영업내용');
     var 담당자 = findVal(row, item.headers, '담당자');
 
-    // 검색어 하이라이트
     var hlSite = highlightText(esc(사이트명), q);
     var hlContent = highlightText(esc(영업내용), q);
     var hlManager = highlightText(esc(담당자), q);
@@ -772,9 +829,9 @@ function drawSearchResultTable(results, q) {
   document.getElementById('searchResultBox').style.display = '';
   document.getElementById('resultCount').textContent = results.length + '건 찾음';
 
-  // 검색 결과 데이터 저장 (상세보기용)
   window._searchResults = results;
 }
+
 
 // 헤더 이름으로 값 찾기
 function findVal(row, hdrs, name) {
