@@ -68,11 +68,7 @@
     .stat-card.etc::before { background: #6c757d; }
     .stat-card.total::before { background: #1a73e8; }
 
-    .stat-number {
-      font-size: 36px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
+    .stat-number { font-size: 36px; font-weight: 700; margin-bottom: 4px; }
     .stat-card.positive .stat-number { color: #0d904f; }
     .stat-card.neutral .stat-number { color: #f9ab00; }
     .stat-card.negative .stat-number { color: #dc3545; }
@@ -80,22 +76,9 @@
     .stat-card.total .stat-number { color: #1a73e8; }
 
     .stat-label { font-size: 14px; color: #666; margin-bottom: 6px; }
-    .stat-percent {
-      font-size: 13px;
-      color: #999;
-    }
-    .stat-bar {
-      margin-top: 10px;
-      height: 6px;
-      background: #eee;
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    .stat-bar-fill {
-      height: 100%;
-      border-radius: 3px;
-      transition: width 0.6s ease;
-    }
+    .stat-percent { font-size: 13px; color: #999; }
+    .stat-bar { margin-top: 10px; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
+    .stat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
     .stat-card.positive .stat-bar-fill { background: #0d904f; }
     .stat-card.neutral .stat-bar-fill { background: #f9ab00; }
     .stat-card.negative .stat-bar-fill { background: #dc3545; }
@@ -109,6 +92,7 @@
       padding: 20px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
       margin-bottom: 24px;
+      display: none;
     }
     .sheet-stats h2 { font-size: 18px; margin-bottom: 14px; }
     .sheet-stat-row {
@@ -120,21 +104,10 @@
       gap: 8px;
     }
     .sheet-stat-row:last-child { border-bottom: none; }
-    .sheet-stat-name {
-      width: 160px;
-      font-weight: 600;
-      color: #333;
-      cursor: pointer;
-    }
+    .sheet-stat-name { width: 160px; font-weight: 600; color: #333; cursor: pointer; }
     .sheet-stat-name:hover { color: #1a73e8; text-decoration: underline; }
     .sheet-stat-bars { flex: 1; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .mini-badge {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      color: white;
-    }
+    .mini-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: white; }
     .mini-badge.pos { background: #0d904f; }
     .mini-badge.neu { background: #f9ab00; }
     .mini-badge.neg { background: #dc3545; }
@@ -164,14 +137,13 @@
     .tab:hover { background: #e8f0fe; color: #1a73e8; }
     .tab.active { background: #1a73e8; color: white; }
 
-    /* 검색/필터 영역 */
+    /* 검색 영역 - 항상 보임 */
     .search-section {
       background: white;
       border-radius: 12px;
       padding: 16px 20px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
       margin-bottom: 20px;
-      display: none;
     }
     .search-row {
       display: flex;
@@ -187,7 +159,6 @@
       border-radius: 10px;
       font-size: 15px;
       outline: none;
-      transition: border-color 0.2s;
     }
     .search-input:focus { border-color: #1a73e8; }
     .filter-select {
@@ -201,6 +172,7 @@
     }
     .filter-select:focus { border-color: #1a73e8; }
     .result-count { font-size: 13px; color: #666; padding: 8px 0; }
+    .search-hint { font-size: 12px; color: #999; margin-top: 6px; }
 
     /* 테이블 영역 */
     .table-area {
@@ -247,9 +219,6 @@
       color: #555;
       border-bottom: 2px solid #e0e0e0;
       white-space: nowrap;
-      position: sticky;
-      top: 0;
-      z-index: 10;
     }
     td {
       padding: 10px 14px;
@@ -259,7 +228,6 @@
       text-overflow: ellipsis;
     }
     tr:hover td { background: #f8f9ff; }
-
     td.editable { cursor: pointer; }
     td.editable:hover { background: #e8f0fe !important; }
     td.editing { padding: 4px; }
@@ -272,7 +240,6 @@
       outline: none;
     }
 
-    /* 감정 뱃지 */
     .sentiment-badge {
       padding: 3px 10px;
       border-radius: 20px;
@@ -319,24 +286,20 @@
       outline: none;
     }
     .field input:focus, .field textarea:focus { border-color: #1a73e8; }
-    .field textarea { min-height: 70px; resize: vertical; }
     .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
 
-    /* 상세보기 모달 */
     .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .detail-item { padding: 10px; background: #f8f9fa; border-radius: 8px; }
     .detail-item label { font-size: 11px; color: #999; display: block; margin-bottom: 4px; }
     .detail-item .value { font-size: 14px; color: #333; word-break: break-all; }
     .detail-full { grid-column: 1 / -1; }
 
-    /* 로딩 */
     .loading { text-align: center; padding: 50px; color: #999; }
     .dot-loading::after { content: ''; animation: dots 1.5s infinite; }
     @keyframes dots {
       0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; }
     }
 
-    /* 알림 */
     .toast-box { position: fixed; top: 76px; right: 20px; z-index: 300; }
     .toast {
       padding: 12px 20px;
@@ -354,6 +317,43 @@
       from { transform: translateX(120%); opacity: 0; }
       to { transform: translateX(0); opacity: 1; }
     }
+
+    /* 전체 검색 결과 */
+    .global-results {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      overflow: hidden;
+      display: none;
+      margin-bottom: 20px;
+    }
+    .global-results .result-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #e0e0e0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .global-result-item {
+      padding: 14px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+    }
+    .global-result-item:hover { background: #f8f9ff; }
+    .global-result-item .sheet-name {
+      font-size: 11px;
+      color: white;
+      background: #1a73e8;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-right: 8px;
+    }
+    .global-result-item .result-text {
+      font-size: 14px;
+      color: #333;
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+    .highlight { background: #fff3cd; padding: 1px 2px; border-radius: 2px; }
 
     @media (max-width: 768px) {
       .container { padding: 10px; }
@@ -375,7 +375,32 @@
 
 <div class="container">
 
-  <!-- 전체 통계 -->
+  <!-- 검색 - 항상 보임 -->
+  <div class="search-section" id="searchSection">
+    <div class="search-row">
+      <input type="text" class="search-input" id="searchBox" placeholder="🔍 이름, 내용 등 전체 검색..." oninput="doSearch()">
+      <select class="filter-select" id="sentimentFilter" onchange="doSearch()">
+        <option value="">전체 감정</option>
+        <option value="긍정">긍정</option>
+        <option value="중립">중립</option>
+        <option value="부정">부정</option>
+        <option value="기타">기타(재계약)</option>
+      </select>
+      <select class="filter-select" id="sheetFilter" onchange="doSearch()">
+        <option value="">전체 시트</option>
+      </select>
+    </div>
+    <div class="result-count" id="resultCount"></div>
+    <div class="search-hint" id="searchHint">시트 탭을 클릭하거나 검색어를 입력하면 결과가 표시됩니다.</div>
+  </div>
+
+  <!-- 전체 검색 결과 -->
+  <div class="global-results" id="globalResults">
+    <div class="result-header" id="globalResultHeader">검색 결과</div>
+    <div id="globalResultBody"></div>
+  </div>
+
+  <!-- 통계 -->
   <div class="stats-section" id="statsSection">
     <h2>📈 전체 현황 통계</h2>
     <div class="stats-grid" id="statsGrid">
@@ -384,7 +409,7 @@
   </div>
 
   <!-- 시트별 통계 -->
-  <div class="sheet-stats" id="sheetStats" style="display:none;">
+  <div class="sheet-stats" id="sheetStats">
     <h2>📋 시트별 현황</h2>
     <div id="sheetStatsBody"></div>
   </div>
@@ -392,24 +417,6 @@
   <!-- 탭 -->
   <div class="tabs" id="tabs">
     <button class="tab active" onclick="showDashboard()">📋 대시보드</button>
-  </div>
-
-  <!-- 검색/필터 -->
-  <div class="search-section" id="searchSection">
-    <div class="search-row">
-      <input type="text" class="search-input" id="searchBox" placeholder="🔍 이름, 내용 등 검색..." oninput="doSearch()">
-      <select class="filter-select" id="sentimentFilter" onchange="doSearch()">
-        <option value="">전체 감정</option>
-        <option value="긍정">긍정</option>
-        <option value="중립">중립</option>
-        <option value="부정">부정</option>
-        <option value="기타">기타(재계약)</option>
-      </select>
-      <select class="filter-select" id="columnFilter" onchange="doSearch()">
-        <option value="">전체 열 검색</option>
-      </select>
-    </div>
-    <div class="result-count" id="resultCount"></div>
   </div>
 
   <!-- 테이블 -->
@@ -456,29 +463,23 @@
 // ========================================
 // ⬇⬇⬇ 본인의 Apps Script 배포 URL ⬇⬇⬇
 // ========================================
-var API = 'https://script.google.com/macros/s/AKfycbx7JCemS6uArAgWbtL3EBeUqGnO-vmmMcyGvpqYQmM63dNjwZagCKRDY-ACSRmy3hVxJw/exec';
+var API = '여https://script.google.com/macros/s/AKfycbx7JCemS6uArAgWbtL3EBeUqGnO-vmmMcyGvpqYQmM63dNjwZagCKRDY-ACSRmy3hVxJw/exec';
 // ========================================
 
 var nowSheet = null;
 var allHeaders = [];
-var displayHeaders = []; // B~Q열 (인덱스 1~16)
+var displayHeaders = [];
 var allRows = [];
 var filteredRows = [];
 var allSheetsData = {};
-
-// 감정 분류 키워드 (시트에서 쓰는 값에 맞게 수정 가능)
-var SENTIMENT_MAP = {
-  '긍정': 'positive',
-  '중립': 'neutral',
-  '부정': 'negative',
-  '재계약': 'etc',
-  '기타': 'etc'
-};
+var dataLoaded = false;
 
 function init() {
+  dataLoaded = false;
+  allSheetsData = {};
   showDashboard();
   loadTabs();
-  loadAllStats();
+  loadAllData();
 }
 
 function toast(msg, type) {
@@ -515,54 +516,28 @@ function getSentiment(value) {
   if (v === '중립') return 'neutral';
   if (v === '부정') return 'negative';
   if (v === '재계약' || v === '기타') return 'etc';
-
-  // 포함 여부로도 체크
   if (v.indexOf('긍정') >= 0) return 'positive';
   if (v.indexOf('중립') >= 0) return 'neutral';
   if (v.indexOf('부정') >= 0) return 'negative';
   if (v.indexOf('재계약') >= 0 || v.indexOf('기타') >= 0) return 'etc';
-
   return null;
 }
 
-function getSentimentLabel(type) {
-  if (type === 'positive') return '긍정';
-  if (type === 'neutral') return '중립';
-  if (type === 'negative') return '부정';
-  if (type === 'etc') return '기타';
-  return '';
-}
-
-// 감정 뱃지 HTML
 function sentimentBadge(value) {
   var type = getSentiment(value);
   if (!type) return escHtml(String(value));
-
   var labels = { positive: '긍정', neutral: '중립', negative: '부정', etc: '기타' };
   var cls = { positive: 'sentiment-positive', neutral: 'sentiment-neutral', negative: 'sentiment-negative', etc: 'sentiment-etc' };
-
   return '<span class="sentiment-badge ' + cls[type] + '">' + labels[type] + '</span>';
 }
 
-// 감정 열 찾기 (모든 헤더 중 감정/평가 관련 열)
-function findSentimentCol(headers) {
+function detectSentimentColFromData(headers, rows) {
   var keywords = ['감정', '평가', '만족', '결과', '분류', '상태', '긍정', '의견'];
   for (var i = 0; i < headers.length; i++) {
     for (var j = 0; j < keywords.length; j++) {
       if (String(headers[i]).indexOf(keywords[j]) >= 0) return i;
     }
   }
-  // 못 찾으면 마지막 열 근처에서 감정 데이터 있는지 확인
-  return -1;
-}
-
-// 데이터에서 감정 열 자동 감지
-function detectSentimentColFromData(headers, rows) {
-  // 우선 헤더 키워드로 탐색
-  var idx = findSentimentCol(headers);
-  if (idx >= 0) return idx;
-
-  // 데이터 값으로 탐색 (긍정/부정/중립/재계약 값이 있는 열)
   for (var c = 0; c < headers.length; c++) {
     var sentCount = 0;
     var checkRows = Math.min(rows.length, 20);
@@ -581,18 +556,23 @@ function detectSentimentColFromData(headers, rows) {
 function loadTabs() {
   apiGet({ action: 'getSheets' }, function(data) {
     var tabsEl = document.getElementById('tabs');
+    var sheetFilterEl = document.getElementById('sheetFilter');
+
     tabsEl.innerHTML = '<button class="tab active" onclick="showDashboard()">📋 대시보드</button>';
+    sheetFilterEl.innerHTML = '<option value="">전체 시트</option>';
+
     var sheets = data.sheets || [];
     for (var i = 0; i < sheets.length; i++) {
       tabsEl.innerHTML += '<button class="tab" onclick="loadSheet(\'' + sheets[i] + '\')">' + sheets[i] + '</button>';
+      sheetFilterEl.innerHTML += '<option value="' + sheets[i] + '">' + sheets[i] + '</option>';
     }
   });
 }
 
-// 전체 통계 로드
-function loadAllStats() {
-  apiGet({ action: 'getSummary' }, function(summaryData) {
-    var sheets = (summaryData.summary || []);
+// 전체 데이터 로드
+function loadAllData() {
+  apiGet({ action: 'getSheets' }, function(data) {
+    var sheets = data.sheets || [];
     var loaded = 0;
     var total = sheets.length;
 
@@ -601,44 +581,39 @@ function loadAllStats() {
       return;
     }
 
-    allSheetsData = {};
-
     for (var i = 0; i < sheets.length; i++) {
       (function(sheetName) {
-        apiGet({ action: 'getData', sheet: sheetName }, function(data) {
-          allSheetsData[sheetName] = data;
+        apiGet({ action: 'getData', sheet: sheetName }, function(sheetData) {
+          allSheetsData[sheetName] = sheetData;
           loaded++;
           if (loaded === total) {
+            dataLoaded = true;
             renderGlobalStats();
             renderSheetStats();
+            toast('전체 데이터 로드 완료', 'ok');
           }
         });
-      })(sheets[i].sheetName);
+      })(sheets[i]);
     }
   });
 }
 
-// 전체 통계 렌더링
+// 전체 통계
 function renderGlobalStats() {
   var totals = { positive: 0, neutral: 0, negative: 0, etc: 0, all: 0 };
-
   var sheetNames = Object.keys(allSheetsData);
+
   for (var s = 0; s < sheetNames.length; s++) {
     var data = allSheetsData[sheetNames[s]];
     var headers = data.headers || [];
     var rows = data.rows || [];
     var sentCol = detectSentimentColFromData(headers, rows);
-
     if (sentCol < 0) continue;
     var sentHeader = headers[sentCol];
 
     for (var r = 0; r < rows.length; r++) {
-      var val = String(rows[r][sentHeader] || '').trim();
-      var type = getSentiment(val);
-      if (type) {
-        totals[type]++;
-        totals.all++;
-      }
+      var type = getSentiment(String(rows[r][sentHeader] || ''));
+      if (type) { totals[type]++; totals.all++; }
     }
   }
 
@@ -665,7 +640,6 @@ function renderGlobalStats() {
     html += '<div class="stat-bar"><div class="stat-bar-fill" style="width:' + pct + '%"></div></div>';
     html += '</div>';
   }
-
   grid.innerHTML = html;
 }
 
@@ -681,8 +655,8 @@ function renderSheetStats() {
     var headers = data.headers || [];
     var rows = data.rows || [];
     var sentCol = detectSentimentColFromData(headers, rows);
-
     var counts = { positive: 0, neutral: 0, negative: 0, etc: 0 };
+
     if (sentCol >= 0) {
       var sentHeader = headers[sentCol];
       for (var r = 0; r < rows.length; r++) {
@@ -706,12 +680,17 @@ function renderSheetStats() {
   document.getElementById('sheetStats').style.display = '';
 }
 
-// 대시보드 보기
+// 대시보드
 function showDashboard() {
   document.getElementById('statsSection').style.display = '';
   document.getElementById('sheetStats').style.display = '';
-  document.getElementById('searchSection').style.display = 'none';
   document.getElementById('tableArea').style.display = 'none';
+  document.getElementById('globalResults').style.display = 'none';
+  document.getElementById('searchHint').style.display = '';
+  document.getElementById('searchBox').value = '';
+  document.getElementById('sentimentFilter').value = '';
+  document.getElementById('sheetFilter').value = '';
+  document.getElementById('resultCount').textContent = '';
   nowSheet = null;
 
   var allTabs = document.querySelectorAll('.tab');
@@ -719,7 +698,7 @@ function showDashboard() {
   if (allTabs[0]) allTabs[0].classList.add('active');
 }
 
-// 시트 로드 (B~Q열만 표시: 인덱스 1~16)
+// 시트 로드
 function loadSheet(name) {
   nowSheet = name;
 
@@ -730,7 +709,8 @@ function loadSheet(name) {
 
   document.getElementById('statsSection').style.display = 'none';
   document.getElementById('sheetStats').style.display = 'none';
-  document.getElementById('searchSection').style.display = '';
+  document.getElementById('globalResults').style.display = 'none';
+  document.getElementById('searchHint').style.display = 'none';
   document.getElementById('tableArea').style.display = '';
   document.getElementById('sheetTitle').textContent = name;
   document.getElementById('searchBox').value = '';
@@ -739,7 +719,6 @@ function loadSheet(name) {
 
   document.getElementById('tBody').innerHTML = '<tr><td colspan="99"><div class="loading"><span class="dot-loading">로딩 중</span></div></td></tr>';
 
-  // 캐시된 데이터가 있으면 사용
   if (allSheetsData[name]) {
     processSheetData(allSheetsData[name]);
   } else {
@@ -754,21 +733,14 @@ function processSheetData(data) {
   allHeaders = data.headers || [];
   allRows = data.rows || [];
 
-  // B~Q열 (인덱스 1~16, 0-based)
-  var startCol = 1;  // B열
-  var endCol = Math.min(16, allHeaders.length - 1); // Q열
+  // B~Q열 (인덱스 1~16)
+  var startCol = 1;
+  var endCol = Math.min(16, allHeaders.length - 1);
   displayHeaders = [];
   for (var i = startCol; i <= endCol; i++) {
-    if (allHeaders[i] !== undefined) {
+    if (allHeaders[i] !== undefined && String(allHeaders[i]).trim() !== '') {
       displayHeaders.push({ name: allHeaders[i], originalIndex: i });
     }
-  }
-
-  // 열 필터 드롭다운 갱신
-  var colFilter = document.getElementById('columnFilter');
-  colFilter.innerHTML = '<option value="">전체 열 검색</option>';
-  for (var i = 0; i < displayHeaders.length; i++) {
-    colFilter.innerHTML += '<option value="' + displayHeaders[i].name + '">' + displayHeaders[i].name + '</option>';
   }
 
   filteredRows = allRows;
@@ -781,7 +753,6 @@ function drawTable(list) {
   var sentColIdx = detectSentimentColFromData(allHeaders, allRows);
   var sentHeader = sentColIdx >= 0 ? allHeaders[sentColIdx] : null;
 
-  // 헤더
   var headHtml = '<tr><th>#</th>';
   for (var i = 0; i < displayHeaders.length; i++) {
     headHtml += '<th>' + escHtml(displayHeaders[i].name) + '</th>';
@@ -789,7 +760,6 @@ function drawTable(list) {
   headHtml += '<th>상세</th><th>삭제</th></tr>';
   document.getElementById('tHead').innerHTML = headHtml;
 
-  // 바디
   var bodyHtml = '';
   for (var i = 0; i < list.length; i++) {
     var row = list[i];
@@ -799,9 +769,8 @@ function drawTable(list) {
     for (var j = 0; j < displayHeaders.length; j++) {
       var h = displayHeaders[j];
       var val = row[h.name] !== undefined ? row[h.name] : '';
-      var colNum = h.originalIndex + 1; // 1-based for sheets
+      var colNum = h.originalIndex + 1;
 
-      // 감정 열이면 뱃지로 표시
       if (h.name === sentHeader) {
         bodyHtml += '<td class="editable" ondblclick="editCell(this,\'' + nowSheet + '\',' + row._rowIndex + ',' + colNum + ',\'' + escHtml(h.name) + '\')">' + sentimentBadge(val) + '</td>';
       } else {
@@ -822,40 +791,154 @@ function drawTable(list) {
   document.getElementById('resultCount').textContent = '총 ' + list.length + '건 표시 중';
 }
 
-// 검색 + 필터
+// 전체 검색
 function doSearch() {
   var q = document.getElementById('searchBox').value.toLowerCase().trim();
   var sentFilter = document.getElementById('sentimentFilter').value;
-  var colFilter = document.getElementById('columnFilter').value;
+  var sheetFilter = document.getElementById('sheetFilter').value;
 
+  // 시트 탭이 선택된 상태면 해당 시트 내에서 검색
+  if (nowSheet) {
+    searchInCurrentSheet(q, sentFilter);
+    return;
+  }
+
+  // 대시보드 상태면 전체 시트 검색
+  if (!q && !sentFilter && !sheetFilter) {
+    document.getElementById('globalResults').style.display = 'none';
+    document.getElementById('statsSection').style.display = '';
+    document.getElementById('sheetStats').style.display = '';
+    document.getElementById('searchHint').style.display = '';
+    document.getElementById('resultCount').textContent = '';
+    return;
+  }
+
+  if (!dataLoaded) {
+    document.getElementById('resultCount').textContent = '데이터 로딩 중... 잠시 후 다시 시도하세요.';
+    return;
+  }
+
+  // 전체 시트에서 검색
+  document.getElementById('statsSection').style.display = 'none';
+  document.getElementById('sheetStats').style.display = 'none';
+  document.getElementById('searchHint').style.display = 'none';
+
+  var results = [];
+  var sheetNames = Object.keys(allSheetsData);
+  if (sheetFilter) sheetNames = [sheetFilter];
+
+  for (var s = 0; s < sheetNames.length; s++) {
+    var name = sheetNames[s];
+    var data = allSheetsData[name];
+    if (!data) continue;
+    var headers = data.headers || [];
+    var rows = data.rows || [];
+    var sentCol = detectSentimentColFromData(headers, rows);
+    var sentHeader = sentCol >= 0 ? headers[sentCol] : null;
+
+    // B~Q열
+    var startCol = 1;
+    var endCol = Math.min(16, headers.length - 1);
+    var dispHeaders = [];
+    for (var i = startCol; i <= endCol; i++) {
+      if (headers[i] !== undefined && String(headers[i]).trim() !== '') {
+        dispHeaders.push(headers[i]);
+      }
+    }
+
+    for (var r = 0; r < rows.length; r++) {
+      var row = rows[r];
+
+      // 감정 필터
+      if (sentFilter && sentHeader) {
+        var rowSent = getSentiment(String(row[sentHeader] || ''));
+        var filterSent = getSentiment(sentFilter);
+        if (rowSent !== filterSent) continue;
+      }
+
+      // 텍스트 검색
+      if (q) {
+        var match = false;
+        for (var j = 0; j < dispHeaders.length; j++) {
+          if (String(row[dispHeaders[j]] || '').toLowerCase().indexOf(q) >= 0) {
+            match = true;
+            break;
+          }
+        }
+        if (!match) continue;
+      }
+
+      // 결과에 추가
+      var preview = '';
+      for (var j = 0; j < Math.min(dispHeaders.length, 5); j++) {
+        var val = String(row[dispHeaders[j]] || '').trim();
+        if (val) {
+          if (preview) preview += ' | ';
+          preview += dispHeaders[j] + ': ' + val;
+        }
+      }
+
+      results.push({
+        sheetName: name,
+        preview: preview,
+        rowIndex: r,
+        sentiment: sentHeader ? String(row[sentHeader] || '') : ''
+      });
+    }
+  }
+
+  // 결과 표시
+  var container = document.getElementById('globalResultBody');
+  var html = '';
+
+  for (var i = 0; i < Math.min(results.length, 100); i++) {
+    var item = results[i];
+    var previewHtml = escHtml(item.preview);
+
+    // 검색어 하이라이트
+    if (q) {
+      var regex = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+      previewHtml = previewHtml.replace(regex, '<span class="highlight">$1</span>');
+    }
+
+    html += '<div class="global-result-item" onclick="loadSheetAndGoTo(\'' + item.sheetName + '\',' + item.rowIndex + ')">';
+    html += '<span class="sheet-name">' + escHtml(item.sheetName) + '</span>';
+    if (item.sentiment) html += sentimentBadge(item.sentiment);
+    html += '<div class="result-text">' + previewHtml + '</div>';
+    html += '</div>';
+  }
+
+  if (results.length === 0) {
+    html = '<div style="padding:30px;text-align:center;color:#999;">검색 결과가 없습니다.</div>';
+  }
+
+  container.innerHTML = html;
+  document.getElementById('globalResultHeader').textContent = '검색 결과 (' + results.length + '건)';
+  document.getElementById('globalResults').style.display = '';
+  document.getElementById('resultCount').textContent = '총 ' + results.length + '건 찾음' + (results.length > 100 ? ' (상위 100건 표시)' : '');
+}
+
+// 현재 시트 내 검색
+function searchInCurrentSheet(q, sentFilter) {
   var sentColIdx = detectSentimentColFromData(allHeaders, allRows);
   var sentHeader = sentColIdx >= 0 ? allHeaders[sentColIdx] : null;
 
   filteredRows = [];
-
   for (var i = 0; i < allRows.length; i++) {
     var row = allRows[i];
 
-    // 감정 필터
     if (sentFilter && sentHeader) {
       var rowSent = getSentiment(String(row[sentHeader] || ''));
       var filterSent = getSentiment(sentFilter);
       if (rowSent !== filterSent) continue;
     }
 
-    // 텍스트 검색
     if (q) {
       var match = false;
-      if (colFilter) {
-        // 특정 열만 검색
-        if (String(row[colFilter] || '').toLowerCase().indexOf(q) >= 0) match = true;
-      } else {
-        // 표시되는 열 전체 검색
-        for (var j = 0; j < displayHeaders.length; j++) {
-          if (String(row[displayHeaders[j].name] || '').toLowerCase().indexOf(q) >= 0) {
-            match = true;
-            break;
-          }
+      for (var j = 0; j < displayHeaders.length; j++) {
+        if (String(row[displayHeaders[j].name] || '').toLowerCase().indexOf(q) >= 0) {
+          match = true;
+          break;
         }
       }
       if (!match) continue;
@@ -865,6 +948,11 @@ function doSearch() {
   }
 
   drawTable(filteredRows);
+}
+
+// 검색결과에서 시트로 이동
+function loadSheetAndGoTo(sheetName, rowIdx) {
+  loadSheet(sheetName);
 }
 
 // 상세보기
@@ -877,9 +965,8 @@ function showDetail(idx) {
   var sentHeader = sentColIdx >= 0 ? allHeaders[sentColIdx] : null;
 
   document.getElementById('detailTitle').textContent = '상세 정보 (#' + (idx + 1) + ')';
-
   var html = '';
-  // B~Q열의 모든 데이터를 상세하게 표시
+
   for (var i = 0; i < displayHeaders.length; i++) {
     var h = displayHeaders[i];
     var val = row[h.name] !== undefined ? row[h.name] : '';
@@ -887,13 +974,11 @@ function showDetail(idx) {
 
     html += '<div class="detail-item' + (isLong ? ' detail-full' : '') + '">';
     html += '<label>' + escHtml(h.name) + '</label>';
-
     if (h.name === sentHeader) {
       html += '<div class="value">' + sentimentBadge(val) + '</div>';
     } else {
       html += '<div class="value">' + escHtml(String(val)) + '</div>';
     }
-
     html += '</div>';
   }
 
@@ -916,22 +1001,16 @@ function editCell(td, sheet, row, col, header) {
     td.classList.remove('editing');
     td.textContent = val;
 
-    // 감정열이면 뱃지로 다시 표시
     var sentColIdx2 = detectSentimentColFromData(allHeaders, allRows);
     var sentHeader2 = sentColIdx2 >= 0 ? allHeaders[sentColIdx2] : null;
-    if (header === sentHeader2) {
-      td.innerHTML = sentimentBadge(val);
-    }
+    if (header === sentHeader2) td.innerHTML = sentimentBadge(val);
 
     if (val !== old) {
       apiPost({ action: 'updateCell', sheet: sheet, row: row, col: col, value: val }, function(res) {
         if (res.success) {
           toast('수정 완료!', 'ok');
           for (var i = 0; i < allRows.length; i++) {
-            if (allRows[i]._rowIndex === row) {
-              allRows[i][header] = val;
-              break;
-            }
+            if (allRows[i]._rowIndex === row) { allRows[i][header] = val; break; }
           }
         } else {
           td.textContent = old;
@@ -964,11 +1043,8 @@ function closeModal(id) {
 }
 
 function submitAdd() {
-  // 전체 열에 맞게 데이터 구성 (A열은 빈값, B~Q열은 입력값)
   var rowData = [];
-  for (var i = 0; i < allHeaders.length; i++) {
-    rowData.push(''); // 기본 빈값
-  }
+  for (var i = 0; i < allHeaders.length; i++) rowData.push('');
   for (var i = 0; i < displayHeaders.length; i++) {
     var val = document.getElementById('addF_' + i).value;
     rowData[displayHeaders[i].originalIndex] = val;
@@ -978,7 +1054,6 @@ function submitAdd() {
     if (res.success) {
       toast('행이 추가되었습니다!', 'ok');
       closeModal('addModal');
-      // 캐시 삭제 후 다시 로드
       delete allSheetsData[nowSheet];
       loadSheet(nowSheet);
     } else {
