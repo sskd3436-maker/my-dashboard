@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>구글 시트 대시보드</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      color: white;
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .header h1 { font-size: 20px; }
+    .refresh-btn {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      padding: 8px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .refresh-btn:hover { background: rgba(255,255,255,0.3); }
+
+    .container { max-width: 1300px; margin: 0 auto; padding: 20px; }
+
+    /* 탭 */
+    .tabs {
+      display: flex;
+      gap: 6px;
+      background: white;
+      padding: 8px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      overflow-x: auto;
+      flex-wrap: nowrap;
+    }
+    .tab {
+      padding: 10px 20px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #666;
+      white-space: nowrap;
+    }
+    .tab:hover { background: #e8f0fe; color: #1a73e8; }
+    .tab.active { background: #1a73e8; color: white; }
+
+    /* 요약 카드 */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      cursor: pointer;
+      border-left: 4px solid #1a73e8;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+    .card h3 { color: #1a73e8; margin-bottom: 12px; }
+    .card .info { color: #666; font-size: 13px; margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .card .tags { margin-top: 10px; }
+    .card .tag {
+      display: inline-block;
+      background: #e8f0fe;
+      color: #1a73e8;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      margin: 2px;
+    }
+
+    /* 테이블 영역 */
+    .table-area {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      overflow: hidden;
+      display: none;
+    }
+    .toolbar {
+      padding: 16px 20px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .toolbar h2 { font-size: 18px; color: #1a1a2e; }
+    .toolbar-right { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .search {
+      padding: 9px 14px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      width: 220px;
+      outline: none;
+    }
+    .search:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26,115,232,0.1); }
+
+    .btn {
+      padding: 9px 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .btn-blue { background: #1a73e8; color: white; }
+    .btn-blue:hover { background: #1557b0; }
+    .btn-red { background: #dc3545; color: white; }
+    .btn-red:hover { background: #b02a37; }
+    .btn-gray { background: #f0f0f0; color: #333; }
+    .btn-gray:hover { background: #e0e0e0; }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      background: #f8f9fa;
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 600;
+      color: #555;
+      border-bottom: 2px solid #e0e0e0;
+      white-space: nowrap;
+    }
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f0f0f0;
+      max-width: 250px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    tr:hover td { background: #f8f9ff; }
+
+    td.editable { cursor: pointer; }
+    td.editable:hover { background: #e8f0fe !important; }
+
+    td.editing { padding: 4px; }
+    td.editing input {
+      width: 100%;
+      padding: 7px;
+      border: 2px solid #1a73e8;
+      border-radius: 4px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    /* 모달 */
+    .modal-bg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-bg.show { display: flex; }
+    .modal {
+      background: white;
+      border-radius: 16px;
+      padding: 28px;
+      width: 90%;
+      max-width: 550px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal h2 { margin-bottom: 20px; font-size: 20px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; margin-bottom: 5px; font-size: 13px; color: #555; font-weight: 500; }
+    .field input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+    .field input:focus { border-color: #1a73e8; }
+    .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+    /* 로딩 */
+    .loading { text-align: center; padding: 50px; color: #999; }
+    .dot-loading::after {
+      content: '';
+      animation: dots 1.5s infinite;
+    }
+    @keyframes dots {
+      0% { content: ''; }
+      25% { content: '.'; }
+      50% { content: '..'; }
+      75% { content: '...'; }
+    }
+
+    /* 알림 */
+    .toast-box { position: fixed; top: 76px; right: 20px; z-index: 300; }
+    .toast {
+      padding: 12px 20px;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      margin-bottom: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s;
+    }
+    .toast.ok { background: #0d904f; }
+    .toast.fail { background: #dc3545; }
+    .toast.info { background: #1a73e8; }
+    @keyframes slideIn {
+      from { transform: translateX(120%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .empty-msg {
+      text-align: center;
+      padding: 50px;
+      color: #999;
+      font-size: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 10px; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+      .search { width: 100%; }
+      th, td { padding: 8px 10px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 구글 시트 대시보드</h1>
+  <button class="refresh-btn" onclick="init()">🔄 새로고침</button>
+</div>
+
+<div class="toast-box" id="toasts"></div>
+
+<div class="container">
+  <div class="tabs" id="tabs">
+    <button class="tab active" onclick="showSummary()">📋 전체 요약</button>
+  </div>
+
+  <div id="summaryArea">
+    <div class="loading"><span class="dot-loading">데이터 불러오는 중</span></div>
+  </div>
+
+  <div class="table-area" id="tableArea">
+    <div class="toolbar">
+      <h2 id="sheetTitle">시트</h2>
+      <div class="toolbar-right">
+        <input type="text" class="search" id="searchBox" placeholder="🔍 검색..." oninput="doSearch()">
+        <button class="btn btn-blue" onclick="openAddModal()">+ 행 추가</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead id="tHead"></thead>
+        <tbody id="tBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 행 추가 모달 -->
+<div class="modal-bg" id="addModal">
+  <div class="modal">
+    <h2>새 행 추가</h2>
+    <div id="addFields"></div>
+    <div class="modal-btns">
+      <button class="btn btn-gray" onclick="closeModal()">취소</button>
+      <button class="btn btn-blue" onclick="submitAdd()">추가하기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// ⬇⬇⬇ 여기에 3단계에서 복사한 URL 붙여넣기 ⬇⬇⬇
+// ============================================
+var API = 'https://script.google.com/macros/s/AKfycbyGgfDfzY8hHLPlutxewH3BdS4qlbgT2RNgBuUSMgXqn88_epMThxE5Q0odUfhcW6d5hA/exec';
+// ============================================
+
+var nowSheet = null;
+var headers = [];
+var rows = [];
+
+// 시작
+function init() {
+  showSummary();
+  loadTabs();
+  loadSummary();
+}
+
+// 알림
+function toast(msg, type) {
+  var box = document.getElementById('toasts');
+  var el = document.createElement('div');
+  el.className = 'toast ' + (type || 'info');
+  el.textContent = msg;
+  box.appendChild(el);
+  setTimeout(function() { el.remove(); }, 3000);
+}
+
+// API GET
+function apiGet(params, callback) {
+  var url = API + '?' + Object.keys(params).map(function(k) {
+    return k + '=' + encodeURIComponent(params[k]);
+  }).join('&');
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(callback)
+    .catch(function() { toast('데이터 로드 실패', 'fail'); });
+}
+
+// API POST
+function apiPost(data, callback) {
+  fetch(API, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  })
+    .then(function(r) { return r.json(); })
+    .then(callback)
+    .catch(function() { toast('요청 실패', 'fail'); });
+}
+
+// 탭 로드
+function loadTabs() {
+  apiGet({ action: 'getSheets' }, function(data) {
+    var tabsEl = document.getElementById('tabs');
+    tabsEl.innerHTML = '<button class="tab active" onclick="showSummary()">📋 전체 요약</button>';
+    var sheets = data.sheets || [];
+    for (var i = 0; i < sheets.length; i++) {
+      var name = sheets[i];
+      tabsEl.innerHTML += '<button class="tab" onclick="loadSheet(\'' + name + '\')">' + name + '</button>';
+    }
+  });
+}
+
+// 요약 로드
+function loadSummary() {
+  var area = document.getElementById('summaryArea');
+  area.innerHTML = '<div class="loading"><span class="dot-loading">요약 불러오는 중</span></div>';
+
+  apiGet({ action: 'getSummary' }, function(data) {
+    var list = data.summary || [];
+    var html = '<div class="cards">';
+
+    for (var i = 0; i < list.length; i++) {
+      var s = list[i];
+      html += '<div class="card" onclick="loadSheet(\'' + s.sheetName + '\')">';
+      html += '<h3>' + s.sheetName + '</h3>';
+      html += '<div class="info"><span>데이터 행</span><strong>' + s.totalRows + '개</strong></div>';
+      html += '<div class="info"><span>컬럼 수</span><strong>' + s.totalCols + '개</strong></div>';
+      html += '<div class="tags">';
+      for (var j = 0; j < s.headers.length; j++) {
+        html += '<span class="tag">' + s.headers[j] + '</span>';
+      }
+      html += '</div></div>';
+    }
+
+    html += '</div>';
+    area.innerHTML = html;
+
+    if (list.length === 0) {
+      area.innerHTML = '<div class="empty-msg">시트가 비어있습니다.</div>';
+    }
+  });
+}
+
+// 요약 보기
+function showSummary() {
+  document.getElementById('summaryArea').style.display = '';
+  document.getElementById('tableArea').style.display = 'none';
+  nowSheet = null;
+
+  var allTabs = document.querySelectorAll('.tab');
+  for (var i = 0; i < allTabs.length; i++) {
+    allTabs[i].classList.remove('active');
+  }
+  allTabs[0].classList.add('active');
+}
+
+// 시트 로드
+function loadSheet(name) {
+  nowSheet = name;
+
+  var allTabs = document.querySelectorAll('.tab');
+  for (var i = 0; i < allTabs.length; i++) {
+    allTabs[i].classList.toggle('active', allTabs[i].textContent === name);
+  }
+
+  document.getElementById('summaryArea').style.display = 'none';
+  document.getElementById('tableArea').style.display = '';
+  document.getElementById('sheetTitle').textContent = name;
+  document.getElementById('searchBox').value = '';
+  document.getElementById('tBody').innerHTML = '<tr><td colspan="99"><div class="loading"><span class="dot-loading">로딩 중</span></div></td></tr>';
+
+  apiGet({ action: 'getData', sheet: name }, function(data) {
+    headers = data.headers || [];
+    rows = data.rows || [];
+    drawTable(rows);
+    toast(name + ' 로드 완료', 'ok');
+  });
+}
+
+// 테이블 그리기
+function drawTable(list) {
+  // 헤더
+  var headHtml = '<tr><th>#</th>';
+  for (var i = 0; i < headers.length; i++) {
+    headHtml += '<th>' + headers[i] + '</th>';
+  }
+  headHtml += '<th>작업</th></tr>';
+  document.getElementById('tHead').innerHTML = headHtml;
+
+  // 바디
+  var bodyHtml = '';
+  for (var i = 0; i < list.length; i++) {
+    var row = list[i];
+    bodyHtml += '<tr>';
+    bodyHtml += '<td style="color:#999;font-size:11px;">' + (i + 1) + '</td>';
+
+    for (var j = 0; j < headers.length; j++) {
+      var val = row[headers[j]] !== undefined ? row[headers[j]] : '';
+      bodyHtml += '<td class="editable" ondblclick="editCell(this,\'' + nowSheet + '\',' + row._rowIndex + ',' + (j + 1) + ',\'' + headers[j] + '\')" title="더블클릭하여 수정">' + escHtml(String(val)) + '</td>';
+    }
+
+    bodyHtml += '<td><button class="btn btn-red btn-sm" onclick="delRow(\'' + nowSheet + '\',' + row._rowIndex + ')">삭제</button></td>';
+    bodyHtml += '</tr>';
+  }
+
+  if (list.length === 0) {
+    bodyHtml = '<tr><td colspan="' + (headers.length + 2) + '"><div class="empty-msg">데이터가 없습니다</div></td></tr>';
+  }
+
+  document.getElementById('tBody').innerHTML = bodyHtml;
+}
+
+function escHtml(t) {
+  var d = document.createElement('div');
+  d.textContent = t;
+  return d.innerHTML;
+}
+
+// 셀 편집
+function editCell(td, sheet, row, col, header) {
+  if (td.classList.contains('editing')) return;
+
+  var old = td.textContent;
+  td.classList.add('editing');
+  td.innerHTML = '<input type="text" value="' + escHtml(old) + '">';
+
+  var input = td.querySelector('input');
+  input.focus();
+  input.select();
+
+  function save() {
+    var val = input.value;
+    td.classList.remove('editing');
+    td.textContent = val;
+
+    if (val !== old) {
+      apiPost({ action: 'updateCell', sheet: sheet, row: row, col: col, value: val }, function(res) {
+        if (res.success) {
+          toast('수정 완료!', 'ok');
+          for (var i = 0; i < rows.length; i++) {
+            if (rows[i]._rowIndex === row) {
+              rows[i][header] = val;
+              break;
+            }
+          }
+        } else {
+          td.textContent = old;
+          toast('수정 실패', 'fail');
+        }
+      });
+    }
+  }
+
+  input.onblur = save;
+  input.onkeydown = function(e) {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') {
+      td.classList.remove('editing');
+      td.textContent = old;
+    }
+  };
+}
+
+// 검색
+function doSearch() {
+  var q = document.getElementById('searchBox').value.toLowerCase();
+  if (!q) { drawTable(rows); return; }
+
+  var filtered = [];
+  for (var i = 0; i < rows.length; i++) {
+    var match = false;
+    for (var j = 0; j < headers.length; j++) {
+      if (String(rows[i][headers[j]]).toLowerCase().indexOf(q) >= 0) {
+        match = true;
+        break;
+      }
+    }
+    if (match) filtered.push(rows[i]);
+  }
+  drawTable(filtered);
+}
+
+// 행 추가
+function openAddModal() {
+  var fields = document.getElementById('addFields');
+  fields.innerHTML = '';
+  for (var i = 0; i < headers.length; i++) {
+    fields.innerHTML += '<div class="field"><label>' + headers[i] + '</label><input type="text" id="addF_' + i + '" placeholder="' + headers[i] + ' 입력"></div>';
+  }
+  document.getElementById('addModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('addModal').classList.remove('show');
+}
+
+function submitAdd() {
+  var data = [];
+  for (var i = 0; i < headers.length; i++) {
+    data.push(document.getElementById('addF_' + i).value);
+  }
+
+  apiPost({ action: 'addRow', sheet: nowSheet, rowData: data }, function(res) {
+    if (res.success) {
+      toast('행이 추가되었습니다!', 'ok');
+      closeModal();
+      loadSheet(nowSheet);
+    } else {
+      toast('추가 실패', 'fail');
+    }
+  });
+}
+
+// 행 삭제
+function delRow(sheet, row) {
+  if (!confirm('정말 이 행을 삭제하시겠습니까?')) return;
+
+  apiPost({ action: 'deleteRow', sheet: sheet, row: row }, function(res) {
+    if (res.success) {
+      toast('삭제 완료', 'ok');
+      loadSheet(nowSheet);
+    } else {
+      toast('삭제 실패', 'fail');
+    }
+  });
+}
+
+// 페이지 로드
+window.onload = init;
+</script>
+
+</body>
+</html>
