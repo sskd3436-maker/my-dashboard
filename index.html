@@ -276,7 +276,8 @@
 
   <!-- 통계 -->
   <div class="stats-section" id="statsSection">
-    <h2>📈 전체 현황 통계</h2>
+    <h2 id="statsTitle">📈 전체 현황 통계</h2>
+
     <div class="stats-grid" id="statsGrid">
       <div class="loading"><div class="spinner"></div><p>통계 불러오는 중...</p></div>
     </div>
@@ -459,6 +460,9 @@ function loadAllData() {
         apiGet({ action: 'getData', sheet: name }, function(d) {
           allSheetsData[name] = d;
           loaded++;
+          
+          document.getElementById('statsTitle').textContent = '📈 전체 현황 통계';
+
           if (loaded === sheets.length) {
             dataLoaded = true;
             renderStats();
@@ -729,6 +733,8 @@ function drawSearchResultTable(results, q) {
 
   // 통계 카드 업데이트
   var grid = document.getElementById('statsGrid');
+  document.getElementById('statsTitle').textContent = '📈 검색 결과 현황 통계 (' + results.length + '건)';
+
   var items = [
     { key: 'all', label: '전체', cls: 'total' },
     { key: 'positive', label: '긍정', cls: 'positive' },
