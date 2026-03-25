@@ -435,6 +435,9 @@ function goSubTab(tab,el){
 }
 
 function loadAll(){
+  document.getElementById('actStats').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  document.getElementById('actTB').innerHTML='<tr><td colspan="8"><div class="loading"><div class="spinner"></div> 데이터 불러오는 중...</div></td></tr>';
+
   apiGet({action:'getSheets'},function(data){
     var sheets=data.sheets||[],loaded=0;
     var sm=document.getElementById('sheetMenus');sm.innerHTML='';
@@ -447,11 +450,20 @@ function loadAll(){
     for(var i=0;i<sheets.length;i++){
       (function(nm){apiGet({action:'getData',sheet:nm},function(d){
         allSheetsData[nm]=d;loaded++;
-        if(loaded===sheets.length){dataLoaded=true;buildFlat();buildFilters();renderActivity();toast('로드 완료','ok');}
+        if(loaded===sheets.length){
+          dataLoaded=true;
+          buildFlat();
+          buildFilters();
+          // 현재 페이지에 맞게 렌더링
+          if(curPage==='activity')renderActivity();
+          else if(curPage==='stats')renderSubTab();
+          toast('로드 완료','ok');
+        }
       });})(sheets[i]);
     }
   });
 }
+
 
 function buildFlat(){
   allFlat=[];var ns=Object.keys(allSheetsData);
