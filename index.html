@@ -223,7 +223,6 @@
     <div class="menu-group">
       <div class="menu-group-title">영업활동관리</div>
       <div class="menu-item active" onclick="goPage('activity',this)"><span class="icon">📋</span> 영업활동 조회</div>
-      <div class="menu-item" onclick="goPage('search',this)"><span class="icon">🔍</span> 검색</div>
       <div id="sheetMenus"></div>
     </div>
     <div class="menu-group">
@@ -258,21 +257,6 @@
       </div>
     </div>
 
-    <!-- ========== 검색 ========== -->
-    <div class="page" id="page-search">
-      <div class="search-bar">
-        <input type="text" class="search-input" id="searchBox" placeholder="🔍 사이트명, 담당자, 내용 검색..." oninput="doSearch()">
-        <select class="filter-select" id="srcSent" onchange="doSearch()">
-          <option value="">전체 감정</option><option value="긍정">긍정</option><option value="중립">중립</option><option value="부정">부정</option><option value="기타">기타(재계약)</option>
-        </select>
-        <select class="filter-select" id="srcMgr" onchange="doSearch()"><option value="">전체 담당자</option></select>
-      </div>
-      <div class="stats-grid" id="srcStats"></div>
-      <div class="table-box">
-        <div class="box-header"><h3 id="srcTitle">검색 결과</h3></div>
-        <div class="table-wrap"><table><thead id="srcTH"></thead><tbody id="srcTB"></tbody></table></div>
-      </div>
-    </div>
 
     <!-- ========== 시트 데이터 ========== -->
     <div class="page" id="page-sheet">
@@ -426,7 +410,6 @@ function goPage(page,el){
   document.getElementById('overlay').classList.remove('show');
   if(dataLoaded){
     if(page==='activity')renderActivity();
-    else if(page==='search')doSearch();
     else if(page==='stats')renderSubTab();
   }
 }
