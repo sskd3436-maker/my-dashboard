@@ -378,8 +378,41 @@ function init(){
   dataLoaded=false;allSheetsData={};allFlat=[];
   var n=new Date();n.setHours(0,0,0,0);
   dailyDt=new Date(n);setWeekStart(n);mYear=n.getFullYear();mMon=n.getMonth();
-  loadAll();
+  curPage='activity';
+
+  // 로딩 표시
+  document.getElementById('actStats').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  document.getElementById('actTB').innerHTML='<tr><td colspan="8"><div class="loading"><div class="spinner"></div> 데이터 불러오는 중...</div></td></tr>';
+
+  // 데이터 로드
+  apiGet({action:'getSheets'},function(data){
+    var sheets=data.sheets||[],loaded=0;
+    var sm=document.getElementById('sheetMenus');sm.innerHTML='';
+    var actSheet=document.getElementById('actSheet');actSheet.innerHTML='<option value="">전체 시트</option>';
+    for(var i=0;i<sheets.length;i++){
+      sm.innerHTML+='<div class="menu-item" onclick="goSheet(\''+sheets[i]+'\')"><span class="icon">📄</span> '+sheets[i]+'</div>';
+      actSheet.innerHTML+='<option value="'+sheets[i]+'">'+sheets[i]+'</option>';
+    }
+    if(!sheets.length){
+      document.getElementById('actStats').innerHTML='<div class="empty-msg">시트가 없습니다</div>';
+      document.getElementById('actTB').innerHTML='<tr><td colspan="8"><div class="empty-msg">데이터 없음</div></td></tr>';
+      return;
+    }
+    for(var i=0;i<sheets.length;i++){
+      (function(nm){apiGet({action:'getData',sheet:nm},function(d){
+        allSheetsData[nm]=d;loaded++;
+        if(loaded===sheets.length){
+          dataLoaded=true;
+          buildFlat();
+          buildFilters();
+          renderActivity();
+          toast('로드 완료','ok');
+        }
+      });})(sheets[i]);
+    }
+  });
 }
+
 
 function toast(m,t){var b=document.getElementById('toasts'),e=document.createElement('div');e.className='toast '+(t||'info');e.textContent=m;b.appendChild(e);setTimeout(function(){e.remove();},3000);}
 function apiGet(p,cb){var u=API+'?'+Object.keys(p).map(function(k){return k+'='+encodeURIComponent(p[k]);}).join('&');fetch(u).then(function(r){return r.json();}).then(cb).catch(function(){toast('로드 실패','fail');});}
@@ -434,35 +467,6 @@ function goSubTab(tab,el){
   renderSubTab();
 }
 
-function loadAll(){
-  document.getElementById('actStats').innerHTML='<div class="loading"><div class="spinner"></div></div>';
-  document.getElementById('actTB').innerHTML='<tr><td colspan="8"><div class="loading"><div class="spinner"></div> 데이터 불러오는 중...</div></td></tr>';
-
-  apiGet({action:'getSheets'},function(data){
-    var sheets=data.sheets||[],loaded=0;
-    var sm=document.getElementById('sheetMenus');sm.innerHTML='';
-    var actSheet=document.getElementById('actSheet');actSheet.innerHTML='<option value="">전체 시트</option>';
-    for(var i=0;i<sheets.length;i++){
-      sm.innerHTML+='<div class="menu-item" onclick="goSheet(\''+sheets[i]+'\')"><span class="icon">📄</span> '+sheets[i]+'</div>';
-      actSheet.innerHTML+='<option value="'+sheets[i]+'">'+sheets[i]+'</option>';
-    }
-    if(!sheets.length){toast('시트 없음','fail');return;}
-    for(var i=0;i<sheets.length;i++){
-      (function(nm){apiGet({action:'getData',sheet:nm},function(d){
-        allSheetsData[nm]=d;loaded++;
-        if(loaded===sheets.length){
-          dataLoaded=true;
-          buildFlat();
-          buildFilters();
-          // 현재 페이지에 맞게 렌더링
-          if(curPage==='activity')renderActivity();
-          else if(curPage==='stats')renderSubTab();
-          toast('로드 완료','ok');
-        }
-      });})(sheets[i]);
-    }
-  });
-}
 
 
 function buildFlat(){
