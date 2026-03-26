@@ -405,8 +405,7 @@ function init(){
         dataLoaded=true;
         buildFlat();
         buildFilters();
-        setTimeout(function(){ renderActivity(); },100);
-       setTimeout(function(){renderActivity();},500);
+        goPage('activity');
         toast('로드 완료','ok');
       }
     });})(sheets[i]);
