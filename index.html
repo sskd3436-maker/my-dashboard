@@ -590,7 +590,7 @@ function mkTable(list,thId,tbId,pageKey,q){
     b+='<td><span style="background:#1a73e8;color:white;padding:2px 8px;border-radius:4px;font-size:11px;">'+esc(it.sheet)+'</span></td>';
     b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td style="max-width:300px;">'+hl(esc(it.content),q)+'</td>';
     b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
-    b+='<td><button class="btn btn-gray btn-sm" onclick="showDet(\''+pageKey+'\','+i+')">보기</button></td></tr>';}
+    b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';}
   if(!list.length)b='<tr><td colspan="8"><div class="empty-msg">데이터 없음</div></td></tr>';
   document.getElementById(tbId).innerHTML=b;
   window['_d_'+pageKey]=list;
@@ -919,7 +919,20 @@ function delContract(rowIdx){
     else toast('삭제 실패','fail');
   });
 }
-  
+
+  function openContractFromSheet(pageKey,idx){
+  var list=window['_d_'+pageKey]||[];
+  var it=list[idx];if(!it)return;
+  var row=it.row,h=it.headers;
+  editContractRow=null;
+  document.getElementById('contractModalTitle').textContent='계약서 작성';
+  document.getElementById('contractSubmitBtn').textContent='저장';
+  var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note'];
+  for(var i=0;i<fields.length;i++)document.getElementById(fields[i]).value='';
+  var site=fv(row,h,'사이트명')||'';
+  document.getElementById('cf_site').value=site;
+  document.getElementById('contractModal').classList.add('show');
+}
 </script>
 </body>
 </html>
