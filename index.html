@@ -502,14 +502,7 @@ function buildFlat(){
   console.log('buildFlat완료:',allFlat.length);
 }
 
-function buildFilters(){
-  var ms={};for(var i=0;i<allFlat.length;i++){var m=allFlat[i].mgr;if(m)ms[m]=1;}
-  var ns=Object.keys(ms).sort();
-  var sels=['actMgr','srcMgr'];
-  for(var s=0;s<sels.length;s++){var sel=document.getElementById(sels[s]);sel.innerHTML='<option value="">전체 담당자</option>';
-    for(var i=0;i<ns.length;i++)sel.innerHTML+='<option value="'+ns[i]+'">'+ns[i]+'</option>';}
-}
-
+function buildFilters(){var ms={};for(var i=0;i<allFlat.length;i++){var m=allFlat[i].mgr;if(m)ms[m]=1;}var ns=Object.keys(ms).sort();var sel=document.getElementById('actMgr');if(sel){sel.innerHTML='<option value="">전체 담당자</option>';for(var i=0;i<ns.length;i++)sel.innerHTML+='<option value="'+ns[i]+'">'+ns[i]+'</option>';}}
 // ===== 공용 HTML 생성 =====
 function mkStats(list){
   var t={positive:0,neutral:0,negative:0,etc:0,all:0};
