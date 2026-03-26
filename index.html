@@ -208,6 +208,20 @@
     }
     .table-wrap{overflow-x:auto;}
     .content{max-width:100%!important;width:100%!important;}
+    .form-group{margin-bottom:12px;}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:4px;color:#333;}
+.form-input{width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;box-sizing:border-box;}
+.form-input:focus{border-color:#1a73e8;outline:none;}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:white;border-radius:12px;width:90%;max-height:90vh;overflow-y:auto;}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #eee;}
+.modal-header h3{margin:0;}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;}
+.modal-body{padding:20px;}
+.modal-footer{padding:16px 20px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:8px;}
+.btn-sm{padding:4px 10px;font-size:12px;}
+    
   </style>
 </head>
 <body>
@@ -230,6 +244,8 @@
     <div class="menu-group">
       <div class="menu-group-title">통계관리</div>
       <div class="menu-item" onclick="goPage('stats',this)"><span class="icon">📊</span> 현황 통계</div>
+      <div class="menu-group-title">계약관리</div>
+      <div class="menu-item" onclick="goPage('contract',this)"><span class="icon">📋</span> 계약서 관리</div>
     </div>
   </div>
 </div>
@@ -272,6 +288,50 @@
       </div>
     </div>
 
+<!-- ========== 계약서 관리 ========== -->
+<div class="page" id="page-contract">
+  <div class="search-bar">
+    <input type="text" class="search-input" id="ctSearch" placeholder="🔍 사이트명 검색..." oninput="renderContract()">
+    <button class="btn btn-primary" onclick="openContractModal()">+ 계약서 작성</button>
+  </div>
+  <div class="stats-grid" id="ctStats"></div>
+  <div class="table-box">
+    <div class="box-header"><h3 id="ctTitle">계약서 목록</h3></div>
+    <div class="table-wrap"><table><thead id="ctTH"></thead><tbody id="ctTB"></tbody></table></div>
+  </div>
+</div>
+
+<!-- 계약서 작성/수정 모달 -->
+<div class="modal-overlay" id="contractModal">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <h3 id="contractModalTitle">계약서 작성</h3>
+      <button class="modal-close" onclick="closeContractModal()">✕</button>
+    </div>
+    <div class="modal-body" id="contractForm">
+      <div class="form-group"><label>사이트명</label><input type="text" id="cf_site" class="form-input"></div>
+      <div class="form-group"><label>입대위명</label><input type="text" id="cf_name" class="form-input"></div>
+      <div class="form-group"><label>주소</label><input type="text" id="cf_addr" class="form-input"></div>
+      <div class="form-group"><label>사업자번호</label><input type="text" id="cf_biz" class="form-input"></div>
+      <div class="form-group"><label>관리실번호</label><input type="text" id="cf_tel" class="form-input"></div>
+      <div class="form-group"><label>계약년수</label><input type="number" id="cf_year" class="form-input"></div>
+      <div class="form-group"><label>충전기수량</label><input type="number" id="cf_qty" class="form-input" oninput="calcContract()"></div>
+      <div class="form-group"><label>설치유형</label><select id="cf_type" class="form-input" onchange="calcContract()"><option value="">선택</option><option value="신규설치">신규설치</option><option value="제자리교체">제자리교체</option></select></div>
+      <div class="form-group"><label>충전기단가</label><input type="text" id="cf_price" class="form-input" readonly></div>
+      <div class="form-group"><label>설치금액</label><input type="text" id="cf_total" class="form-input" readonly></div>
+      <div class="form-group"><label>프로모션기간</label><input type="text" id="cf_promo" class="form-input"></div>
+      <div class="form-group"><label>프로모션금액</label><input type="text" id="cf_promoAmt" class="form-input"></div>
+      <div class="form-group"><label>진행사항</label><select id="cf_status" class="form-input"><option value="">선택</option><option value="상담">상담</option><option value="입대위">입대위</option><option value="실사">실사</option><option value="계약">계약</option></select></div>
+      <div class="form-group"><label>비고</label><textarea id="cf_note" class="form-input" rows="3"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="closeContractModal()">취소</button>
+      <button class="btn btn-primary" id="contractSubmitBtn" onclick="submitContract()">저장</button>
+    </div>
+  </div>
+</div>
+
+    
     <!-- ========== 통계관리 ========== -->
     <div class="page" id="page-stats">
       <div class="sub-tabs">
@@ -450,6 +510,7 @@ function goPage(page,el){
   document.getElementById('overlay').classList.remove('show');
   if(dataLoaded){
     if(page==='activity')renderActivity();
+    else if(page==='contract')renderContract();
     else if(page==='stats')renderSubTab();
   }
 }
@@ -695,6 +756,170 @@ function submitAdd(){var d=[];for(var i=0;i<sheetHeaders.length;i++)d.push(docum
 function delRow(sheet,row){if(!confirm('삭제?'))return;apiPost({action:'deleteRow',sheet:sheet,row:row},function(r){if(r.success){toast('삭제!','ok');delete allSheetsData[nowSheet];buildFlat();loadSheetPage(nowSheet);}else toast('실패','fail');});}
 
 window.onload=init;
+
+// ===== 계약서 관리 =====
+var contractData=null;
+var editContractRow=null;
+
+function loadContract(cb){
+  apiGet({action:'getData',sheet:'계약서'},function(d){
+    contractData=d;
+    if(cb)cb();
+  });
+}
+
+function renderContract(){
+  if(!contractData||!contractData.rows){
+    loadContract(function(){renderContract();});
+    return;
+  }
+  var q=(document.getElementById('ctSearch').value||'').toLowerCase().trim();
+  var rows=contractData.rows;
+  var filtered=[];
+  for(var i=0;i<rows.length;i++){
+    if(q){
+      var site=String(rows[i]['사이트명']||'').toLowerCase();
+      var name=String(rows[i]['입대위명']||'').toLowerCase();
+      if(site.indexOf(q)<0&&name.indexOf(q)<0)continue;
+    }
+    filtered.push(rows[i]);
+  }
+  // 진행사항 통계
+  var sCounts={상담:0,입대위:0,실사:0,계약:0};
+  for(var i=0;i<filtered.length;i++){
+    var st=String(filtered[i]['진행사항']||'').trim();
+    if(sCounts[st]!==undefined)sCounts[st]++;
+  }
+  var statsHtml='';
+  var sItems=[{key:'상담',color:'#6c757d'},{key:'입대위',color:'#f0ad4e'},{key:'실사',color:'#1a73e8'},{key:'계약',color:'#0d904f'}];
+  var total=filtered.length;
+  for(var i=0;i<sItems.length;i++){
+    var it=sItems[i],cnt=sCounts[it.key],pct=total>0?Math.round(cnt/total*100):0;
+    statsHtml+='<div class="stat-card" style="border-top:3px solid '+it.color+'"><div class="stat-label">'+it.key+'</div><div class="stat-number">'+cnt+'</div><div class="stat-percent">'+pct+'%</div></div>';
+  }
+  document.getElementById('ctStats').innerHTML=statsHtml;
+  document.getElementById('ctTitle').textContent='계약서 목록 ('+filtered.length+'건)';
+
+  var th='<tr><th>#</th><th>사이트명</th><th>입대위명</th><th>주소</th><th>충전기수량</th><th>설치유형</th><th>설치금액</th><th>진행사항</th><th>관리</th></tr>';
+  document.getElementById('ctTH').innerHTML=th;
+
+  var tb='';
+  for(var i=0;i<filtered.length;i++){
+    var r=filtered[i];
+    var statusBadge='';
+    var st=String(r['진행사항']||'').trim();
+    var stColors={상담:'#6c757d',입대위:'#f0ad4e',실사:'#1a73e8',계약:'#0d904f'};
+    if(st)statusBadge='<span style="background:'+( stColors[st]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:12px;">'+st+'</span>';
+    tb+='<tr>';
+    tb+='<td>'+(i+1)+'</td>';
+    tb+='<td>'+esc(r['사이트명']||'')+'</td>';
+    tb+='<td>'+esc(r['입대위명']||'')+'</td>';
+    tb+='<td>'+esc(r['주소']||'')+'</td>';
+    tb+='<td>'+esc(r['충전기수량']||'')+'</td>';
+    tb+='<td>'+esc(r['설치유형']||'')+'</td>';
+    tb+='<td>'+esc(r['설치금액']||'')+'</td>';
+    tb+='<td>'+statusBadge+'</td>';
+    tb+='<td><button class="btn btn-sm btn-primary" onclick="editContract('+r._rowIndex+')">수정</button> <button class="btn btn-sm btn-gray" onclick="delContract('+r._rowIndex+')">삭제</button></td>';
+    tb+='</tr>';
+  }
+  if(filtered.length===0)tb='<tr><td colspan="9"><div class="empty-msg">데이터가 없습니다</div></td></tr>';
+  document.getElementById('ctTB').innerHTML=tb;
+}
+
+function calcContract(){
+  var type=document.getElementById('cf_type').value;
+  var qty=parseInt(document.getElementById('cf_qty').value)||0;
+  var price=0;
+  if(type==='신규설치')price=3500000;
+  else if(type==='제자리교체')price=2500000;
+  document.getElementById('cf_price').value=price?price.toLocaleString()+'원':'';
+  document.getElementById('cf_total').value=(price*qty)?( price*qty).toLocaleString()+'원':'';
+}
+
+function openContractModal(rowIdx){
+  editContractRow=rowIdx||null;
+  document.getElementById('contractModalTitle').textContent=rowIdx?'계약서 수정':'계약서 작성';
+  document.getElementById('contractSubmitBtn').textContent=rowIdx?'수정':'저장';
+  var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note'];
+  for(var i=0;i<fields.length;i++)document.getElementById(fields[i]).value='';
+  if(rowIdx&&contractData&&contractData.rows){
+    for(var i=0;i<contractData.rows.length;i++){
+      var r=contractData.rows[i];
+      if(r._rowIndex===rowIdx){
+        document.getElementById('cf_site').value=r['사이트명']||'';
+        document.getElementById('cf_name').value=r['입대위명']||'';
+        document.getElementById('cf_addr').value=r['주소']||'';
+        document.getElementById('cf_biz').value=r['사업자번호']||'';
+        document.getElementById('cf_tel').value=r['관리실번호']||'';
+        document.getElementById('cf_year').value=r['계약년수']||'';
+        document.getElementById('cf_qty').value=r['충전기수량']||'';
+        document.getElementById('cf_type').value=r['설치유형']||'';
+        calcContract();
+        document.getElementById('cf_promo').value=r['프로모션기간']||'';
+        document.getElementById('cf_promoAmt').value=r['프로모션금액']||'';
+        document.getElementById('cf_status').value=r['진행사항']||'';
+        document.getElementById('cf_note').value=r['비고']||'';
+        break;
+      }
+    }
+  }
+  document.getElementById('contractModal').classList.add('show');
+}
+
+function closeContractModal(){
+  document.getElementById('contractModal').classList.remove('show');
+  editContractRow=null;
+}
+
+function submitContract(){
+  var type=document.getElementById('cf_type').value;
+  var qty=parseInt(document.getElementById('cf_qty').value)||0;
+  var price=0;
+  if(type==='신규설치')price=3500000;
+  else if(type==='제자리교체')price=2500000;
+
+  var rowData=[
+    document.getElementById('cf_site').value,
+    document.getElementById('cf_name').value,
+    document.getElementById('cf_addr').value,
+    document.getElementById('cf_biz').value,
+    document.getElementById('cf_tel').value,
+    document.getElementById('cf_year').value,
+    String(qty),
+    type,
+    price?price.toLocaleString()+'원':'',
+    (price*qty)?(price*qty).toLocaleString()+'원':'',
+    document.getElementById('cf_promo').value,
+    document.getElementById('cf_promoAmt').value,
+    document.getElementById('cf_status').value,
+    document.getElementById('cf_note').value
+  ];
+
+  if(editContractRow){
+    for(var i=0;i<rowData.length;i++){
+      apiPost({action:'updateCell',sheet:'계약서',row:editContractRow,col:i+1,value:rowData[i]},function(){});
+    }
+    toast('수정 완료','ok');
+    closeContractModal();
+    setTimeout(function(){contractData=null;renderContract();},1000);
+  }else{
+    apiPost({action:'addRow',sheet:'계약서',rowData:rowData},function(r){
+      if(r.success){toast('저장 완료','ok');closeContractModal();contractData=null;renderContract();}
+      else toast('저장 실패','fail');
+    });
+  }
+}
+
+function editContract(rowIdx){openContractModal(rowIdx);}
+
+function delContract(rowIdx){
+  if(!confirm('삭제하시겠습니까?'))return;
+  apiPost({action:'deleteRow',sheet:'계약서',row:rowIdx},function(r){
+    if(r.success){toast('삭제 완료','ok');contractData=null;renderContract();}
+    else toast('삭제 실패','fail');
+  });
+}
+  
 </script>
 </body>
 </html>
