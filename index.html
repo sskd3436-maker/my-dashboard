@@ -418,7 +418,7 @@ if(loaded>=sheets.length){
 
 
 function toast(m,t){var b=document.getElementById('toasts'),e=document.createElement('div');e.className='toast '+(t||'info');e.textContent=m;b.appendChild(e);setTimeout(function(){e.remove();},3000);}
-function apiGet(p,cb){var url=API+'?'+Object.keys(p).map(function(k){return k+'='+encodeURIComponent(p[k])}).join('&');fetch(url).then(function(r){return r.json()}).then(cb).catch(function(){});}
+function apiGet(p,cb){var url=API+'?'+Object.keys(p).map(function(k){return k+'='+encodeURIComponent(p[k])}).join('&');fetch(url,{redirect:'follow',mode:'cors'}).then(function(r){return r.text();}).then(function(t){try{cb(JSON.parse(t));}catch(e){console.log('응답:',t.substring(0,100));}}).catch(function(e){console.log('fetch오류:',e);});}
 function apiPost(d,cb){fetch(API,{method:'POST',body:JSON.stringify(d)}).then(function(r){return r.json();}).then(cb).catch(function(){toast('요청 실패','fail');});}
 function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML;}
 function isChecked(v){var s=String(v||'').trim();return s==='1'||s==='O'||s==='o'||s==='TRUE'||s==='true'||s==='○'||s==='ㅇ'||s==='V'||s==='v'||s==='Y'||s==='y';}
