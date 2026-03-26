@@ -399,16 +399,17 @@ function init(){
       return;
     }
     for(var i=0;i<sheets.length;i++){
-      (function(nm){apiGet({action:'getData',sheet:nm},function(d){
-        allSheetsData[nm]=d;loaded++;
-        if(loaded===sheets.length){
-          dataLoaded=true;
-          buildFlat();
-          buildFilters();
-          renderActivity();
-          toast('로드 완료','ok');
-        }
-      });})(sheets[i]);
+    (function(nm){apiGet({action:'getData',sheet:nm},function(d){
+      allSheetsData[nm]=d;loaded++;
+      if(loaded>=sheets.length){
+        dataLoaded=true;
+        buildFlat();
+        buildFilters();
+        setTimeout(function(){ renderActivity(); },100);
+        toast('로드 완료','ok');
+      }
+    });})(sheets[i]);
+
     }
   });
 }
