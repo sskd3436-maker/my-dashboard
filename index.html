@@ -402,12 +402,14 @@ function init(){
     (function(nm){apiGet({action:'getData',sheet:nm},function(d){
       allSheetsData[nm]=d;loaded++;
 if(loaded>=sheets.length){
+  console.log('모든시트로드완료');
   dataLoaded=true;
   buildFlat();
   buildFilters();
-  document.getElementById('actStats').innerHTML=mkStats(allFlat);
-  document.getElementById('actTitle').textContent='영업활동 목록 ('+allFlat.length+'건)';
-  mkTable(allFlat,'actTH','actTB','act','');
+  console.log('allFlat길이:',allFlat.length);
+  console.log('renderActivity호출직전');
+  renderActivity();
+  console.log('renderActivity호출완료');
   toast('로드 완료','ok');
 }
     });})(sheets[i]);
