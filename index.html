@@ -475,9 +475,31 @@ function goSubTab(tab,el){
 
 
 function buildFlat(){
-  allFlat=[];var ns=Object.keys(allSheetsData);
-  for(var s=0;s<ns.length;s++){var nm=ns[s],d=allSheetsData[nm],h=d.headers||[],rows=d.rows||[];
-    for(var r=0;r<rows.length;r++){allFlat.push({sheet:nm,row:rows[r],headers:h,sent:getRowSent(rows[r],h),date:parseDate(fv(rows[r],h,'방문일자')),mgr:fv(rows[r],h,'담당자'),site:fv(rows[r],h,'사이트명'),content:fv(rows[r],h,'영업내용')});}}
+  allFlat=[];
+  var ns=Object.keys(allSheetsData);
+  for(var s=0;s<ns.length;s++){
+    var nm=ns[s],d=allSheetsData[nm];
+    if(!d||!d.headers||!d.rows){console.log('시트오류:',nm,d);continue;}
+    var h=d.headers,rows=d.rows;
+    for(var r=0;r<rows.length;r++){
+      try{
+        var row=rows[r];
+        allFlat.push({
+          sheet:nm,
+          row:row,
+          headers:h,
+          sent:getRowSent(row,h),
+          date:parseDate(fv(row,h,'방문일자')),
+          mgr:fv(row,h,'담당자'),
+          site:fv(row,h,'사이트명'),
+          content:fv(row,h,'영업내용')
+        });
+      }catch(e){
+        console.log('행오류:',nm,r,e.message);
+      }
+    }
+  }
+  console.log('buildFlat완료:',allFlat.length);
 }
 
 function buildFilters(){
