@@ -405,6 +405,8 @@ if(loaded>=sheets.length){
   dataLoaded=true;
   buildFlat();
   buildFilters();
+  curPage='activity';
+  document.getElementById('page-activity').classList.add('active');
   renderActivity();
   toast('로드 완료','ok');
 }
