@@ -735,7 +735,7 @@ function drawSheet(list){
   var bb='';for(var i=0;i<list.length;i++){var row=list[i];bb+='<tr><td style="color:#999;font-size:11px;">'+(i+1)+'</td>';
     for(var j=0;j<sheetHeaders.length;j++){var h=sheetHeaders[j],cn=sheetStartCol+j;
       bb+='<td class="editable" ondblclick="editCell(this,\''+nowSheet+'\','+row._rowIndex+','+cn+',\''+esc(h)+'\')">'+ renderCell(h,row[h])+'</td>';}
-    bb+='<td><button class="btn btn-gray btn-sm" onclick="showSheetDet('+i+')">보기</button></td>';
+    bb+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromList('+i+')">보기</button></td>';
     bb+='<td><button class="btn btn-red btn-sm" onclick="delRow(\''+nowSheet+'\','+row._rowIndex+')">삭제</button></td></tr>';}
   if(!list.length)bb='<tr><td colspan="'+(sheetHeaders.length+3)+'"><div class="empty-msg">데이터 없음</div></td></tr>';
   document.getElementById('sTB').innerHTML=bb;
@@ -933,6 +933,22 @@ function delContract(rowIdx){
   document.getElementById('cf_site').value=site;
   document.getElementById('contractModal').classList.add('show');
 }
+
+function openContractFromList(idx){
+  var list=sheetFiltered.length?sheetFiltered:sheetRows;
+  var row=list[idx];if(!row)return;
+  editContractRow=null;
+  document.getElementById('contractModalTitle').textContent='계약서 작성';
+  document.getElementById('contractSubmitBtn').textContent='저장';
+  var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note'];
+  for(var i=0;i<fields.length;i++)document.getElementById(fields[i]).value='';
+  var site=row['사이트명']||'';
+  document.getElementById('cf_site').value=site;
+  var qty=row['충전기수량']||'';
+  document.getElementById('cf_qty').value=qty;
+  document.getElementById('contractModal').classList.add('show');
+}
+  
 </script>
 </body>
 </html>
