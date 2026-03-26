@@ -405,9 +405,9 @@ if(loaded>=sheets.length){
   dataLoaded=true;
   buildFlat();
   buildFilters();
-  curPage='activity';
-  document.getElementById('page-activity').classList.add('active');
-  renderActivity();
+  document.getElementById('actStats').innerHTML=mkStats(allFlat);
+  document.getElementById('actTitle').textContent='영업활동 목록 ('+allFlat.length+'건)';
+  mkTable(allFlat,'actTH','actTB','act','');
   toast('로드 완료','ok');
 }
     });})(sheets[i]);
