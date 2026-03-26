@@ -406,6 +406,7 @@ function init(){
         buildFlat();
         buildFilters();
         setTimeout(function(){ renderActivity(); },100);
+       setTimeout(function(){renderActivity();},500);
         toast('로드 완료','ok');
       }
     });})(sheets[i]);
