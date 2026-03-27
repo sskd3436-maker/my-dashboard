@@ -854,15 +854,7 @@ function renderContract(){
     tb+='<td><button class="btn btn-sm btn-primary" onclick="editContract('+r._rowIndex+')">수정</button> <button class="btn btn-sm btn-blue" onclick="generateContract(\'contract\','+i+')">계약서</button> <button class="btn btn-sm btn-red" onclick="delContract('+r._rowIndex+')">삭제</button></td>';
     tb+='</tr>';
   }
-  if(filtered.length===0)tb='<tr><td colspan="9"><div class="empty-msg">데이터가 없습니다</div></td></tr>';
-  document.getElementById('ctTB').innerHTML=tb;
-}
  
-  document.getElementById('ctTitle').textContent='계약서 목록 ('+filtered.length+'건)';
-
-  var th='<tr><th>#</th><th>사이트명</th><th>입대위명</th><th>주소</th><th>충전기수량</th><th>설치유형</th><th>설치금액</th><th>진행사항</th><th>관리</th></tr>';
-  document.getElementById('ctTH').innerHTML=th;
-
   var tb='';
   for(var i=0;i<filtered.length;i++){
     var r=filtered[i];
