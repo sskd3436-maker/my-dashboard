@@ -869,7 +869,14 @@ function renderContract(){
     tb+='<td>'+esc(fv(r,h,'설치유형')||'')+'</td>';
     tb+='<td>'+esc(fv(r,h,'설치금액')||'')+'</td>';
     tb+='<td>'+statusBadge+'</td>';
-    tb+='<td>'+esc(fv(r,h,'담당자')||'')+'</td>';
+    var mgrVal=fv(r,h,'담당자')||'';
+if(!mgrVal){
+  var sn=(fv(r,h,'사이트명')||'').trim();
+  for(var af=0;af<(allFlat||[]).length;af++){
+    if(allFlat[af].site&&allFlat[af].site.trim()===sn&&allFlat[af].mgr){mgrVal=allFlat[af].mgr;break;}
+  }
+}
+tb+='<td>'+esc(mgrVal)+'</td>';
     tb+='<td><button class="btn btn-sm btn-primary" onclick="editContract('+r._rowIndex+')">수정</button> <button class="btn btn-sm btn-blue" onclick="generateContract(\'contract\','+i+')">계약서</button> <button class="btn btn-sm btn-red" onclick="delContract('+r._rowIndex+')">삭제</button></td>';
     tb+='</tr>';
   }
