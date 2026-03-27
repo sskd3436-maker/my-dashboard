@@ -819,7 +819,7 @@ function renderContract(){
     tb+='<td>'+esc(r['설치유형']||'')+'</td>';
     tb+='<td>'+esc(r['설치금액']||'')+'</td>';
     tb+='<td>'+statusBadge+'</td>';
-    tb+='<td><button class="btn btn-sm btn-primary" onclick="editContract('+r._rowIndex+')">수정</button> <button class="btn btn-sm btn-blue" onclick="generateContract(\'contract\','+i+')">계약서</button> <button class="btn btn-sm btn-gray" onclick="delContract('+r._rowIndex+')">삭제</button></td>';
+    tb+='<td><button class="btn btn-sm btn-primary" onclick="editContract('+r._rowIndex+')">수정</button> <button class="btn btn-sm btn-blue" onclick="generateContract(\'contract\','+i+')">계약서</button> <button class="btn btn-sm btn-red" onclick="delContract('+r._rowIndex+')">삭제</button></td>';
     tb+='</tr>';
   }
   if(filtered.length===0)tb='<tr><td colspan="9"><div class="empty-msg">데이터가 없습니다</div></td></tr>';
