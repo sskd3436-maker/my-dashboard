@@ -345,6 +345,7 @@
       <div class="form-group"><label>프로모션금액</label><input type="text" id="cf_promoAmt" class="form-input"></div>
       <div class="form-group"><label>진행사항</label><select id="cf_status" class="form-input"><option value="">선택</option><option value="상담">상담</option><option value="입대위">입대위</option><option value="실사">실사</option><option value="계약">계약</option></select></div>
       <div class="form-group"><label>비고</label><textarea id="cf_note" class="form-input" rows="3"></textarea></div>
+      <div class="form-group"><label>담당자</label><input type="text" id="cf_mgr" class="form-input"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-gray" onclick="closeContractModal()">취소</button>
@@ -850,7 +851,7 @@ function renderContract(){
   document.getElementById('ctTitle').textContent='계약서 목록 ('+total+'건)';
 
   // 테이블
-  document.getElementById('ctTH').innerHTML='<tr><th>#</th><th>사이트명</th><th>입대위명</th><th>주소</th><th>충전기수량</th><th>설치유형</th><th>설치금액</th><th>진행사항</th><th>관리</th></tr>';
+  document.getElementById('ctTH').innerHTML='<tr><th>#</th><th>사이트명</th><th>입대위명</th><th>주소</th><th>충전기수량</th><th>설치유형</th><th>설치금액</th><th>진행사항</th><th>담당자</th><th>관리</th></tr>';
 
   var tb='';
   var stColors={'상담':'#3498db','입대위':'#f39c12','실사':'#9b59b6','계약':'#27ae60'};
@@ -868,6 +869,7 @@ function renderContract(){
     tb+='<td>'+esc(fv(r,h,'설치유형')||'')+'</td>';
     tb+='<td>'+esc(fv(r,h,'설치금액')||'')+'</td>';
     tb+='<td>'+statusBadge+'</td>';
+    tb+='<td>'+esc(fv(r,h,'담당자')||'')+'</td>';
     tb+='<td><button class="btn btn-sm btn-primary" onclick="editContract('+r._rowIndex+')">수정</button> <button class="btn btn-sm btn-blue" onclick="generateContract(\'contract\','+i+')">계약서</button> <button class="btn btn-sm btn-red" onclick="delContract('+r._rowIndex+')">삭제</button></td>';
     tb+='</tr>';
   }
@@ -909,8 +911,8 @@ function openContractModal(rowIdx){
   editContractRow=rowIdx||null;
   document.getElementById('contractModalTitle').textContent=rowIdx?'계약서 수정':'계약서 작성';
   document.getElementById('contractSubmitBtn').textContent=rowIdx?'수정':'저장';
-  var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note'];
-  for(var i=0;i<fields.length;i++)document.getElementById(fields[i]).value='';
+  var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
+  for(var i=0;i<fields.length;i++){var el=document.getElementById(fields[i]);if(el)el.value='';}
   if(rowIdx&&contractData&&contractData.rows){
     for(var i=0;i<contractData.rows.length;i++){
       var r=contractData.rows[i];
@@ -928,6 +930,7 @@ function openContractModal(rowIdx){
         document.getElementById('cf_promoAmt').value=r['프로모션금액']||'';
         document.getElementById('cf_status').value=r['진행사항']||'';
         document.getElementById('cf_note').value=r['비고']||'';
+        document.getElementById('cf_mgr').value=r['담당자']||'';
         break;
       }
     }
@@ -961,7 +964,8 @@ function submitContract(){
     document.getElementById('cf_promo').value,
     document.getElementById('cf_promoAmt').value,
     document.getElementById('cf_status').value,
-    document.getElementById('cf_note').value
+    document.getElementById('cf_note').value,
+    document.getElementById('cf_mgr').value
   ];
 
   if(editContractRow){
@@ -989,17 +993,19 @@ function delContract(rowIdx){
   });
 }
 
-  function openContractFromSheet(pageKey,idx){
+function openContractFromSheet(pageKey,idx){
   var list=window['_d_'+pageKey]||[];
   var it=list[idx];if(!it)return;
   var row=it.row,h=it.headers;
   editContractRow=null;
   document.getElementById('contractModalTitle').textContent='계약서 작성';
   document.getElementById('contractSubmitBtn').textContent='저장';
-  var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note'];
-  for(var i=0;i<fields.length;i++)document.getElementById(fields[i]).value='';
+  var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
+  for(var i=0;i<fields.length;i++){var el=document.getElementById(fields[i]);if(el)el.value='';}
   var site=fv(row,h,'사이트명')||'';
+  var mgr=it.mgr||fv(row,h,'담당자')||'';
   document.getElementById('cf_site').value=site;
+  document.getElementById('cf_mgr').value=mgr;
   document.getElementById('contractModal').classList.add('show');
 }
 
