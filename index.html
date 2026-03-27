@@ -292,7 +292,17 @@
 <div class="page" id="page-contract">
   <div class="search-bar">
     <input type="text" class="search-input" id="ctSearch" placeholder="🔍 사이트명 검색..." oninput="renderContract()">
-    <button class="btn btn-primary" onclick="openContractModal()">+ 계약서 작성</button>
+    <select id="ctMgr" class="form-input" style="width:160px;display:inline-block;margin-left:8px;" onchange="renderContract()">
+      <option value="">전체 담당자</option>
+    </select>
+    <select id="ctStatus" class="form-input" style="width:140px;display:inline-block;margin-left:8px;" onchange="renderContract()">
+      <option value="">전체 진행사항</option>
+      <option value="상담">상담</option>
+      <option value="입대위">입대위</option>
+      <option value="실사">실사</option>
+      <option value="계약">계약</option>
+    </select>
+    <button class="btn btn-primary" style="margin-left:8px;" onclick="openContractModal()">+ 계약서 작성</button>
   </div>
   <div class="stats-grid" id="ctStats"></div>
   <div class="table-box">
@@ -300,7 +310,7 @@
     <div class="table-wrap"><table><thead id="ctTH"></thead><tbody id="ctTB"></tbody></table></div>
   </div>
 </div>
-
+    
 <!-- 계약서 작성/수정 모달 -->
 <div class="modal-overlay" id="contractModal">
   <div class="modal" style="max-width:600px;">
@@ -769,21 +779,82 @@ function loadContract(cb){
 }
 
 function renderContract(){
-  if(!contractData||!contractData.rows){
-    loadContract(function(){renderContract();});
-    return;
+  if(!contractData||!contractData.rows)return;
+  var h=contractData.headers, rows=contractData.rows;
+  var keyword=(document.getElementById('ctSearch').value||'').toLowerCase();
+  var selMgr=document.getElementById('ctMgr').value;
+  var selStatus=document.getElementById('ctStatus').value;
+
+  // 담당자 목록 구축
+  var mgrs={};
+  for(var m=0;m<rows.length;m++){
+    var mg=fv(rows[m],h,'담당자')||'';
+    if(mg)mgrs[mg]=1;
   }
-  var q=(document.getElementById('ctSearch').value||'').toLowerCase().trim();
-  var rows=contractData.rows;
+  var mgrSel=document.getElementById('ctMgr');
+  var curMgr=mgrSel.value;
+  mgrSel.innerHTML='<option value="">전체 담당자</option>';
+  Object.keys(mgrs).sort().forEach(function(n){
+    mgrSel.innerHTML+='<option value="'+n+'"'+(n===curMgr?' selected':'')+'>'+n+'</option>';
+  });
+
+  // 필터링
   var filtered=[];
   for(var i=0;i<rows.length;i++){
-    if(q){
-      var site=String(rows[i]['사이트명']||'').toLowerCase();
-      var name=String(rows[i]['입대위명']||'').toLowerCase();
-      if(site.indexOf(q)<0&&name.indexOf(q)<0)continue;
-    }
-    filtered.push(rows[i]);
+    var r=rows[i];
+    var siteName=(fv(r,h,'사이트명')||'').toLowerCase();
+    var mgr=fv(r,h,'담당자')||'';
+    var status=fv(r,h,'진행사항')||'';
+    if(keyword&&siteName.indexOf(keyword)<0)continue;
+    if(selMgr&&mgr!==selMgr)continue;
+    if(selStatus&&status!==selStatus)continue;
+    r._rowIndex=i+4;
+    filtered.push(r);
   }
+
+  // 통계
+  var total=filtered.length, cnt상담=0, cnt입대위=0, cnt실사=0, cnt계약=0;
+  for(var j=0;j<filtered.length;j++){
+    var st=fv(filtered[j],h,'진행사항')||'';
+    if(st==='상담')cnt상담++;
+    else if(st==='입대위')cnt입대위++;
+    else if(st==='실사')cnt실사++;
+    else if(st==='계약')cnt계약++;
+  }
+  document.getElementById('ctStats').innerHTML=
+    '<div class="stat-card"><div class="stat-value">'+total+'</div><div class="stat-label">총 건수</div></div>'+
+    '<div class="stat-card"><div class="stat-value" style="color:#3498db;">'+cnt상담+'</div><div class="stat-label">상담</div></div>'+
+    '<div class="stat-card"><div class="stat-value" style="color:#f39c12;">'+cnt입대위+'</div><div class="stat-label">입대위</div></div>'+
+    '<div class="stat-card"><div class="stat-value" style="color:#9b59b6;">'+cnt실사+'</div><div class="stat-label">실사</div></div>'+
+    '<div class="stat-card"><div class="stat-value" style="color:#27ae60;">'+cnt계약+'</div><div class="stat-label">계약</div></div>';
+
+  document.getElementById('ctTitle').textContent='계약서 목록 ('+total+'건)';
+
+  // 테이블
+  document.getElementById('ctTH').innerHTML='<tr><th>#</th><th>사이트명</th><th>입대위명</th><th>주소</th><th>충전기수량</th><th>설치유형</th><th>설치금액</th><th>진행사항</th><th>관리</th></tr>';
+
+  var tb='';
+  var stColors={'상담':'#3498db','입대위':'#f39c12','실사':'#9b59b6','계약':'#27ae60'};
+  for(var i=0;i<filtered.length;i++){
+    var r=filtered[i];
+    var st=fv(r,h,'진행사항')||'';
+    var statusBadge='';
+    if(st)statusBadge='<span style="background:'+(stColors[st]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:12px;">'+st+'</span>';
+    tb+='<tr>';
+    tb+='<td>'+(i+1)+'</td>';
+    tb+='<td>'+esc(fv(r,h,'사이트명')||'')+'</td>';
+    tb+='<td>'+esc(fv(r,h,'입대위명')||'')+'</td>';
+    tb+='<td>'+esc(fv(r,h,'주소')||'')+'</td>';
+    tb+='<td>'+esc(fv(r,h,'충전기수량')||'')+'</td>';
+    tb+='<td>'+esc(fv(r,h,'설치유형')||'')+'</td>';
+    tb+='<td>'+esc(fv(r,h,'설치금액')||'')+'</td>';
+    tb+='<td>'+statusBadge+'</td>';
+    tb+='<td><button class="btn btn-sm btn-primary" onclick="editContract('+r._rowIndex+')">수정</button> <button class="btn btn-sm btn-blue" onclick="generateContract(\'contract\','+i+')">계약서</button> <button class="btn btn-sm btn-red" onclick="delContract('+r._rowIndex+')">삭제</button></td>';
+    tb+='</tr>';
+  }
+  if(filtered.length===0)tb='<tr><td colspan="9"><div class="empty-msg">데이터가 없습니다</div></td></tr>';
+  document.getElementById('ctTB').innerHTML=tb;
+}
   // 진행사항 통계
   var sCounts={상담:0,입대위:0,실사:0,계약:0};
   for(var i=0;i<filtered.length;i++){
