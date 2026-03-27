@@ -978,7 +978,7 @@ function generateContract(source, idx) {
     if(xhr.status===200){
       try{
         var zip=new window.PizZip(xhr.response);
-        var doc=new window.docxtemplater(zip,{paragraphLoop:true,linebreaks:true});
+        var doc=new window.docxtemplater(zip,{paragraphLoop:true,linebreaks:true,delimiters:{start:'{',end:'}'}});
         doc.render({
           '입대위명':name,
           '사업자번호':biz,
