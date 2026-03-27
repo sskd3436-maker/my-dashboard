@@ -833,12 +833,19 @@ function renderContract(){
     else if(st==='실사')cnt실사++;
     else if(st==='계약')cnt계약++;
   }
-  document.getElementById('ctStats').innerHTML=
-    '<div class="stat-card"><div class="stat-value">'+total+'</div><div class="stat-label">총 건수</div></div>'+
-    '<div class="stat-card"><div class="stat-value" style="color:#3498db;">'+cnt상담+'</div><div class="stat-label">상담</div></div>'+
-    '<div class="stat-card"><div class="stat-value" style="color:#f39c12;">'+cnt입대위+'</div><div class="stat-label">입대위</div></div>'+
-    '<div class="stat-card"><div class="stat-value" style="color:#9b59b6;">'+cnt실사+'</div><div class="stat-label">실사</div></div>'+
-    '<div class="stat-card"><div class="stat-value" style="color:#27ae60;">'+cnt계약+'</div><div class="stat-label">계약</div></div>';
+    var stItems=[
+    {label:'총 건수',count:total,color:'#3b82f6',pct:100},
+    {label:'상담',count:cnt상담,color:'#3498db',pct:total>0?Math.round(cnt상담/total*100):0},
+    {label:'입대위',count:cnt입대위,color:'#f39c12',pct:total>0?Math.round(cnt입대위/total*100):0},
+    {label:'실사',count:cnt실사,color:'#9b59b6',pct:total>0?Math.round(cnt실사/total*100):0},
+    {label:'계약',count:cnt계약,color:'#27ae60',pct:total>0?Math.round(cnt계약/total*100):0}
+  ];
+  var statsHtml='';
+  for(var s=0;s<stItems.length;s++){
+    var si=stItems[s];
+    statsHtml+='<div class="stat-card" style="border-top:4px solid '+si.color+';"><div class="stat-label">'+si.label+'</div><div class="stat-value" style="font-size:36px;font-weight:800;color:'+si.color+';">'+si.count+'</div><div style="font-size:12px;color:#888;margin-top:2px;">'+si.pct+'%</div><div style="height:4px;background:#eee;border-radius:2px;margin-top:6px;"><div style="height:4px;background:'+si.color+';border-radius:2px;width:'+si.pct+'%;"></div></div></div>';
+  }
+  document.getElementById('ctStats').innerHTML=statsHtml;
 
   document.getElementById('ctTitle').textContent='계약서 목록 ('+total+'건)';
 
