@@ -969,7 +969,7 @@ function generateContract(source, idx) {
     promoAmt=document.getElementById('cf_promoAmt').value;
   }
 
-  var templateUrl='https://sskd3436-maker.github.io/my-dashboard/계약서 양식 (자동 복구됨).docx';
+  var templateUrl='https://sskd3436-maker.github.io/my-dashboard/%EA%B3%84%EC%95%BD%EC%84%9C%20%EC%96%91%EC%8B%9D%20(%EC%9E%90%EB%8F%99%20%EB%B3%B5%EA%B5%AC%EB%90%A8).docx';
 
   var xhr=new XMLHttpRequest();
   xhr.open('GET',templateUrl,true);
@@ -977,7 +977,7 @@ function generateContract(source, idx) {
   xhr.onload=function(){
     if(xhr.status===200){
       try{
-        var zip=new PizZip(xhr.response);
+        var zip=new window.PizZip(xhr.response);
         var doc=new window.docxtemplater(zip,{paragraphLoop:true,linebreaks:true});
         doc.render({
           '입대위명':name,
@@ -992,7 +992,7 @@ function generateContract(source, idx) {
           '프로모션기간':promo
         });
         var out=doc.getZip().generate({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
-        saveAs(out, site+'_계약서.docx');
+        window.saveAs(out, site+'_계약서.docx');
         toast('계약서 다운로드 완료','ok');
       }catch(e){
         console.log('계약서 생성 오류:',e);
@@ -1005,6 +1005,7 @@ function generateContract(source, idx) {
   xhr.onerror=function(){toast('네트워크 오류','fail');};
   xhr.send();
 }
+
   
 </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.6/pizzip.js"></script>
