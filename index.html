@@ -857,20 +857,7 @@ function renderContract(){
   if(filtered.length===0)tb='<tr><td colspan="9"><div class="empty-msg">데이터가 없습니다</div></td></tr>';
   document.getElementById('ctTB').innerHTML=tb;
 }
-  // 진행사항 통계
-  var sCounts={상담:0,입대위:0,실사:0,계약:0};
-  for(var i=0;i<filtered.length;i++){
-    var st=String(filtered[i]['진행사항']||'').trim();
-    if(sCounts[st]!==undefined)sCounts[st]++;
-  }
-  var statsHtml='';
-  var sItems=[{key:'상담',color:'#6c757d'},{key:'입대위',color:'#f0ad4e'},{key:'실사',color:'#1a73e8'},{key:'계약',color:'#0d904f'}];
-  var total=filtered.length;
-  for(var i=0;i<sItems.length;i++){
-    var it=sItems[i],cnt=sCounts[it.key],pct=total>0?Math.round(cnt/total*100):0;
-    statsHtml+='<div class="stat-card" style="border-top:3px solid '+it.color+'"><div class="stat-label">'+it.key+'</div><div class="stat-number">'+cnt+'</div><div class="stat-percent">'+pct+'%</div></div>';
-  }
-  document.getElementById('ctStats').innerHTML=statsHtml;
+ 
   document.getElementById('ctTitle').textContent='계약서 목록 ('+filtered.length+'건)';
 
   var th='<tr><th>#</th><th>사이트명</th><th>입대위명</th><th>주소</th><th>충전기수량</th><th>설치유형</th><th>설치금액</th><th>진행사항</th><th>관리</th></tr>';
