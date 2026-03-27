@@ -516,13 +516,13 @@ function goPage(page,el){
   document.getElementById('page-'+page).classList.add('active');
   var items=document.querySelectorAll('.menu-item');for(var i=0;i<items.length;i++)items[i].classList.remove('active');
   if(el)el.classList.add('active');
-  var titles={activity:'📋 영업활동 조회',search:'🔍 검색',stats:'📊 현황 통계',sheet:'📄 시트 데이터'};
+ var titles={activity:'📋 영업활동 조회',search:'🔍 검색',stats:'📊 현황 통계',sheet:'📄 시트 데이터',contract:'📋 계약서 관리'};
   document.getElementById('pageTitle').textContent=titles[page]||page;
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('overlay').classList.remove('show');
   if(dataLoaded){
     if(page==='activity')renderActivity();
-    else if(page==='contract')renderContract();
+    else if(page==='contract'){if(!contractData){loadContract(function(){renderContract();});}else{renderContract();}}
     else if(page==='stats')renderSubTab();
   }
 }
