@@ -522,7 +522,7 @@ function goPage(page,el){
   document.getElementById('overlay').classList.remove('show');
   if(dataLoaded){
     if(page==='activity')renderActivity();
-    else if(page==='contract'){if(!contractData){loadContract(function(){renderContract();});}else{renderContract();}}
+    else if(page==='contract'){loadContract(function(){renderContract();});}
     else if(page==='stats')renderSubTab();
   }
 }
