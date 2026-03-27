@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.12/docxtemplater.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.6/pizzip.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>현장 업무수행 대시보드</title>
@@ -819,7 +822,7 @@ function renderContract(){
     tb+='<td>'+esc(r['설치유형']||'')+'</td>';
     tb+='<td>'+esc(r['설치금액']||'')+'</td>';
     tb+='<td>'+statusBadge+'</td>';
-    tb+='<td><button class="btn btn-sm btn-primary" onclick="editContract('+r._rowIndex+')">수정</button> <button class="btn btn-sm btn-gray" onclick="delContract('+r._rowIndex+')">삭제</button></td>';
+    tb+='<td><button class="btn btn-sm btn-primary" onclick="editContract('+r._rowIndex+')">수정</button> <button class="btn btn-sm btn-blue" onclick="generateContract(\'contract\','+i+')">계약서</button> <button class="btn btn-sm btn-gray" onclick="delContract('+r._rowIndex+')">삭제</button></td>';
     tb+='</tr>';
   }
   if(filtered.length===0)tb='<tr><td colspan="9"><div class="empty-msg">데이터가 없습니다</div></td></tr>';
@@ -947,6 +950,63 @@ function openContractFromList(idx){
   var qty=row['충전기수량']||'';
   document.getElementById('cf_qty').value=qty;
   document.getElementById('contractModal').classList.add('show');
+}
+
+function generateContract(source, idx) {
+  var site='',name='',addr='',biz='',year='',qty='',type='',price='',total='',promo='',promoAmt='';
+
+  if(source==='contract'){
+    var d=contractData;
+    if(!d||!d.rows||!d.rows[idx])return;
+    var row=d.rows[idx],h=d.headers;
+    site=fv(row,h,'사이트명')||'';name=fv(row,h,'입대위명')||'';addr=fv(row,h,'주소')||'';
+    biz=fv(row,h,'사업자번호')||'';year=fv(row,h,'계약년수')||'';
+    qty=fv(row,h,'충전기수량')||'';type=fv(row,h,'설치유형')||'';price=fv(row,h,'충전기단가')||'';
+    total=fv(row,h,'설치금액')||'';promo=fv(row,h,'프로모션기간')||'';promoAmt=fv(row,h,'프로모션금액')||'';
+  } else if(source==='form'){
+    site=document.getElementById('cf_site').value;name=document.getElementById('cf_name').value;
+    addr=document.getElementById('cf_addr').value;biz=document.getElementById('cf_biz').value;
+    year=document.getElementById('cf_year').value;qty=document.getElementById('cf_qty').value;
+    type=document.getElementById('cf_type').value;price=document.getElementById('cf_price').value;
+    total=document.getElementById('cf_total').value;promo=document.getElementById('cf_promo').value;
+    promoAmt=document.getElementById('cf_promoAmt').value;
+  }
+
+  var templateUrl='https://sskd3436-maker.github.io/my-dashboard/계약서 양식 (자동 복구됨).docx';
+
+  var xhr=new XMLHttpRequest();
+  xhr.open('GET',templateUrl,true);
+  xhr.responseType='arraybuffer';
+  xhr.onload=function(){
+    if(xhr.status===200){
+      try{
+        var zip=new PizZip(xhr.response);
+        var doc=new window.docxtemplater(zip,{paragraphLoop:true,linebreaks:true});
+        doc.render({
+          '입대위명':name,
+          '사업자번호':biz,
+          '주소':addr,
+          '설치수량':qty,
+          '총금액':total,
+          '기당금액':price,
+          '사이트명':site,
+          '계약년수':year,
+          '프로모션금액':promoAmt,
+          '프로모션기간':promo
+        });
+        var out=doc.getZip().generate({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+        saveAs(out, site+'_계약서.docx');
+        toast('계약서 다운로드 완료','ok');
+      }catch(e){
+        console.log('계약서 생성 오류:',e);
+        toast('계약서 생성 실패','fail');
+      }
+    }else{
+      toast('템플릿 로드 실패','fail');
+    }
+  };
+  xhr.onerror=function(){toast('네트워크 오류','fail');};
+  xhr.send();
 }
   
 </script>
