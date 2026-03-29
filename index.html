@@ -1014,6 +1014,7 @@ function openContractFromSheet(pageKey,idx){
   var mgr=it.mgr||fv(row,h,'담당자')||'';
   document.getElementById('cf_site').value=site;
   document.getElementById('cf_mgr').value=mgr;
+  if(!document.getElementById('cf_status').value)document.getElementById('cf_status').value='상담';
   document.getElementById('contractModal').classList.add('show');
 }
 
