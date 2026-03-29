@@ -813,6 +813,23 @@ function renderContract(){
     mgrSel.innerHTML+='<option value="'+n+'"'+(n===curMgr?' selected':'')+'>'+n+'</option>';
   });
 
+  // Sheet1 데이터를 상담 단계로 추가
+  var existSites={};
+  for(var i=0;i<rows.length;i++){
+    var sn=(fv(rows[i],h,'사이트명')||'').trim();
+    if(sn)existSites[sn]=1;
+  }
+  if(allFlat&&allFlat.length){
+    for(var af=0;af<allFlat.length;af++){
+      var f=allFlat[af];
+      var sn=(f.site||'').trim();
+      if(!sn||existSites[sn])continue;
+      existSites[sn]=1;
+      var fakeRow={'사이트명':sn,'담당자':f.mgr||'','진행사항':'상담','비고':f.content||'','_rowIndex':null};
+      rows.push(fakeRow);
+    }
+  }
+  
   // 필터링
   var filtered=[];
   for(var i=0;i<rows.length;i++){
