@@ -368,10 +368,18 @@
       </div>
 
       <!-- 전체 현황 -->
-      <div class="sub-page active" id="sub-all">
-        <div class="stats-grid" id="allStats"></div>
+     <div class="sub-page active" id="sub-all">
+        <div class="section-box"><h3>📋 계약 진행 현황</h3><div id="allContract"></div></div>
+        <div class="section-box"><h3>👤 담당자별 계약 현황</h3><div id="allContractMgr"></div></div>
+        <div class="section-box">
+          <h3>📄 시트별 현황
+            <select id="allSheetSelect" class="form-input" style="width:160px;display:inline-block;margin-left:12px;font-size:13px;" onchange="renderAllStats()">
+              <option value="">전체 시트</option>
+            </select>
+          </h3>
+          <div id="allSheet"></div>
+        </div>
         <div class="section-box"><h3>👤 담당자별 현황</h3><div id="allMgr"></div></div>
-        <div class="section-box"><h3>📄 시트별 현황</h3><div id="allSheet"></div></div>
       </div>
 
       <!-- 일일 보고 -->
@@ -667,19 +675,89 @@ function renderSubTab(){
 }
 
 function renderAllStats(){
-  // 시트별 통계 (계약서 제외)
-  var sc={};for(var i=0;i<allFlat.length;i++){var s=allFlat[i].sheet;if(s==='계약서')continue;if(!sc[s])sc[s]={positive:0,neutral:0,negative:0,etc:0,total:0};sc[s].total++;var se=allFlat[i].sent;if(se)sc[s][se]++;}
+  // 계약 진행 현황
+  var ctTotal=0,ct상담=0,ct입대위=0,ct실사=0,ct계약=0;
+  var mgrContract={};
+  if(contractData&&contractData.rows){
+    var ch2=contractData.headers;
+    for(var i=0;i<contractData.rows.length;i++){
+      var st=fv(contractData.rows[i],ch2,'진행사항')||'상담';
+      var mg=fv(contractData.rows[i],ch2,'담당자')||'미지정';
+      ctTotal++;
+      if(st==='상담')ct상담++;else if(st==='입대위')ct입대위++;else if(st==='실사')ct실사++;else if(st==='계약')ct계약++;
+      if(!mgrContract[mg])mgrContract[mg]={상담:0,입대위:0,실사:0,계약:0,total:0};
+      mgrContract[mg].total++;mgrContract[mg][st]=(mgrContract[mg][st]||0)+1;
+    }
+  }
+  if(allFlat&&allFlat.length){
+    var existSites={};
+    if(contractData&&contractData.rows){
+      var ch3=contractData.headers;
+      for(var i=0;i<contractData.rows.length;i++){var sn=(fv(contractData.rows[i],ch3,'사이트명')||'').trim();if(sn)existSites[sn]=1;}
+    }
+    for(var i=0;i<allFlat.length;i++){
+      var sn=(allFlat[i].site||'').trim();
+      var mg=allFlat[i].mgr||'미지정';
+      if(sn&&!existSites[sn]){existSites[sn]=1;ctTotal++;ct상담++;
+        if(!mgrContract[mg])mgrContract[mg]={상담:0,입대위:0,실사:0,계약:0,total:0};
+        mgrContract[mg].total++;mgrContract[mg]['상담']++;
+      }
+    }
+  }
+  var ctPct상담=ctTotal>0?Math.round(ct상담/ctTotal*100):0;
+  var ctPct입대위=ctTotal>0?Math.round(ct입대위/ctTotal*100):0;
+  var ctPct실사=ctTotal>0?Math.round(ct실사/ctTotal*100):0;
+  var ctPct계약=ctTotal>0?Math.round(ct계약/ctTotal*100):0;
+  var ctHtml='<div style="display:flex;gap:12px;margin-bottom:12px;">';
+  ctHtml+='<div style="flex:1;background:#eff6ff;border-radius:8px;padding:16px;text-align:center;border-top:4px solid #3498db;"><div style="font-size:13px;color:#3498db;font-weight:700;">상담</div><div style="font-size:32px;font-weight:800;color:#3498db;">'+ct상담+'</div><div style="font-size:12px;color:#888;">'+ctPct상담+'%</div></div>';
+  ctHtml+='<div style="flex:1;background:#fff8ee;border-radius:8px;padding:16px;text-align:center;border-top:4px solid #f39c12;"><div style="font-size:13px;color:#f39c12;font-weight:700;">입대위</div><div style="font-size:32px;font-weight:800;color:#f39c12;">'+ct입대위+'</div><div style="font-size:12px;color:#888;">'+ctPct입대위+'%</div></div>';
+  ctHtml+='<div style="flex:1;background:#f5f0ff;border-radius:8px;padding:16px;text-align:center;border-top:4px solid #9b59b6;"><div style="font-size:13px;color:#9b59b6;font-weight:700;">실사</div><div style="font-size:32px;font-weight:800;color:#9b59b6;">'+ct실사+'</div><div style="font-size:12px;color:#888;">'+ctPct실사+'%</div></div>';
+  ctHtml+='<div style="flex:1;background:#eefbf3;border-radius:8px;padding:16px;text-align:center;border-top:4px solid #27ae60;"><div style="font-size:13px;color:#27ae60;font-weight:700;">계약</div><div style="font-size:32px;font-weight:800;color:#27ae60;">'+ct계약+'</div><div style="font-size:12px;color:#888;">'+ctPct계약+'%</div></div>';
+  ctHtml+='</div>';
+  ctHtml+='<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:13px;color:#666;font-weight:600;">총 '+ctTotal+'건</span>';
+  ctHtml+='<div style="flex:1;height:10px;background:#eee;border-radius:5px;overflow:hidden;display:flex;">';
+  ctHtml+='<div style="width:'+ctPct상담+'%;background:#3498db;"></div>';
+  ctHtml+='<div style="width:'+ctPct입대위+'%;background:#f39c12;"></div>';
+  ctHtml+='<div style="width:'+ctPct실사+'%;background:#9b59b6;"></div>';
+  ctHtml+='<div style="width:'+ctPct계약+'%;background:#27ae60;"></div>';
+  ctHtml+='</div></div>';
+  document.getElementById('allContract').innerHTML=ctHtml;
 
-  // 시트별 카드
-  var ns=Object.keys(sc),sh='';
-  for(var i=0;i<ns.length;i++){
-    var n=ns[i],c=sc[n];
+  // 담당자별 계약 현황
+  var mcKeys=Object.keys(mgrContract).sort();
+  var mcHtml='';
+  for(var i=0;i<mcKeys.length;i++){
+    var mn=mcKeys[i],mc=mgrContract[mn];
+    mcHtml+='<div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;gap:12px;">';
+    mcHtml+='<div style="min-width:80px;font-weight:600;font-size:14px;">'+esc(mn)+'</div>';
+    mcHtml+='<span style="background:#3498db;color:#fff;padding:2px 10px;border-radius:4px;font-size:12px;">상담 '+mc['상담']+'</span>';
+    mcHtml+='<span style="background:#f39c12;color:#fff;padding:2px 10px;border-radius:4px;font-size:12px;">입대위 '+mc['입대위']+'</span>';
+    mcHtml+='<span style="background:#9b59b6;color:#fff;padding:2px 10px;border-radius:4px;font-size:12px;">실사 '+mc['실사']+'</span>';
+    mcHtml+='<span style="background:#27ae60;color:#fff;padding:2px 10px;border-radius:4px;font-size:12px;">계약 '+mc['계약']+'</span>';
+    mcHtml+='<span style="font-size:11px;color:#999;">('+mc.total+'건)</span>';
+    mcHtml+='</div>';
+  }
+  document.getElementById('allContractMgr').innerHTML=mcHtml;
+
+  // 시트별 현황 (계약서 제외)
+  var sc={};for(var i=0;i<allFlat.length;i++){var s=allFlat[i].sheet;if(s==='계약서')continue;if(!sc[s])sc[s]={positive:0,neutral:0,negative:0,etc:0,total:0};sc[s].total++;var se=allFlat[i].sent;if(se)sc[s][se]++;}
+  var ns=Object.keys(sc);
+  // 시트 선택 드롭다운
+  var sel=document.getElementById('allSheetSelect');
+  var curSel=sel.value;
+  sel.innerHTML='<option value="">전체 시트</option>';
+  for(var i=0;i<ns.length;i++){sel.innerHTML+='<option value="'+ns[i]+'"'+(ns[i]===curSel?' selected':'')+'>'+ns[i]+'</option>';}
+  // 선택된 시트만 표시
+  var showSheets=curSel?[curSel]:ns;
+  var sh='';
+  for(var i=0;i<showSheets.length;i++){
+    var n=showSheets[i],c=sc[n];if(!c)continue;
     var posP=c.total>0?Math.round(c.positive/c.total*100):0;
     var neuP=c.total>0?Math.round(c.neutral/c.total*100):0;
     var negP=c.total>0?Math.round(c.negative/c.total*100):0;
     sh+='<div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:20px;margin-bottom:16px;">';
     sh+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
-    sh+='<h4 style="margin:0;font-size:16px;">📄 '+esc(n)+' 전체현황</h4>';
+    sh+='<h4 style="margin:0;font-size:16px;">📄 '+esc(n)+'</h4>';
     sh+='<span style="font-size:14px;color:#666;font-weight:600;">총 '+c.total+'건</span></div>';
     sh+='<div style="display:flex;gap:12px;margin-bottom:12px;">';
     sh+='<div style="flex:1;background:#eefbf3;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:12px;color:#27ae60;font-weight:600;">긍정</div><div style="font-size:24px;font-weight:800;color:#27ae60;">'+c.positive+'</div><div style="font-size:11px;color:#888;">'+posP+'%</div></div>';
@@ -695,63 +773,11 @@ function renderAllStats(){
   }
   document.getElementById('allSheet').innerHTML=sh;
 
-  // 계약 진행 현황
-  var ctTotal=0,ct상담=0,ct입대위=0,ct실사=0,ct계약=0;
-  if(contractData&&contractData.rows){
-    var ch2=contractData.headers;
-    for(var i=0;i<contractData.rows.length;i++){
-      var st=fv(contractData.rows[i],ch2,'진행사항')||'상담';
-      ctTotal++;
-      if(st==='상담')ct상담++;
-      else if(st==='입대위')ct입대위++;
-      else if(st==='실사')ct실사++;
-      else if(st==='계약')ct계약++;
-    }
-  }
-  // Sheet1 상담 데이터 추가
-  if(allFlat&&allFlat.length){
-    var existSites={};
-    if(contractData&&contractData.rows){
-      var ch3=contractData.headers;
-      for(var i=0;i<contractData.rows.length;i++){
-        var sn=(fv(contractData.rows[i],ch3,'사이트명')||'').trim();
-        if(sn)existSites[sn]=1;
-      }
-    }
-    for(var i=0;i<allFlat.length;i++){
-      var sn=(allFlat[i].site||'').trim();
-      if(sn&&!existSites[sn]){existSites[sn]=1;ctTotal++;ct상담++;}
-    }
-  }
-  var ctHtml='<div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:20px;margin-bottom:16px;">';
-  ctHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
-  ctHtml+='<h4 style="margin:0;font-size:16px;">📋 계약 진행 현황</h4>';
-  ctHtml+='<span style="font-size:14px;color:#666;font-weight:600;">총 '+ctTotal+'건</span></div>';
-  ctHtml+='<div style="display:flex;gap:12px;margin-bottom:12px;">';
-  var ctPct상담=ctTotal>0?Math.round(ct상담/ctTotal*100):0;
-  var ctPct입대위=ctTotal>0?Math.round(ct입대위/ctTotal*100):0;
-  var ctPct실사=ctTotal>0?Math.round(ct실사/ctTotal*100):0;
-  var ctPct계약=ctTotal>0?Math.round(ct계약/ctTotal*100):0;
-  ctHtml+='<div style="flex:1;background:#eff6ff;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:12px;color:#3498db;font-weight:600;">상담</div><div style="font-size:24px;font-weight:800;color:#3498db;">'+ct상담+'</div><div style="font-size:11px;color:#888;">'+ctPct상담+'%</div></div>';
-  ctHtml+='<div style="flex:1;background:#fff8ee;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:12px;color:#f39c12;font-weight:600;">입대위</div><div style="font-size:24px;font-weight:800;color:#f39c12;">'+ct입대위+'</div><div style="font-size:11px;color:#888;">'+ctPct입대위+'%</div></div>';
-  ctHtml+='<div style="flex:1;background:#f5f0ff;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:12px;color:#9b59b6;font-weight:600;">실사</div><div style="font-size:24px;font-weight:800;color:#9b59b6;">'+ct실사+'</div><div style="font-size:11px;color:#888;">'+ctPct실사+'%</div></div>';
-  ctHtml+='<div style="flex:1;background:#eefbf3;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:12px;color:#27ae60;font-weight:600;">계약</div><div style="font-size:24px;font-weight:800;color:#27ae60;">'+ct계약+'</div><div style="font-size:11px;color:#888;">'+ctPct계약+'%</div></div>';
-  ctHtml+='</div>';
-  ctHtml+='<div style="height:8px;background:#eee;border-radius:4px;overflow:hidden;display:flex;">';
-  ctHtml+='<div style="width:'+ctPct상담+'%;background:#3498db;"></div>';
-  ctHtml+='<div style="width:'+ctPct입대위+'%;background:#f39c12;"></div>';
-  ctHtml+='<div style="width:'+ctPct실사+'%;background:#9b59b6;"></div>';
-  ctHtml+='<div style="width:'+ctPct계약+'%;background:#27ae60;"></div>';
-  ctHtml+='</div></div>';
-
   // 담당자별 현황
-  document.getElementById('allMgr').innerHTML=mkMgr(allFlat);
-  // 전체 통계 카드 (계약서 제외)
   var flatNoContract=allFlat.filter(function(f){return f.sheet!=='계약서';});
-  document.getElementById('allStats').innerHTML=mkStats(flatNoContract);
-  // 시트별 + 계약진행 합치기
-  document.getElementById('allSheet').innerHTML=sh+ctHtml;
+  document.getElementById('allMgr').innerHTML=mkMgr(flatNoContract);
 }
+
 // 일일
 function moveDaily(dir){if(dir===0)dailyDt=new Date();else dailyDt.setDate(dailyDt.getDate()+dir);dailyDt.setHours(0,0,0,0);renderDaily();}
 function renderDaily(){
