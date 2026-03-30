@@ -623,14 +623,14 @@ function mkTable(list,thId,tbId,pageKey,q){
     var ch=contractData.headers;
     for(var j=0;j<contractData.rows.length;j++){
       var sn=(fv(contractData.rows[j],ch,'사이트명')||'').trim();
-      if(sn)contractSites[sn]=1;
+      if(sn)contractSites[sn]=fv(contractData.rows[j],ch,'진행사항')||'상담';
     }
   }
   var b='',show=Math.min(list.length,300);
   for(var i=0;i<show;i++){var it=list[i],dt=it.date?fmt(it.date):fv(it.row,it.headers,'방문일자');
     var siteName=(it.site||'').trim();
     var isContract=contractSites[siteName]?true:false;
-    var rowBg=isContract?'background:#eefbf3;':'';
+    var rowBg='';
     // 시트 표시 (계약서 제외)
     var sheetDisplay=it.sheet||'';
     if(it.sheets){
@@ -642,7 +642,7 @@ function mkTable(list,thId,tbId,pageKey,q){
     b+='<tr style="'+rowBg+'">';
     b+='<td style="color:#999;font-size:11px;">'+(i+1)+'</td>';
     b+='<td><span style="background:#1a73e8;color:white;padding:2px 8px;border-radius:4px;font-size:11px;">'+esc(sheetDisplay)+'</span>';
-    if(isContract)b+=' <span style="background:#27ae60;color:white;padding:2px 6px;border-radius:4px;font-size:10px;">계약</span>';
+   if(isContract){var ctSt=contractSites[siteName]||'상담';var ctColors={'상담':'#3498db','입대위':'#f39c12','실사':'#9b59b6','계약':'#27ae60'};b+=' <span style="background:'+(ctColors[ctSt]||'#999')+';color:white;padding:2px 6px;border-radius:4px;font-size:10px;">'+ctSt+'</span>';}
     b+='</td>';
     b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td style="max-width:300px;">'+hl(esc(it.content),q)+'</td>';
     b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
