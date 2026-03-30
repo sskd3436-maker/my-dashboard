@@ -819,18 +819,31 @@ function renderContract(){
     var sn=(fv(rows[i],h,'사이트명')||'').trim();
     if(sn)existSites[sn]=1;
   }
+  var sheetOnlyRows=[];
   if(allFlat&&allFlat.length){
     for(var af=0;af<allFlat.length;af++){
       var f=allFlat[af];
       var sn=(f.site||'').trim();
       if(!sn||existSites[sn])continue;
       existSites[sn]=1;
-      var fakeRow={'사이트명':sn,'담당자':f.mgr||'','진행사항':'상담','비고':f.content||'','_rowIndex':null};
-      rows.push(fakeRow);
+      sheetOnlyRows.push({'사이트명':sn,'담당자':f.mgr||'','진행사항':'상담','비고':f.content||'','_rowIndex':null});
     }
   }
   
   // 필터링
+
+    // Sheet1 상담 데이터 필터링 추가
+  for(var si=0;si<sheetOnlyRows.length;si++){
+    var sr=sheetOnlyRows[si];
+    var siteName2=(sr['사이트명']||'').toLowerCase();
+    var mgr2=sr['담당자']||'';
+    var status2=sr['진행사항']||'';
+    if(keyword&&siteName2.indexOf(keyword)<0)continue;
+    if(selMgr&&mgr2!==selMgr)continue;
+    if(selStatus&&status2!==selStatus)continue;
+    filtered.push(sr);
+  }
+  
   var filtered=[];
   for(var i=0;i<rows.length;i++){
     var r=rows[i];
