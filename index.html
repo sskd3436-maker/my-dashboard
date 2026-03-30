@@ -995,7 +995,7 @@ function submitContract(){
 
   if(editContractRow){
     for(var i=0;i<rowData.length;i++){
-      apiPost({action:'updateCell',sheet:'계약서',row:editContractRow,col:i+1,value:rowData[i]},function(){});
+      apiPost({action:'updateCell',sheet:'계약서',row:editContractRow,col:i+2,value:rowData[i]},function(){});
     }
     toast('수정 완료','ok');
     closeContractModal();
