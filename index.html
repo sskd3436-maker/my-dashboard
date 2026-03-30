@@ -617,10 +617,33 @@ function mkMgr(list){
 }
 function mkTable(list,thId,tbId,pageKey,q){
   document.getElementById(thId).innerHTML='<tr><th>#</th><th>시트</th><th>방문일자</th><th>사이트명</th><th>영업내용</th><th>감정</th><th>담당자</th><th>상세</th></tr>';
+  // 계약서 시트 사이트 목록
+  var contractSites={};
+  if(contractData&&contractData.rows){
+    var ch=contractData.headers;
+    for(var j=0;j<contractData.rows.length;j++){
+      var sn=(fv(contractData.rows[j],ch,'사이트명')||'').trim();
+      if(sn)contractSites[sn]=1;
+    }
+  }
   var b='',show=Math.min(list.length,300);
   for(var i=0;i<show;i++){var it=list[i],dt=it.date?fmt(it.date):fv(it.row,it.headers,'방문일자');
-    b+='<tr><td style="color:#999;font-size:11px;">'+(i+1)+'</td>';
-    b+='<td><span style="background:#1a73e8;color:white;padding:2px 8px;border-radius:4px;font-size:11px;">'+esc(it.sheet)+'</span></td>';
+    var siteName=(it.site||'').trim();
+    var isContract=contractSites[siteName]?true:false;
+    var rowBg=isContract?'background:#eefbf3;':'';
+    // 시트 표시 (계약서 제외)
+    var sheetDisplay=it.sheet||'';
+    if(it.sheets){
+      var filtered=it.sheets.filter(function(s){return s!=='계약서';});
+      sheetDisplay=filtered.join(', ');
+    }else if(sheetDisplay==='계약서'){
+      sheetDisplay='';
+    }
+    b+='<tr style="'+rowBg+'">';
+    b+='<td style="color:#999;font-size:11px;">'+(i+1)+'</td>';
+    b+='<td><span style="background:#1a73e8;color:white;padding:2px 8px;border-radius:4px;font-size:11px;">'+esc(sheetDisplay)+'</span>';
+    if(isContract)b+=' <span style="background:#27ae60;color:white;padding:2px 6px;border-radius:4px;font-size:10px;">계약</span>';
+    b+='</td>';
     b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td style="max-width:300px;">'+hl(esc(it.content),q)+'</td>';
     b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
     b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';}
