@@ -372,10 +372,6 @@
         <div class="stats-grid" id="allStats"></div>
         <div class="section-box"><h3>👤 담당자별 현황</h3><div id="allMgr"></div></div>
         <div class="section-box"><h3>📄 시트별 현황</h3><div id="allSheet"></div></div>
-        <div class="table-box">
-          <div class="box-header"><h3 id="allTableTitle">전체 목록</h3></div>
-          <div class="table-wrap"><table><thead id="allTH"></thead><tbody id="allTB"></tbody></table></div>
-        </div>
       </div>
 
       <!-- 일일 보고 -->
@@ -676,11 +672,28 @@ function renderAllStats(){
   // 시트별
   var sc={};for(var i=0;i<allFlat.length;i++){var s=allFlat[i].sheet;if(!sc[s])sc[s]={positive:0,neutral:0,negative:0,etc:0,total:0};sc[s].total++;var se=allFlat[i].sent;if(se)sc[s][se]++;}
   var ns=Object.keys(sc),sh='';
-  for(var i=0;i<ns.length;i++){var n=ns[i],c=sc[n];
-    sh+='<div class="mgr-row"><div class="mgr-name">'+esc(n)+'</div><span class="mini-badge pos">긍정 '+c.positive+'</span><span class="mini-badge neu">중립 '+c.neutral+'</span><span class="mini-badge neg">부정 '+c.negative+'</span><span class="mini-badge etc2">기타 '+c.etc+'</span><span style="font-size:11px;color:#999;">('+c.total+')</span></div>';}
+  for(var i=0;i<ns.length;i++){
+    var n=ns[i],c=sc[n];
+    var posP=c.total>0?Math.round(c.positive/c.total*100):0;
+    var neuP=c.total>0?Math.round(c.neutral/c.total*100):0;
+    var negP=c.total>0?Math.round(c.negative/c.total*100):0;
+    sh+='<div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:20px;margin-bottom:16px;">';
+    sh+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
+    sh+='<h4 style="margin:0;font-size:16px;">📄 '+esc(n)+'</h4>';
+    sh+='<span style="font-size:14px;color:#666;font-weight:600;">총 '+c.total+'건</span></div>';
+    sh+='<div style="display:flex;gap:12px;margin-bottom:12px;">';
+    sh+='<div style="flex:1;background:#eefbf3;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:12px;color:#27ae60;font-weight:600;">긍정</div><div style="font-size:24px;font-weight:800;color:#27ae60;">'+c.positive+'</div><div style="font-size:11px;color:#888;">'+posP+'%</div></div>';
+    sh+='<div style="flex:1;background:#fff8ee;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:12px;color:#f39c12;font-weight:600;">중립</div><div style="font-size:24px;font-weight:800;color:#f39c12;">'+c.neutral+'</div><div style="font-size:11px;color:#888;">'+neuP+'%</div></div>';
+    sh+='<div style="flex:1;background:#fef0f0;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:12px;color:#e74c3c;font-weight:600;">부정</div><div style="font-size:24px;font-weight:800;color:#e74c3c;">'+c.negative+'</div><div style="font-size:11px;color:#888;">'+negP+'%</div></div>';
+    sh+='<div style="flex:1;background:#f0f4ff;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:12px;color:#999;font-weight:600;">기타</div><div style="font-size:24px;font-weight:800;color:#999;">'+c.etc+'</div></div>';
+    sh+='</div>';
+    sh+='<div style="height:8px;background:#eee;border-radius:4px;overflow:hidden;display:flex;">';
+    sh+='<div style="width:'+posP+'%;background:#27ae60;"></div>';
+    sh+='<div style="width:'+neuP+'%;background:#f39c12;"></div>';
+    sh+='<div style="width:'+negP+'%;background:#e74c3c;"></div>';
+    sh+='</div></div>';
+  }
   document.getElementById('allSheet').innerHTML=sh;
-  document.getElementById('allTableTitle').textContent='전체 목록 ('+allFlat.length+'건)';
-  mkTable(allFlat,'allTH','allTB','all');
 }
 
 // 일일
