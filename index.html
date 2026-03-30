@@ -369,7 +369,11 @@
 
       <!-- 전체 현황 -->
      <div class="sub-page active" id="sub-all">
-        <div class="section-box"><h3>📋 계약 진행 현황</h3><div id="allContract"></div></div>
+        <div class="section-box"><h3>📋 계약 진행 현황
+  <select id="allContractSheet" class="form-input" style="width:160px;display:inline-block;margin-left:12px;font-size:13px;" onchange="renderAllStats()">
+    <option value="">전체 시트</option>
+  </select>
+</h3><div id="allContract"></div></div>
         <div class="section-box"><h3>👤 담당자별 계약 현황</h3><div id="allContractMgr"></div></div>
         <div class="section-box">
           <h3>📄 시트별 현황
@@ -676,12 +680,34 @@ function renderSubTab(){
 
 function renderAllStats(){
    if(!contractData){loadContract(function(){renderAllStats();});return;}
-  // 계약 진행 현황
+   // 계약 진행 현황
+  // 사이트→시트 매핑
+  var siteToSheet={};
+  if(allFlat&&allFlat.length){
+    for(var i=0;i<allFlat.length;i++){
+      var sn=(allFlat[i].site||'').trim();
+      if(sn&&allFlat[i].sheet!=='계약서'){
+        if(!siteToSheet[sn])siteToSheet[sn]=[];
+        if(siteToSheet[sn].indexOf(allFlat[i].sheet)<0)siteToSheet[sn].push(allFlat[i].sheet);
+      }
+    }
+  }
+  // 시트 선택 드롭다운
+  var ctSheetSel=document.getElementById('allContractSheet');
+  var curCtSheet=ctSheetSel.value;
+  var ctSheetNames={};
+  for(var k in siteToSheet){for(var j=0;j<siteToSheet[k].length;j++)ctSheetNames[siteToSheet[k][j]]=1;}
+  ctSheetSel.innerHTML='<option value="">전체 시트</option>';
+  Object.keys(ctSheetNames).sort().forEach(function(n){ctSheetSel.innerHTML+='<option value="'+n+'"'+(n===curCtSheet?' selected':'')+'>'+n+'</option>';});
+
   var ctTotal=0,ct상담=0,ct입대위=0,ct실사=0,ct계약=0;
   var mgrContract={};
   if(contractData&&contractData.rows){
     var ch2=contractData.headers;
     for(var i=0;i<contractData.rows.length;i++){
+      var sn=(fv(contractData.rows[i],ch2,'사이트명')||'').trim();
+      var sheets=siteToSheet[sn]||[];
+      if(curCtSheet&&sheets.indexOf(curCtSheet)<0)continue;
       var st=fv(contractData.rows[i],ch2,'진행사항')||'상담';
       var mg=fv(contractData.rows[i],ch2,'담당자')||'미지정';
       ctTotal++;
@@ -694,10 +720,11 @@ function renderAllStats(){
     var existSites={};
     if(contractData&&contractData.rows){
       var ch3=contractData.headers;
-      for(var i=0;i<contractData.rows.length;i++){var sn=(fv(contractData.rows[i],ch3,'사이트명')||'').trim();if(sn)existSites[sn]=1;}
+      for(var i=0;i<contractData.rows.length;i++){var sn2=(fv(contractData.rows[i],ch3,'사이트명')||'').trim();if(sn2)existSites[sn2]=1;}
     }
     for(var i=0;i<allFlat.length;i++){
       var sn=(allFlat[i].site||'').trim();
+      if(curCtSheet&&allFlat[i].sheet!==curCtSheet)continue;
       var mg=allFlat[i].mgr||'미지정';
       if(sn&&!existSites[sn]){existSites[sn]=1;ctTotal++;ct상담++;
         if(!mgrContract[mg])mgrContract[mg]={상담:0,입대위:0,실사:0,계약:0,total:0};
@@ -723,7 +750,6 @@ function renderAllStats(){
   ctHtml+='<div style="width:'+ctPct계약+'%;background:#27ae60;"></div>';
   ctHtml+='</div></div>';
   document.getElementById('allContract').innerHTML=ctHtml;
-
   // 담당자별 계약 현황
   var mcKeys=Object.keys(mgrContract).sort();
   var mcHtml='';
