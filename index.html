@@ -618,7 +618,7 @@ function mkMgr(list){
   return h||'<div class="empty-msg">데이터 없음</div>';
 }
 function mkTable(list,thId,tbId,pageKey,q){
-  document.getElementById(thId).innerHTML='<tr><th>#</th><th>시트</th><th>방문일자</th><th>사이트명</th><th>영업내용</th><th>감정</th><th>담당자</th><th>상세</th></tr>';
+  document.getElementById(thId).innerHTML='<tr><th>#</th><th>시트</th><th>방문일자</th><th>사이트명</th><th>충전기수</th><th>계약시작</th><th>계약종료</th><th>감정</th><th>담당자</th><th>상세</th></tr>';
   // 계약서 시트 사이트 목록
   var contractSites={};
   if(contractData&&contractData.rows){
@@ -646,10 +646,13 @@ function mkTable(list,thId,tbId,pageKey,q){
     b+='<td>'+sheetDisplay.split('<br>').map(function(s){return '<span style="background:#1a73e8;color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:inline-block;margin:1px 0;">'+esc(s)+'</span>';}).join('<br>')+' ';
        if(isContract){var ctSt=contractSites[siteName]||'상담';var ctColors={'상담':'#3498db','제안':'#e67e22','입대위':'#f39c12','실사':'#9b59b6','계약':'#27ae60'};b+=' <span style="background:'+(ctColors[ctSt]||'#999')+';color:white;padding:2px 6px;border-radius:4px;font-size:10px;">'+ctSt+'</span>';}
     b+='</td>';
-    b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td style="max-width:300px;">'+hl(esc(it.content),q)+'</td>';
+     var charger=fv(it.row,it.headers,'충전기수량')||'';
+    var ctStart=fv(it.row,it.headers,'계약시작')||'';
+    var ctEnd=fv(it.row,it.headers,'계약종료')||'';
+    b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td>';
     b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
     b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';}
-  if(!list.length)b='<tr><td colspan="8"><div class="empty-msg">데이터 없음</div></td></tr>';
+  if(!list.length)b='<tr><td colspan="10"><div class="empty-msg">데이터 없음</div></td></tr>';
   document.getElementById(tbId).innerHTML=b;
   window['_d_'+pageKey]=list;
 }
