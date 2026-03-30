@@ -666,7 +666,7 @@ function renderSubTab(){
   else if(curSubTab==='manager')renderMgrTab();
 }
 
-unction renderAllStats(){
+function renderAllStats(){
   // 시트별 통계 (계약서 제외)
   var sc={};for(var i=0;i<allFlat.length;i++){var s=allFlat[i].sheet;if(s==='계약서')continue;if(!sc[s])sc[s]={positive:0,neutral:0,negative:0,etc:0,total:0};sc[s].total++;var se=allFlat[i].sent;if(se)sc[s][se]++;}
 
