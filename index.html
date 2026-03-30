@@ -830,20 +830,7 @@ function renderContract(){
     }
   }
   
-  // 필터링
-
-    // Sheet1 상담 데이터 필터링 추가
-  for(var si=0;si<sheetOnlyRows.length;si++){
-    var sr=sheetOnlyRows[si];
-    var siteName2=(sr['사이트명']||'').toLowerCase();
-    var mgr2=sr['담당자']||'';
-    var status2=sr['진행사항']||'';
-    if(keyword&&siteName2.indexOf(keyword)<0)continue;
-    if(selMgr&&mgr2!==selMgr)continue;
-    if(selStatus&&status2!==selStatus)continue;
-    filtered.push(sr);
-  }
-  
+  // 필터링  
   var filtered=[];
   for(var i=0;i<rows.length;i++){
     var r=rows[i];
@@ -855,6 +842,18 @@ function renderContract(){
     if(selStatus&&status!==selStatus)continue;
     r._rowIndex=i+4;
     filtered.push(r);
+  }
+
+      // Sheet1 상담 데이터 필터링 추가
+  for(var si=0;si<sheetOnlyRows.length;si++){
+    var sr=sheetOnlyRows[si];
+    var siteName2=(sr['사이트명']||'').toLowerCase();
+    var mgr2=sr['담당자']||'';
+    var status2=sr['진행사항']||'';
+    if(keyword&&siteName2.indexOf(keyword)<0)continue;
+    if(selMgr&&mgr2!==selMgr)continue;
+    if(selStatus&&status2!==selStatus)continue;
+    filtered.push(sr);
   }
 
   // 통계
