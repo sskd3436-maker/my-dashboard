@@ -675,6 +675,7 @@ function renderSubTab(){
 }
 
 function renderAllStats(){
+   if(!contractData){loadContract(function(){renderAllStats();});return;}
   // 계약 진행 현황
   var ctTotal=0,ct상담=0,ct입대위=0,ct실사=0,ct계약=0;
   var mgrContract={};
