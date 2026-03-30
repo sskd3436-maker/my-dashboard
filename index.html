@@ -368,22 +368,21 @@
       </div>
 
       <!-- 전체 현황 -->
-     <div class="sub-page active" id="sub-all">
+      <div class="sub-page active" id="sub-all">
         <div class="section-box"><h3>📋 계약 진행 현황
-  <select id="allContractSheet" class="form-input" style="width:160px;display:inline-block;margin-left:12px;font-size:13px;" onchange="renderAllStats()">
-    <option value="">전체 시트</option>
-  </select>
-</h3><div id="allContract"></div></div>
-        <div class="section-box"><h3>👤 담당자별 계약 현황</h3><div id="allContractMgr"></div></div>
-        <div class="section-box">
-          <h3>📄 시트별 현황
-            <select id="allSheetSelect" class="form-input" style="width:160px;display:inline-block;margin-left:12px;font-size:13px;" onchange="renderAllStats()">
+          <select id="allContractSheet" class="form-input" style="width:160px;display:inline-block;margin-left:12px;font-size:13px;" onchange="renderAllStats()">
+            <option value="">전체 시트</option>
+          </select>
+        </h3><div id="allContract"></div></div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <div class="section-box" style="flex:1;min-width:300px;"><h3>👤 담당자별 계약 현황</h3><div id="allContractMgr"></div></div>
+          <div class="section-box" style="flex:1;min-width:300px;"><h3>📄 시트별 현황
+            <select id="allSheetSelect" class="form-input" style="width:140px;display:inline-block;margin-left:12px;font-size:13px;" onchange="renderAllStats()">
               <option value="">전체 시트</option>
             </select>
-          </h3>
-          <div id="allSheet"></div>
+          </h3><div id="allSheet"></div></div>
         </div>
-        <div class="section-box"><h3>👤 담당자별 현황</h3><div id="allMgr"></div></div>
+        <div class="section-box"><h3>👤 담당자별 영업 현황</h3><div id="allMgr"></div></div>
       </div>
 
       <!-- 일일 보고 -->
@@ -752,17 +751,31 @@ function renderAllStats(){
   document.getElementById('allContract').innerHTML=ctHtml;
   // 담당자별 계약 현황
   var mcKeys=Object.keys(mgrContract).sort();
+  var mcMax=0;for(var i=0;i<mcKeys.length;i++){if(mgrContract[mcKeys[i]].total>mcMax)mcMax=mgrContract[mcKeys[i]].total;}
   var mcHtml='';
   for(var i=0;i<mcKeys.length;i++){
     var mn=mcKeys[i],mc=mgrContract[mn];
-    mcHtml+='<div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;gap:12px;">';
-    mcHtml+='<div style="min-width:80px;font-weight:600;font-size:14px;">'+esc(mn)+'</div>';
-    mcHtml+='<span style="background:#3498db;color:#fff;padding:2px 10px;border-radius:4px;font-size:12px;">상담 '+mc['상담']+'</span>';
-    mcHtml+='<span style="background:#f39c12;color:#fff;padding:2px 10px;border-radius:4px;font-size:12px;">입대위 '+mc['입대위']+'</span>';
-    mcHtml+='<span style="background:#9b59b6;color:#fff;padding:2px 10px;border-radius:4px;font-size:12px;">실사 '+mc['실사']+'</span>';
-    mcHtml+='<span style="background:#27ae60;color:#fff;padding:2px 10px;border-radius:4px;font-size:12px;">계약 '+mc['계약']+'</span>';
-    mcHtml+='<span style="font-size:11px;color:#999;">('+mc.total+'건)</span>';
+    var barW=mcMax>0?Math.round(mc.total/mcMax*100):0;
+    var b상담=mc.total>0?Math.round(mc['상담']/mc.total*100):0;
+    var b입대위=mc.total>0?Math.round(mc['입대위']/mc.total*100):0;
+    var b실사=mc.total>0?Math.round(mc['실사']/mc.total*100):0;
+    var b계약=mc.total>0?Math.round(mc['계약']/mc.total*100):0;
+    mcHtml+='<div style="padding:8px 0;border-bottom:1px solid #f5f5f5;">';
+    mcHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">';
+    mcHtml+='<span style="font-weight:600;font-size:13px;">'+esc(mn)+'</span>';
+    mcHtml+='<span style="font-size:12px;color:#666;">'+mc.total+'건</span></div>';
+    mcHtml+='<div style="height:20px;background:#eee;border-radius:4px;overflow:hidden;display:flex;width:'+barW+'%;min-width:40px;">';
+    mcHtml+='<div style="width:'+b상담+'%;background:#3498db;" title="상담 '+mc['상담']+'"></div>';
+    mcHtml+='<div style="width:'+b입대위+'%;background:#f39c12;" title="입대위 '+mc['입대위']+'"></div>';
+    mcHtml+='<div style="width:'+b실사+'%;background:#9b59b6;" title="실사 '+mc['실사']+'"></div>';
+    mcHtml+='<div style="width:'+b계약+'%;background:#27ae60;" title="계약 '+mc['계약']+'"></div>';
     mcHtml+='</div>';
+    mcHtml+='<div style="display:flex;gap:8px;margin-top:4px;font-size:11px;">';
+    mcHtml+='<span style="color:#3498db;">상담 '+mc['상담']+'</span>';
+    mcHtml+='<span style="color:#f39c12;">입대위 '+mc['입대위']+'</span>';
+    mcHtml+='<span style="color:#9b59b6;">실사 '+mc['실사']+'</span>';
+    mcHtml+='<span style="color:#27ae60;">계약 '+mc['계약']+'</span>';
+    mcHtml+='</div></div>';
   }
   document.getElementById('allContractMgr').innerHTML=mcHtml;
 
