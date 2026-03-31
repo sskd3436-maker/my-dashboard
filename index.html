@@ -1316,21 +1316,35 @@ function openContractFromSheet(pageKey,idx){
   window._sheetEditHeaders=h;
   window._sheetEditSheet=it.sheet;
   window._sheetEditRowIdx=row._rowIndex||(allFlat.indexOf(it)+4);
+   var sentFields=['긍정','중립','부정'];
+  var sentDone=false;
   for(var i=0;i<h.length;i++){
     var val=row[h[i]]!==undefined?row[h[i]]:'';
     if(String(val).indexOf('T')>0&&String(val).indexOf('Z')>0)val=String(val).split('T')[0];
+    if(sentFields.indexOf(h[i])>=0){
+      if(!sentDone){
+        sentDone=true;
+        var curSent='';
+        if(String(row['긍정'])==='1')curSent='긍정';
+        else if(String(row['중립'])==='1')curSent='중립';
+        else if(String(row['부정'])==='1')curSent='부정';
+        sdHtml+='<div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;">';
+        sdHtml+='<div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">감정상태</div>';
+        sdHtml+='<select class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" data-header="감정상태" onchange="updateSentCell(this)">';
+        sdHtml+='<option value="">선택</option>';
+        sdHtml+='<option value="긍정"'+(curSent==='긍정'?' selected':'')+'>긍정</option>';
+        sdHtml+='<option value="중립"'+(curSent==='중립'?' selected':'')+'>중립</option>';
+        sdHtml+='<option value="부정"'+(curSent==='부정'?' selected':'')+'>부정</option>';
+        sdHtml+='</select></div>';
+      }
+      continue;
+    }
     sdHtml+='<div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;">';
     sdHtml+='<div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">'+esc(h[i])+'</div>';
-    if(sentFields.indexOf(h[i])>=0){
-      sdHtml+='<select class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" data-col="'+(i+1)+'" data-header="'+esc(h[i])+'" onchange="updateSheetCell(this)">';
-      sdHtml+='<option value="">선택</option>';
-      for(var sv=0;sv<=10;sv++){sdHtml+='<option value="'+sv+'"'+(String(val)===String(sv)?' selected':'')+'>'+sv+'</option>';}
-      sdHtml+='</select>';
-    }else{
-      sdHtml+='<input type="text" class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" value="'+esc(String(val))+'" data-col="'+(i+1)+'" data-header="'+esc(h[i])+'" onchange="updateSheetCell(this)">';
-    }
+    sdHtml+='<input type="text" class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" value="'+esc(String(val))+'" data-col="'+(i+1)+'" data-header="'+esc(h[i])+'" onchange="updateSheetCell(this)">';
     sdHtml+='</div>';
   }
+
   document.getElementById('cf_sheetData').innerHTML=sdHtml;
 
   document.getElementById('contractModal').classList.add('show');
@@ -1354,6 +1368,26 @@ function openContractFromSheet(pageKey,idx){
     }
   });
 }
+
+  function updateSentCell(el){
+  var picked=el.value;
+  var sheet=window._sheetEditSheet;
+  var rowIdx=window._sheetEditRowIdx;
+  var h=window._sheetEditHeaders;
+  if(!sheet||!rowIdx){toast('시트 정보 없음','err');return;}
+  var cols={'긍정':0,'중립':0,'부정':0};
+  for(var i=0;i<h.length;i++){
+    if(h[i]==='긍정'||h[i]==='중립'||h[i]==='부정')cols[h[i]]=i+1;
+  }
+  var items=['긍정','중립','부정'];
+  for(var j=0;j<items.length;j++){
+    var v=(items[j]===picked)?'1':'';
+    apiPost({action:'updateCell',sheet:sheet,row:rowIdx,col:cols[items[j]],value:v},function(){});
+    if(window._sheetEditRow)window._sheetEditRow[items[j]]=v;
+  }
+  toast('감정상태 → '+picked+' 저장','ok');
+}
+  
   
 function openContractFromList(idx){
   var list=sheetFiltered.length?sheetFiltered:sheetRows;
