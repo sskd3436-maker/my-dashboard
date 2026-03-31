@@ -410,6 +410,7 @@
           </div>
         </div>
         <div class="stats-grid" id="dailyStats"></div>
+        <div class="section-box"><h3>📋 계약 진행 현황</h3><div id="dailyContract"></div></div>
         <div class="section-box"><h3>👤 담당자별</h3><div id="dailyMgr"></div></div>
         <div class="table-box">
           <div class="box-header"><h3 id="dailyTT">방문 목록</h3></div>
@@ -429,6 +430,7 @@
           </div>
         </div>
         <div class="stats-grid" id="weeklyStats"></div>
+        <div class="section-box"><h3>📋 계약 진행 현황</h3><div id="weeklyContract"></div></div>
         <div class="section-box"><h3>👤 담당자별</h3><div id="weeklyMgr"></div></div>
         <div class="section-box"><h3>📊 일별 현황</h3><div id="weeklyDaily"></div></div>
         <div class="table-box">
@@ -450,6 +452,7 @@
         </div>
         <div class="stats-grid" id="monthlyStats"></div>
         <div class="section-box"><h3>👤 담당자별</h3><div id="monthlyMgr"></div></div>
+        <div class="section-box"><h3>📋 계약 진행 현황</h3><div id="monthlyContract"></div></div>
         <div class="section-box"><h3>📅 캘린더</h3><div class="cal-mini" id="monthlyCal"></div></div>
         <div class="section-box"><h3>📊 주별 현황</h3><div id="monthlyWeekly"></div></div>
         <div class="table-box">
@@ -461,6 +464,7 @@
       <!-- 담당자별 -->
       <div class="sub-page" id="sub-manager">
         <div class="stats-grid" id="mgrAllStats"></div>
+        <div class="section-box"><h3>📋 계약 진행 현황</h3><div id="mgrContract"></div></div>
         <div id="mgrDetailArea"></div>
       </div>
 
@@ -950,6 +954,7 @@ function renderDaily(){
   document.getElementById('dailyDate').textContent=fmt(dailyDt);
   var list=filterByDate(dailyDt,dailyDt);
   document.getElementById('dailyStats').innerHTML=mkStats(list);
+  document.getElementById('dailyContract').innerHTML=mkContractStats(list);
   document.getElementById('dailyMgr').innerHTML=mkMgr(list);
   document.getElementById('dailyTT').textContent='방문 목록 ('+list.length+'건)';
   mkTable(list,'dailyTH','dailyTB','daily');
@@ -962,6 +967,7 @@ function renderWeekly(){
   document.getElementById('weeklyDate').textContent=fmt(weekStart)+' ~ '+fmt(end);
   var list=filterByDate(weekStart,end);
   document.getElementById('weeklyStats').innerHTML=mkStats(list);
+  document.getElementById('weeklyContract').innerHTML=mkContractStats(list);
   document.getElementById('weeklyMgr').innerHTML=mkMgr(list);
   document.getElementById('weeklyTT').textContent='방문 목록 ('+list.length+'건)';
   var dh='',days=['월','화','수','목','금','토','일'];
@@ -979,6 +985,7 @@ function renderMonthly(){
   var first=new Date(mYear,mMon,1),last=new Date(mYear,mMon+1,0);
   var list=filterByDate(first,last);
   document.getElementById('monthlyStats').innerHTML=mkStats(list);
+  document.getElementById('monthlyContract').innerHTML=mkContractStats(list);
   document.getElementById('monthlyMgr').innerHTML=mkMgr(list);
   document.getElementById('monthlyTT').textContent='방문 목록 ('+list.length+'건)';
   // 캘린더
@@ -1006,6 +1013,7 @@ function renderMonthly(){
 // 담당자별
 function renderMgrTab(){
   document.getElementById('mgrAllStats').innerHTML=mkStats(allFlat);
+  document.getElementById('mgrContract').innerHTML=mkContractStats(allFlat);
   var ms={};for(var i=0;i<allFlat.length;i++){var m=allFlat[i].mgr||'미지정';if(!ms[m])ms[m]=[];ms[m].push(allFlat[i]);}
   var ns=Object.keys(ms).sort(),h='';
   for(var i=0;i<ns.length;i++){var n=ns[i],ml=ms[n];
@@ -1378,7 +1386,40 @@ function openContractFromSheet(pageKey,idx){
   }
   toast('감정상태 → '+picked+' 저장','ok');
 }
-  
+  function mkContractStats(siteList){
+  if(!contractData){return '<div style="color:#999;font-size:13px;">계약 데이터 로딩중...</div>';}
+  var ch=contractData.headers,rows=contractData.rows;
+  var sites={};
+  for(var i=0;i<siteList.length;i++){var sn=(siteList[i].site||'').trim();if(sn)sites[sn]=1;}
+  var ct={상담:0,제안:0,입대위:0,실사:0,계약:0,total:0};
+  for(var i=0;i<rows.length;i++){
+    var sn=(fv(rows[i],ch,'사이트명')||'').trim();
+    if(!sites[sn])continue;
+    var st=fv(rows[i],ch,'진행사항')||'상담';
+    ct.total++;ct[st]=(ct[st]||0)+1;
+  }
+  var matched={};
+  for(var i=0;i<rows.length;i++){var sn=(fv(rows[i],ch,'사이트명')||'').trim();if(sn)matched[sn]=1;}
+  for(var sn in sites){if(!matched[sn]){ct.total++;ct['상담']++;}}
+  if(ct.total===0)return '<div style="color:#999;font-size:13px;">해당 기간 계약 데이터 없음</div>';
+  var colors={상담:'#3498db',제안:'#e67e22',입대위:'#f39c12',실사:'#9b59b6',계약:'#27ae60'};
+  var steps=['상담','제안','입대위','실사','계약'];
+  var html='<div style="display:flex;gap:10px;margin-bottom:10px;">';
+  for(var i=0;i<steps.length;i++){
+    var s=steps[i],c=ct[s]||0,p=ct.total>0?Math.round(c/ct.total*100):0;
+    html+='<div style="flex:1;background:#fff;border-radius:8px;padding:10px;text-align:center;border-top:3px solid '+colors[s]+';">';
+    html+='<div style="font-size:11px;color:'+colors[s]+';font-weight:700;">'+s+'</div>';
+    html+='<div style="font-size:24px;font-weight:800;color:'+colors[s]+';">'+c+'</div>';
+    html+='<div style="font-size:10px;color:#888;">'+p+'%</div></div>';
+  }
+  html+='</div>';
+  html+='<div style="display:flex;align-items:center;gap:6px;">';
+  html+='<span style="font-size:11px;color:#666;">총 '+ct.total+'건</span>';
+  html+='<div style="flex:1;height:6px;background:#eee;border-radius:3px;overflow:hidden;display:flex;">';
+  for(var i=0;i<steps.length;i++){var s=steps[i],p=ct.total>0?Math.round((ct[s]||0)/ct.total*100):0;html+='<div style="width:'+p+'%;background:'+colors[s]+';"></div>';}
+  html+='</div></div>';
+  return html;
+}
   
 function openContractFromList(idx){
   var list=sheetFiltered.length?sheetFiltered:sheetRows;
