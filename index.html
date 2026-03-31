@@ -1226,8 +1226,6 @@ function renderContract(){
     if(status==='상담'||status==='제안'||status==='')continue;
     r._rowIndex=i+4;
     filtered.push(r);
-    r._rowIndex=i+4;
-    filtered.push(r);
   }
 
  // 통계
@@ -1260,32 +1258,7 @@ function renderContract(){
   // 테이블
   document.getElementById('ctTH').innerHTML='<tr><th>#</th><th>사이트명</th><th>입대위명</th><th>주소</th><th>충전기수량</th><th>설치유형</th><th>진행사항</th><th>담당자</th><th>관리</th></tr>';
 
-  var tb='';
-  var stColors={'상담':'#3498db','입대위':'#f39c12','실사':'#9b59b6','계약':'#27ae60'};
-  for(var i=0;i<filtered.length;i++){
-    var r=filtered[i];
-    var st=fv(r,h,'진행사항')||'';
-    var statusBadge='';
-    if(st)statusBadge='<span style="background:'+(stColors[st]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:12px;">'+st+'</span>';
-    tb+='<tr>';
-    tb+='<td>'+(i+1)+'</td>';
-    tb+='<td>'+esc(fv(r,h,'사이트명')||'')+'</td>';
-    tb+='<td>'+esc(fv(r,h,'입대위명')||'')+'</td>';
-    tb+='<td>'+esc(fv(r,h,'주소')||'')+'</td>';
-    tb+='<td>'+esc(fv(r,h,'충전기수량')||'')+'</td>';
-    tb+='<td>'+esc(fv(r,h,'설치유형')||'')+'</td>';
-    tb+='<td>'+statusBadge+'</td>';
-    var mgrVal=fv(r,h,'담당자')||'';
-if(!mgrVal){
-  var sn=(fv(r,h,'사이트명')||'').trim();
-  for(var af=0;af<(allFlat||[]).length;af++){
-    if(allFlat[af].site&&allFlat[af].site.trim()===sn&&allFlat[af].mgr){mgrVal=allFlat[af].mgr;break;}
-  }
-}
-tb+='<td>'+esc(mgrVal)+'</td>';
-    tb+='<td><button class="btn btn-sm btn-primary" onclick="editContract('+r._rowIndex+')">수정</button> <button class="btn btn-sm btn-blue" onclick="generateContract(\'contract\','+i+')">계약서</button> <button class="btn btn-sm btn-red" onclick="delContract('+r._rowIndex+')">삭제</button></td>';
-    tb+='</tr>';
-  }
+  
  
   var tb='';
   for(var i=0;i<filtered.length;i++){
