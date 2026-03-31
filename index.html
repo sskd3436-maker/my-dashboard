@@ -618,7 +618,7 @@ function mkMgr(list){
   return h||'<div class="empty-msg">데이터 없음</div>';
 }
 function mkTable(list,thId,tbId,pageKey,q){
-  document.getElementById(thId).innerHTML='<tr><th>#</th><th>시트</th><th>방문일자</th><th>사이트명</th><th>충전기수</th><th>계약시작</th><th>계약종료</th><th>감정</th><th>담당자</th><th>상세</th></tr>';
+  document.getElementById(thId).innerHTML='<tr><th>#</th><th>시트</th><th>방문일자</th><th>사이트명</th><th>영업내용</th><th>충전기수</th><th>계약시작</th><th>계약종료</th><th>감정</th><th>담당자</th><th>상세</th></tr>'
   // 계약서 시트 사이트 목록
   var contractSites={};
   if(contractData&&contractData.rows){
