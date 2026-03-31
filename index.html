@@ -329,27 +329,38 @@
     
 <!-- 계약서 작성/수정 모달 -->
 <div class="modal-overlay" id="contractModal">
-  <div class="modal" style="max-width:600px;">
+  <div class="modal" style="max-width:1200px;width:95%;">
     <div class="modal-header">
       <h3 id="contractModalTitle">계약서 작성</h3>
       <button class="modal-close" onclick="closeContractModal()">✕</button>
     </div>
-    <div class="modal-body" id="contractForm">
-      <div class="form-group"><label>사이트명</label><input type="text" id="cf_site" class="form-input"></div>
-      <div class="form-group"><label>입대위명</label><input type="text" id="cf_name" class="form-input"></div>
-      <div class="form-group"><label>주소</label><input type="text" id="cf_addr" class="form-input"></div>
-      <div class="form-group"><label>사업자번호</label><input type="text" id="cf_biz" class="form-input"></div>
-      <div class="form-group"><label>관리실번호</label><input type="text" id="cf_tel" class="form-input"></div>
-      <div class="form-group"><label>계약년수</label><input type="number" id="cf_year" class="form-input"></div>
-      <div class="form-group"><label>충전기수량</label><input type="number" id="cf_qty" class="form-input" oninput="calcContract()"></div>
-      <div class="form-group"><label>설치유형</label><select id="cf_type" class="form-input" onchange="calcContract()"><option value="">선택</option><option value="신규설치">신규설치</option><option value="제자리교체">제자리교체</option></select></div>
-      <div class="form-group"><label>충전기단가</label><input type="text" id="cf_price" class="form-input" readonly></div>
-      <div class="form-group"><label>설치금액</label><input type="text" id="cf_total" class="form-input" readonly></div>
-      <div class="form-group"><label>프로모션기간</label><input type="text" id="cf_promo" class="form-input"></div>
-      <div class="form-group"><label>프로모션금액</label><input type="text" id="cf_promoAmt" class="form-input"></div>
-      <div class="form-group"><label>진행사항</label><select id="cf_status" class="form-input"><option value="">선택</option><option value="상담">상담</option><option value="제안">제안</option><option value="입대위">입대위</option><option value="실사">실사</option><option value="계약">계약</option>
-      <div class="form-group"><label>비고</label><textarea id="cf_note" class="form-input" rows="3"></textarea></div>
-      <div class="form-group"><label>담당자</label><input type="text" id="cf_mgr" class="form-input"></div>
+    <div class="modal-body" id="contractForm" style="display:flex;gap:24px;flex-wrap:wrap;">
+      <!-- 왼쪽: 시트 원본 데이터 -->
+      <div style="flex:1;min-width:300px;">
+        <h4 style="margin:0 0 12px 0;color:#1a73e8;border-bottom:2px solid #1a73e8;padding-bottom:8px;">📄 시트 데이터</h4>
+        <div id="cf_sheetData" style="font-size:13px;">
+          <div class="empty-msg">시트 데이터 없음</div>
+        </div>
+      </div>
+      <!-- 오른쪽: 계약서 작성 -->
+      <div style="flex:1;min-width:300px;">
+        <h4 style="margin:0 0 12px 0;color:#27ae60;border-bottom:2px solid #27ae60;padding-bottom:8px;">📋 계약서 작성</h4>
+        <div class="form-group"><label>사이트명</label><input type="text" id="cf_site" class="form-input"></div>
+        <div class="form-group"><label>입대위명</label><input type="text" id="cf_name" class="form-input"></div>
+        <div class="form-group"><label>주소</label><input type="text" id="cf_addr" class="form-input"></div>
+        <div class="form-group"><label>사업자번호</label><input type="text" id="cf_biz" class="form-input"></div>
+        <div class="form-group"><label>관리실번호</label><input type="text" id="cf_tel" class="form-input"></div>
+        <div class="form-group"><label>계약년수</label><input type="number" id="cf_year" class="form-input"></div>
+        <div class="form-group"><label>충전기수량</label><input type="number" id="cf_qty" class="form-input" oninput="calcContract()"></div>
+        <div class="form-group"><label>설치유형</label><select id="cf_type" class="form-input" onchange="calcContract()"><option value="">선택</option><option value="신규설치">신규설치</option><option value="제자리교체">제자리교체</option></select></div>
+        <div class="form-group"><label>충전기단가</label><input type="text" id="cf_price" class="form-input" readonly></div>
+        <div class="form-group"><label>설치금액</label><input type="text" id="cf_total" class="form-input" readonly></div>
+        <div class="form-group"><label>프로모션기간</label><input type="text" id="cf_promo" class="form-input"></div>
+        <div class="form-group"><label>프로모션금액</label><input type="text" id="cf_promoAmt" class="form-input"></div>
+        <div class="form-group"><label>진행사항</label><select id="cf_status" class="form-input"><option value="">선택</option><option value="상담">상담</option><option value="제안">제안</option><option value="입대위">입대위</option><option value="실사">실사</option><option value="계약">계약</option></select></div>
+        <div class="form-group"><label>비고</label><textarea id="cf_note" class="form-input" rows="3"></textarea></div>
+        <div class="form-group"><label>담당자</label><input type="text" id="cf_mgr" class="form-input"></div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-gray" onclick="closeContractModal()">취소</button>
@@ -1297,6 +1308,19 @@ function openContractFromSheet(pageKey,idx){
   document.getElementById('cf_site').value=site;
   document.getElementById('cf_mgr').value=mgr;
   if(!document.getElementById('cf_status').value)document.getElementById('cf_status').value='상담';
+
+  // 왼쪽 시트 데이터 표시
+  var sdHtml='';
+  for(var i=0;i<h.length;i++){
+    var val=row[h[i]]!==undefined?row[h[i]]:'';
+    if(String(val).indexOf('T')>0&&String(val).indexOf('Z')>0)val=String(val).split('T')[0];
+    sdHtml+='<div style="display:flex;padding:6px 0;border-bottom:1px solid #f0f0f0;">';
+    sdHtml+='<div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">'+esc(h[i])+'</div>';
+    sdHtml+='<div style="flex:1;font-size:13px;color:#333;">'+esc(String(val))+'</div>';
+    sdHtml+='</div>';
+  }
+  document.getElementById('cf_sheetData').innerHTML=sdHtml;
+
   document.getElementById('contractModal').classList.add('show');
 }
 
