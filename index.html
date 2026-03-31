@@ -1287,7 +1287,7 @@ function renderContract(){
   var statsHtml='';
   for(var s=0;s<stItems.length;s++){
     var si=stItems[s];
-    statsHtml+='<div class="stat-card" style="border-top:4px solid '+si.color+';"><div class="stat-label">'+si.label+'</div><div class="stat-value" style="font-size:36px;font-weight:800;color:'+si.color+';">'+si.count+'</div><div style="font-size:12px;color:#888;margin-top:2px;">'+si.pct+'%</div><div style="height:4px;background:#eee;border-radius:2px;margin-top:6px;"><div style="height:4px;background:'+si.color+';border-radius:2px;width:'+si.pct+'%;"></div></div></div>';
+    statsHtml+='<div style="background:white;border-radius:12px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,0.08);text-align:center;border-top:4px solid '+si.color+';"><div class="stat-label">'+si.label+'</div><div style="font-size:36px;font-weight:800;color:'+si.color+';">'+si.count+'</div><div style="font-size:12px;color:#888;margin-top:2px;">'+si.pct+'%</div><div style="height:4px;background:#eee;border-radius:2px;margin-top:6px;"><div style="height:4px;background:'+si.color+';border-radius:2px;width:'+si.pct+'%;"></div></div></div>';
   }
   document.getElementById('ctStats').innerHTML=statsHtml;
 
