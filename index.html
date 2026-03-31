@@ -710,6 +710,20 @@ function goTablePage(pageKey,pg){
   window['_pg_'+pageKey]=pg;
   mkTablePage(pageKey);
 }
+  function showDet(key,idx){var list=window['_d_'+key]||[];var it=list[idx];if(!it)return;
+  var row=it.row,h=it.headers;document.getElementById('detailTitle').textContent='상세 - '+it.sheet;
+  var html='';for(var i=0;i<h.length;i++){var v=row[h[i]]!==undefined?row[h[i]]:'',lo=String(v).length>40;
+    html+='<div class="detail-item'+(lo?' detail-full':'')+'"><label>'+esc(h[i])+'</label><div class="val">'+renderCell(h[i],v)+'</div></div>';}
+  document.getElementById('detailGrid').innerHTML=html;document.getElementById('detailModal').classList.add('show');}
+
+function filterList(q,sf,mf,shf){
+  var r=[];for(var i=0;i<allFlat.length;i++){var it=allFlat[i];
+    if(shf&&it.sheet!==shf)continue;
+    if(sf){var fs=sf==='기타'?'etc':sf==='긍정'?'positive':sf==='중립'?'neutral':'negative';if(it.sent!==fs)continue;}
+    if(mf&&it.mgr!==mf)continue;
+    if(q){var f=false,h=it.headers,row=it.row;for(var j=0;j<h.length;j++)if(String(row[h[j]]||'').toLowerCase().indexOf(q)>=0){f=true;break;}if(!f)continue;}
+    r.push(it);}return r;
+}
 
 // ===== 영업활동 =====
 function renderActivity(){
