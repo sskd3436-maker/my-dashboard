@@ -913,8 +913,8 @@ function submitAddRow(){
       rowData.push(el?el.value:'');
     }
   }
-  apiPost({action:'addRow',sheet:sheet,values:rowData},function(res){
-    if(res.ok){
+    apiPost({action:'addRow',sheet:sheet,rowData:rowData},function(res){
+    if(res.success||res.ok){
       toast('행 추가 완료','ok');
       document.getElementById('contractModal').classList.remove('show');
       apiGet({action:'getData',sheet:sheet},function(d){
