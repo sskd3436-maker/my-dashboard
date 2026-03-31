@@ -753,19 +753,27 @@ function renderActivity(){
   document.getElementById('actContractArea').innerHTML=ctHtml;
 
 
-  // 사이트명 기준 합치기
+   // 사이트명 기준 합치기
   var siteMap={};
   var merged=[];
   for(var i=0;i<list.length;i++){
     var sn=(list[i].site||'').trim();
     if(!sn){merged.push(list[i]);continue;}
     if(!siteMap[sn]){
-      siteMap[sn]={sheet:list[i].sheet,date:list[i].date,site:list[i].site,content:list[i].content,sent:list[i].sent,mgr:list[i].mgr,row:list[i].row,headers:list[i].headers,sheets:[list[i].sheet],_mergedIdx:merged.length};
+      siteMap[sn]={sheet:list[i].sheet,date:list[i].date,site:list[i].site,content:list[i].content,sent:list[i].sent,mgr:list[i].mgr,row:list[i].row,headers:list[i].headers,sheets:[list[i].sheet],contents:{},dates:{},mgrs:{},sents:{}};
+      siteMap[sn].contents[list[i].sheet]=list[i].content||'';
+      siteMap[sn].dates[list[i].sheet]=list[i].date||'';
+      siteMap[sn].mgrs[list[i].sheet]=list[i].mgr||'';
+      siteMap[sn].sents[list[i].sheet]=list[i].sent||'';
       merged.push(siteMap[sn]);
     }else{
       var ex=siteMap[sn];
       if(ex.sheets.indexOf(list[i].sheet)<0)ex.sheets.push(list[i].sheet);
       ex.sheet=ex.sheets.join(', ');
+      ex.contents[list[i].sheet]=list[i].content||'';
+      ex.dates[list[i].sheet]=list[i].date||'';
+      ex.mgrs[list[i].sheet]=list[i].mgr||'';
+      ex.sents[list[i].sheet]=list[i].sent||'';
       if(list[i].date&&(!ex.date||list[i].date>ex.date)){ex.date=list[i].date;ex.row=list[i].row;ex.headers=list[i].headers;}
       if(list[i].content&&!ex.content)ex.content=list[i].content;
       if(list[i].mgr&&!ex.mgr)ex.mgr=list[i].mgr;
@@ -773,9 +781,39 @@ function renderActivity(){
     }
   }
 
-  document.getElementById('actTitle').textContent='영업활동 목록 ('+merged.length+'건 / 원본 '+list.length+'건)';
-  mkTable(merged,'actTH','actTB','act',q);
+  window._actMerged=merged;
+  window._actQuery=q;
+  renderActTable('all');
 }
+
+function renderActTable(mode){
+  var merged=window._actMerged||[];
+  var q=window._actQuery||'';
+  var display=[];
+  for(var i=0;i<merged.length;i++){
+    var it=merged[i];
+    if(mode==='all'){
+      display.push(it);
+    }else{
+      if(!it.sheets||it.sheets.indexOf(mode)<0)continue;
+      var copy={sheet:it.sheet,date:it.dates?it.dates[mode]||it.date:it.date,site:it.site,content:it.contents?it.contents[mode]||it.content:it.content,sent:it.sents?it.sents[mode]||it.sent:it.sent,mgr:it.mgrs?it.mgrs[mode]||it.mgr:it.mgr,row:it.row,headers:it.headers,sheets:it.sheets};
+      display.push(copy);
+    }
+  }
+  // 버튼 HTML
+  var sheetNames={};
+  for(var i=0;i<merged.length;i++){if(merged[i].sheets){for(var j=0;j<merged[i].sheets.length;j++)sheetNames[merged[i].sheets[j]]=1;}}
+  var btnHtml='<div style="display:flex;gap:6px;margin-bottom:12px;">';
+  btnHtml+='<button class="btn btn-sm '+(mode==='all'?'btn-primary':'btn-gray')+'" onclick="renderActTable(\'all\')">전체</button>';
+  var sns=Object.keys(sheetNames).sort();
+  for(var i=0;i<sns.length;i++){
+    btnHtml+='<button class="btn btn-sm '+(mode===sns[i]?'btn-primary':'btn-gray')+'" onclick="renderActTable(\''+sns[i]+'\')">'+sns[i]+'</button>';
+  }
+  btnHtml+='</div>';
+  document.getElementById('actTitle').innerHTML='영업활동 목록 ('+display.length+'건)'+btnHtml;
+  mkTable(display,'actTH','actTB','act',q);
+}
+
 
 
 // ===== 검색 =====
