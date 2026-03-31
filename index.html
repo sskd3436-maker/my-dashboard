@@ -1102,20 +1102,11 @@ function renderContract(){
     if(keyword&&siteName.indexOf(keyword)<0)continue;
     if(selMgr&&mgr!==selMgr)continue;
     if(selStatus&&status!==selStatus)continue;
+    if(status==='상담'||status==='제안'||status==='')continue;
     r._rowIndex=i+4;
     filtered.push(r);
-  }
-
-      // Sheet1 상담 데이터 필터링 추가
-  for(var si=0;si<sheetOnlyRows.length;si++){
-    var sr=sheetOnlyRows[si];
-    var siteName2=(sr['사이트명']||'').toLowerCase();
-    var mgr2=sr['담당자']||'';
-    var status2=sr['진행사항']||'';
-    if(keyword&&siteName2.indexOf(keyword)<0)continue;
-    if(selMgr&&mgr2!==selMgr)continue;
-    if(selStatus&&status2!==selStatus)continue;
-    filtered.push(sr);
+    r._rowIndex=i+4;
+    filtered.push(r);
   }
 
  // 통계
