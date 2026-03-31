@@ -1299,7 +1299,7 @@ function openContractFromSheet(pageKey,idx){
   var it=list[idx];if(!it)return;
   var row=it.row,h=it.headers;
   editContractRow=null;
-  document.getElementById('contractModalTitle').textContent='계약서 작성';
+  document.getElementById('contractModalTitle').textContent='사이트 정';
   document.getElementById('contractSubmitBtn').textContent='저장';
   var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
   for(var i=0;i<fields.length;i++){var el=document.getElementById(fields[i]);if(el)el.value='';}
@@ -1309,14 +1309,26 @@ function openContractFromSheet(pageKey,idx){
   document.getElementById('cf_mgr').value=mgr;
   if(!document.getElementById('cf_status').value)document.getElementById('cf_status').value='상담';
 
-  // 왼쪽 시트 데이터 표시
+    // 왼쪽 시트 데이터 표시 (수정 가능)
   var sdHtml='';
+  var sentFields=['긍정','중립','부정'];
+  window._sheetEditRow=row;
+  window._sheetEditHeaders=h;
+  window._sheetEditSheet=it.sheet;
+  window._sheetEditRowIdx=row._rowIndex||(allFlat.indexOf(it)+4);
   for(var i=0;i<h.length;i++){
     var val=row[h[i]]!==undefined?row[h[i]]:'';
     if(String(val).indexOf('T')>0&&String(val).indexOf('Z')>0)val=String(val).split('T')[0];
-    sdHtml+='<div style="display:flex;padding:6px 0;border-bottom:1px solid #f0f0f0;">';
+    sdHtml+='<div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;">';
     sdHtml+='<div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">'+esc(h[i])+'</div>';
-    sdHtml+='<div style="flex:1;font-size:13px;color:#333;">'+esc(String(val))+'</div>';
+    if(sentFields.indexOf(h[i])>=0){
+      sdHtml+='<select class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" data-col="'+(i+1)+'" data-header="'+esc(h[i])+'" onchange="updateSheetCell(this)">';
+      sdHtml+='<option value="">선택</option>';
+      for(var sv=0;sv<=10;sv++){sdHtml+='<option value="'+sv+'"'+(String(val)===String(sv)?' selected':'')+'>'+sv+'</option>';}
+      sdHtml+='</select>';
+    }else{
+      sdHtml+='<input type="text" class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" value="'+esc(String(val))+'" data-col="'+(i+1)+'" data-header="'+esc(h[i])+'" onchange="updateSheetCell(this)">';
+    }
     sdHtml+='</div>';
   }
   document.getElementById('cf_sheetData').innerHTML=sdHtml;
@@ -1324,6 +1336,25 @@ function openContractFromSheet(pageKey,idx){
   document.getElementById('contractModal').classList.add('show');
 }
 
+  function updateSheetCell(el){
+  var col=parseInt(el.getAttribute('data-col'));
+  var header=el.getAttribute('data-header');
+  var newVal=el.value;
+  var sheet=window._sheetEditSheet;
+  var rowIdx=window._sheetEditRowIdx;
+  if(!sheet||!rowIdx){toast('시트 정보 없음','err');return;}
+  apiPost({action:'updateCell',sheet:sheet,row:rowIdx,col:col,value:newVal},function(res){
+    if(res.ok){
+      toast(header+' 저장 완료','ok');
+      if(window._sheetEditRow&&window._sheetEditHeaders){
+        window._sheetEditRow[header]=newVal;
+      }
+    }else{
+      toast('저장 실패: '+(res.msg||''),'err');
+    }
+  });
+}
+  
 function openContractFromList(idx){
   var list=sheetFiltered.length?sheetFiltered:sheetRows;
   var row=list[idx];if(!row)return;
