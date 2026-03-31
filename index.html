@@ -1310,16 +1310,17 @@ function openContractFromSheet(pageKey,idx){
 
     // 왼쪽 시트 데이터 표시 (수정 가능)
   var sdHtml='';
-  var sentFields=['긍정','중립','부정'];
   window._sheetEditRow=row;
   window._sheetEditHeaders=h;
   window._sheetEditSheet=it.sheet;
   window._sheetEditRowIdx=row._rowIndex||(allFlat.indexOf(it)+4);
-   var sentFields=['긍정','중립','부정'];
+  var sentFields=['긍정','중립','부정'];
+  var hideFields=['재계약'];
   var sentDone=false;
   for(var i=0;i<h.length;i++){
     var val=row[h[i]]!==undefined?row[h[i]]:'';
     if(String(val).indexOf('T')>0&&String(val).indexOf('Z')>0)val=String(val).split('T')[0];
+    if(hideFields.indexOf(h[i])>=0)continue;
     if(sentFields.indexOf(h[i])>=0){
       if(!sentDone){
         sentDone=true;
@@ -1327,6 +1328,7 @@ function openContractFromSheet(pageKey,idx){
         if(String(row['긍정'])==='1')curSent='긍정';
         else if(String(row['중립'])==='1')curSent='중립';
         else if(String(row['부정'])==='1')curSent='부정';
+        else if(String(row['기타'])==='1')curSent='기타';
         sdHtml+='<div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;">';
         sdHtml+='<div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">감정상태</div>';
         sdHtml+='<select class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" data-header="감정상태" onchange="updateSentCell(this)">';
@@ -1334,6 +1336,7 @@ function openContractFromSheet(pageKey,idx){
         sdHtml+='<option value="긍정"'+(curSent==='긍정'?' selected':'')+'>긍정</option>';
         sdHtml+='<option value="중립"'+(curSent==='중립'?' selected':'')+'>중립</option>';
         sdHtml+='<option value="부정"'+(curSent==='부정'?' selected':'')+'>부정</option>';
+        sdHtml+='<option value="기타"'+(curSent==='기타'?' selected':'')+'>기타</option>';
         sdHtml+='</select></div>';
       }
       continue;
@@ -1374,11 +1377,12 @@ function openContractFromSheet(pageKey,idx){
   var rowIdx=window._sheetEditRowIdx;
   var h=window._sheetEditHeaders;
   if(!sheet||!rowIdx){toast('시트 정보 없음','err');return;}
-  var cols={'긍정':0,'중립':0,'부정':0};
+  var cols={'긍정':0,'중립':0,'부정':0,'기타':0};
+    if(h[i]==='긍정'||h[i]==='중립'||h[i]==='부정')cols[h[i]]=i+1;
   for(var i=0;i<h.length;i++){
     if(h[i]==='긍정'||h[i]==='중립'||h[i]==='부정')cols[h[i]]=i+1;
   }
-  var items=['긍정','중립','부정'];
+  var items=['긍정','중립','부정','기타'];
   for(var j=0;j<items.length;j++){
     var v=(items[j]===picked)?'1':'';
     apiPost({action:'updateCell',sheet:sheet,row:rowIdx,col:cols[items[j]],value:v},function(){});
