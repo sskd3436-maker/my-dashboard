@@ -800,19 +800,24 @@ function renderActTable(mode){
       display.push(copy);
     }
   }
-  // 버튼 HTML
+  // 시트 버튼 (계약서 제외, 토글 스타일)
   var sheetNames={};
-  for(var i=0;i<merged.length;i++){if(merged[i].sheets){for(var j=0;j<merged[i].sheets.length;j++)sheetNames[merged[i].sheets[j]]=1;}}
-  var btnHtml='<div style="display:flex;gap:6px;margin-bottom:12px;">';
-  btnHtml+='<button class="btn btn-sm '+(mode==='all'?'btn-primary':'btn-gray')+'" onclick="renderActTable(\'all\')">전체</button>';
+  for(var i=0;i<merged.length;i++){if(merged[i].sheets){for(var j=0;j<merged[i].sheets.length;j++){if(merged[i].sheets[j]!=='계약서')sheetNames[merged[i].sheets[j]]=1;}}}
+  var btnHtml='<div style="display:flex;align-items:center;gap:0;">';
+  var allActive=mode==='all';
+  btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;'+(allActive?'background:#1a73e8;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="renderActTable(\'all\')">';
+  btnHtml+='<span style="width:16px;height:16px;border-radius:50%;border:2px solid '+(allActive?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(allActive?'<span style="width:8px;height:8px;border-radius:50%;background:#fff;"></span>':'')+'</span> 전체</label>';
   var sns=Object.keys(sheetNames).sort();
   for(var i=0;i<sns.length;i++){
-    btnHtml+='<button class="btn btn-sm '+(mode===sns[i]?'btn-primary':'btn-gray')+'" onclick="renderActTable(\''+sns[i]+'\')">'+sns[i]+'</button>';
+    var active=mode===sns[i];
+    btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;margin-left:6px;'+(active?'background:#1a73e8;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="renderActTable(\''+sns[i]+'\')">';
+    btnHtml+='<span style="width:16px;height:16px;border-radius:50%;border:2px solid '+(active?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(active?'<span style="width:8px;height:8px;border-radius:50%;background:#fff;"></span>':'')+'</span> '+sns[i]+'</label>';
   }
   btnHtml+='</div>';
-  document.getElementById('actTitle').innerHTML='영업활동 목록 ('+display.length+'건)'+btnHtml;
+  document.getElementById('actTitle').innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;">영업활동 목록 ('+display.length+'건)'+btnHtml+'</div>';
   mkTable(display,'actTH','actTB','act',q);
 }
+
 
 
 
