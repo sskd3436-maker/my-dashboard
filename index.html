@@ -618,7 +618,7 @@ function mkMgr(list){
   return h||'<div class="empty-msg">데이터 없음</div>';
 }
 function mkTable(list,thId,tbId,pageKey,q){
-  document.getElementById(thId).innerHTML='<tr><th>#</th><th>시트</th><th>방문일자</th><th>사이트명</th><th>영업내용</th><th>충전기수</th><th>계약시작</th><th>계약종료</th><th>감정</th><th>담당자</th><th>상세</th></tr>'
+  document.getElementById(thId).innerHTML='<tr><th>#</th><th>시트</th><th>방문일자</th><th>사이트명</th><th>충전기수</th><th>계약시작</th><th>계약종료</th><th>영업내용</th><th>감정</th><th>담당자</th><th>상세</th></tr>'
   // 계약서 시트 사이트 목록
   var contractSites={};
   if(contractData&&contractData.rows){
@@ -651,7 +651,7 @@ function mkTable(list,thId,tbId,pageKey,q){
     var ctEnd=fv(it.row,it.headers,'계약종료')||'';
     if(ctStart&&ctStart.indexOf('T')>0)ctStart=ctStart.split('T')[0];
     if(ctEnd&&ctEnd.indexOf('T')>0)ctEnd=ctEnd.split('T')[0];
-    b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td style="max-width:200px;">'+hl(esc(it.content),q)+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td>';
+    b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td><td style="max-width:200px;">'+hl(esc(it.content),q)+'</td>';
     b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
     b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';}
   if(!list.length)b='<tr><td colspan="10"><div class="empty-msg">데이터 없음</div></td></tr>';
@@ -682,12 +682,23 @@ function renderActivity(){
   var list=filterList(q,sf,mf,shf);
   document.getElementById('actStats').innerHTML=mkStats(list);
 
-  // 계약 진행 현황
+   // 계약 진행 현황 (필터 적용)
   if(!contractData){loadContract(function(){renderActivity();});return;}
   var ctTotal=0,ct상담=0,ct제안=0,ct입대위=0,ct실사=0,ct계약=0;
   if(contractData&&contractData.rows){
     var ch2=contractData.headers;
     for(var i=0;i<contractData.rows.length;i++){
+      var sn=(fv(contractData.rows[i],ch2,'사이트명')||'').trim();
+      var mg=fv(contractData.rows[i],ch2,'담당자')||'';
+      if(mf&&mg!==mf)continue;
+      // 시트 필터: 사이트명으로 시트 매칭
+      if(shf){
+        var matched=false;
+        for(var af=0;af<allFlat.length;af++){
+          if((allFlat[af].site||'').trim()===sn&&allFlat[af].sheet===shf){matched=true;break;}
+        }
+        if(!matched)continue;
+      }
       var st=fv(contractData.rows[i],ch2,'진행사항')||'상담';
       ctTotal++;
       if(st==='상담')ct상담++;else if(st==='제안')ct제안++;else if(st==='입대위')ct입대위++;else if(st==='실사')ct실사++;else if(st==='계약')ct계약++;
@@ -696,10 +707,12 @@ function renderActivity(){
   var existSites={};
   if(contractData&&contractData.rows){
     var ch3=contractData.headers;
-    for(var i=0;i<contractData.rows.length;i++){var sn=(fv(contractData.rows[i],ch3,'사이트명')||'').trim();if(sn)existSites[sn]=1;}
+    for(var i=0;i<contractData.rows.length;i++){var sn2=(fv(contractData.rows[i],ch3,'사이트명')||'').trim();if(sn2)existSites[sn2]=1;}
   }
   for(var i=0;i<allFlat.length;i++){
     var sn=(allFlat[i].site||'').trim();
+    if(shf&&allFlat[i].sheet!==shf)continue;
+    if(mf&&allFlat[i].mgr!==mf)continue;
     if(sn&&!existSites[sn]){existSites[sn]=1;ctTotal++;ct상담++;}
   }
   var ctPct상담=ctTotal>0?Math.round(ct상담/ctTotal*100):0;
