@@ -812,10 +812,81 @@ function renderActTable(mode){
     btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;margin-left:6px;'+(active?'background:#1a73e8;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="renderActTable(\''+sns[i]+'\')">';
     btnHtml+='<span style="width:16px;height:16px;border-radius:50%;border:2px solid '+(active?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(active?'<span style="width:8px;height:8px;border-radius:50%;background:#fff;"></span>':'')+'</span> '+sns[i]+'</label>';
   }
+  btnHtml+='<button class="btn btn-sm btn-primary" style="margin-left:12px;border-radius:20px;padding:6px 16px;font-size:12px;font-weight:600;" onclick="openAddRow()">+ 행추가</button>';
   btnHtml+='</div>';
   document.getElementById('actTitle').innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;width:100%;">영업활동 목록 ('+display.length+'건)<div style="margin-left:auto;">'+btnHtml+'</div></div>';
   mkTable(display,'actTH','actTB','act',q);
 }
+  function openAddRow(){
+  editContractRow=null;
+  document.getElementById('contractModalTitle').textContent='새 행 추가';
+  document.getElementById('contractSubmitBtn').textContent='저장';
+  var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
+  for(var i=0;i<fields.length;i++){var el=document.getElementById(fields[i]);if(el)el.value='';}
+  var sheetNames=[];
+  for(var k in allSheetsData){if(k!=='계약서')sheetNames.push(k);}
+  var sdHtml='<div style="display:flex;align-items:center;padding:8px 0;border-bottom:2px solid #1a73e8;margin-bottom:8px;">';
+  sdHtml+='<div style="min-width:100px;font-weight:700;font-size:13px;color:#1a73e8;">저장할 시트</div>';
+  sdHtml+='<select id="addRowSheet" class="form-input" style="flex:1;font-size:13px;padding:4px 8px;">';
+  for(var i=0;i<sheetNames.length;i++){sdHtml+='<option value="'+sheetNames[i]+'">'+sheetNames[i]+'</option>';}
+  sdHtml+='</select></div>';
+  var firstSheet=sheetNames[0];
+  var headers=allSheetsData[firstSheet]?allSheetsData[firstSheet].headers:[];
+  var sentFields=['긍정','중립','부정'];
+  var hideFields=['재계약'];
+  var sentDone=false;
+  for(var i=0;i<headers.length;i++){
+    if(hideFields.indexOf(headers[i])>=0)continue;
+    if(sentFields.indexOf(headers[i])>=0){
+      if(!sentDone){
+        sentDone=true;
+        sdHtml+='<div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;">';
+        sdHtml+='<div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">감정상태</div>';
+        sdHtml+='<select class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" id="addRowSent">';
+        sdHtml+='<option value="">선택</option><option value="긍정">긍정</option><option value="중립">중립</option><option value="부정">부정</option><option value="기타">기타</option>';
+        sdHtml+='</select></div>';
+      }
+      continue;
+    }
+    sdHtml+='<div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;">';
+    sdHtml+='<div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">'+esc(headers[i])+'</div>';
+    sdHtml+='<input type="text" class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" id="addRow_'+i+'" data-header="'+esc(headers[i])+'" data-col="'+(i+1)+'">';
+    sdHtml+='</div>';
+  }
+  sdHtml+='<div style="text-align:right;margin-top:12px;"><button class="btn btn-primary" onclick="submitAddRow()">시트에 저장</button></div>';
+  document.getElementById('cf_sheetData').innerHTML=sdHtml;
+  document.getElementById('contractModal').classList.add('show');
+}
+
+function submitAddRow(){
+  var sheet=document.getElementById('addRowSheet').value;
+  if(!sheet){toast('시트를 선택하세요','err');return;}
+  var headers=allSheetsData[sheet]?allSheetsData[sheet].headers:[];
+  var rowData=[];
+  var sentFields=['긍정','중립','부정'];
+  var sentVal=document.getElementById('addRowSent')?document.getElementById('addRowSent').value:'';
+  for(var i=0;i<headers.length;i++){
+    if(sentFields.indexOf(headers[i])>=0){
+      rowData.push(headers[i]===sentVal?'1':'');
+    }else{
+      var el=document.getElementById('addRow_'+i);
+      rowData.push(el?el.value:'');
+    }
+  }
+  apiPost({action:'addRow',sheet:sheet,values:rowData},function(res){
+    if(res.ok){
+      toast('행 추가 완료','ok');
+      document.getElementById('contractModal').classList.remove('show');
+      apiGet({action:'getData',sheet:sheet},function(d){
+        allSheetsData[sheet]=d;
+        buildFlat();buildFilters();renderActivity();
+      });
+    }else{
+      toast('저장 실패: '+(res.msg||''),'err');
+    }
+  });
+}
+
 
 
 
