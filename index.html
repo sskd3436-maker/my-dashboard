@@ -1340,7 +1340,7 @@ function openContractFromSheet(pageKey,idx){
   var it=list[idx];if(!it)return;
   var row=it.row,h=it.headers;
   editContractRow=null;
-  document.getElementById('contractModalTitle').textContent='사이트 정';
+  document.getElementById('contractModalTitle').textContent='사이트 정보';
   document.getElementById('contractSubmitBtn').textContent='저장';
   var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
   for(var i=0;i<fields.length;i++){var el=document.getElementById(fields[i]);if(el)el.value='';}
