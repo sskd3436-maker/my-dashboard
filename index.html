@@ -647,8 +647,10 @@ function mkTable(list,thId,tbId,pageKey,q){
        if(isContract){var ctSt=contractSites[siteName]||'상담';var ctColors={'상담':'#3498db','제안':'#e67e22','입대위':'#f39c12','실사':'#9b59b6','계약':'#27ae60'};b+=' <span style="background:'+(ctColors[ctSt]||'#999')+';color:white;padding:2px 6px;border-radius:4px;font-size:10px;">'+ctSt+'</span>';}
     b+='</td>';
      var charger=fv(it.row,it.headers,'충전기수량')||'';
-    var ctStart=fv(it.row,it.headers,'계약시작')||'';
+        var ctStart=fv(it.row,it.headers,'계약시작')||'';
     var ctEnd=fv(it.row,it.headers,'계약종료')||'';
+    if(ctStart&&ctStart.indexOf('T')>0)ctStart=ctStart.split('T')[0];
+    if(ctEnd&&ctEnd.indexOf('T')>0)ctEnd=ctEnd.split('T')[0];
     b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td>';
     b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
     b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';}
