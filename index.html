@@ -632,8 +632,7 @@ function mkMgr(list){
   return h||'<div class="empty-msg">데이터 없음</div>';
 }
 function mkTable(list,thId,tbId,pageKey,q){
-  document.getElementById(thId).innerHTML='<tr><th>#</th><th>시트</th><th>방문일자</th><th>사이트명</th><th>충전기수</th><th>계약시작</th><th>계약종료</th><th>영업내용</th><th>감정</th><th>담당자</th><th>상세</th></tr>'
-  // 계약서 시트 사이트 목록
+  document.getElementById(thId).innerHTML='<tr><th>#</th><th>시트</th><th>방문일자</th><th>사이트명</th><th>충전기수</th><th>계약시작</th><th>계약종료</th><th>영업내용</th><th>감정</th><th>담당자</th><th>상세</th></tr>';
   var contractSites={};
   if(contractData&&contractData.rows){
     var ch=contractData.headers;
@@ -642,49 +641,74 @@ function mkTable(list,thId,tbId,pageKey,q){
       if(sn)contractSites[sn]=fv(contractData.rows[j],ch,'진행사항')||'상담';
     }
   }
-  var b='',show=Math.min(list.length,300);
-  for(var i=0;i<show;i++){var it=list[i],dt=it.date?fmt(it.date):fv(it.row,it.headers,'방문일자');
+  window['_d_'+pageKey]=list;
+  window['_pg_'+pageKey]=0;
+  window['_q_'+pageKey]=q;
+  window['_cs_'+pageKey]=contractSites;
+  mkTablePage(pageKey);
+}
+
+function mkTablePage(pageKey){
+  var list=window['_d_'+pageKey]||[];
+  var q=window['_q_'+pageKey]||'';
+  var contractSites=window['_cs_'+pageKey]||{};
+  var page=window['_pg_'+pageKey]||0;
+  var perPage=50;
+  var start=page*perPage;
+  var end=Math.min(start+perPage,list.length);
+  var totalPages=Math.ceil(list.length/perPage)||1;
+
+  var b='';
+  for(var i=start;i<end;i++){
+    var it=list[i],dt=it.date?fmt(it.date):fv(it.row,it.headers,'방문일자');
     var siteName=(it.site||'').trim();
     var isContract=contractSites[siteName]?true:false;
-    var rowBg='';
-    // 시트 표시 (계약서 제외)
     var sheetDisplay=it.sheet||'';
     if(it.sheets){
       var filtered=it.sheets.filter(function(s){return s!=='계약서';});
       sheetDisplay=filtered.join('<br>');
-    }else if(sheetDisplay==='계약서'){
-      sheetDisplay='';
-    }
-    b+='<tr style="'+rowBg+'">';
+    }else if(sheetDisplay==='계약서'){sheetDisplay='';}
+    b+='<tr>';
     b+='<td style="color:#999;font-size:11px;">'+(i+1)+'</td>';
     b+='<td>'+sheetDisplay.split('<br>').map(function(s){return '<span style="background:#1a73e8;color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:inline-block;margin:1px 0;">'+esc(s)+'</span>';}).join('<br>')+' ';
-       if(isContract){var ctSt=contractSites[siteName]||'상담';var ctColors={'상담':'#3498db','제안':'#e67e22','입대위':'#f39c12','실사':'#9b59b6','계약':'#27ae60'};b+=' <span style="background:'+(ctColors[ctSt]||'#999')+';color:white;padding:2px 6px;border-radius:4px;font-size:10px;">'+ctSt+'</span>';}
+    if(isContract){var ctSt=contractSites[siteName]||'상담';var ctColors={'상담':'#3498db','제안':'#e67e22','입대위':'#f39c12','실사':'#9b59b6','계약':'#27ae60'};b+=' <span style="background:'+(ctColors[ctSt]||'#999')+';color:white;padding:2px 6px;border-radius:4px;font-size:10px;">'+ctSt+'</span>';}
     b+='</td>';
-     var charger=fv(it.row,it.headers,'충전기수량')||'';
-        var ctStart=fv(it.row,it.headers,'계약시작')||'';
+    var charger=fv(it.row,it.headers,'충전기수량')||'';
+    var ctStart=fv(it.row,it.headers,'계약시작')||'';
     var ctEnd=fv(it.row,it.headers,'계약종료')||'';
     if(ctStart&&ctStart.indexOf('T')>0)ctStart=ctStart.split('T')[0];
     if(ctEnd&&ctEnd.indexOf('T')>0)ctEnd=ctEnd.split('T')[0];
     b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td><td style="max-width:200px;">'+hl(esc(it.content),q)+'</td>';
     b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
-    b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';}
-  if(!list.length)b='<tr><td colspan="10"><div class="empty-msg">데이터 없음</div></td></tr>';
-  document.getElementById(tbId).innerHTML=b;
-  window['_d_'+pageKey]=list;
-}
-function showDet(key,idx){var list=window['_d_'+key]||[];var it=list[idx];if(!it)return;
-  var row=it.row,h=it.headers;document.getElementById('detailTitle').textContent='상세 - '+it.sheet;
-  var html='';for(var i=0;i<h.length;i++){var v=row[h[i]]!==undefined?row[h[i]]:'',lo=String(v).length>40;
-    html+='<div class="detail-item'+(lo?' detail-full':'')+'"><label>'+esc(h[i])+'</label><div class="val">'+renderCell(h[i],v)+'</div></div>';}
-  document.getElementById('detailGrid').innerHTML=html;document.getElementById('detailModal').classList.add('show');}
+    b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';
+  }
+  if(!list.length)b='<tr><td colspan="11"><div class="empty-msg">데이터 없음</div></td></tr>';
 
-function filterList(q,sf,mf,shf){
-  var r=[];for(var i=0;i<allFlat.length;i++){var it=allFlat[i];
-    if(shf&&it.sheet!==shf)continue;
-    if(sf){var fs=sf==='기타'?'etc':sf==='긍정'?'positive':sf==='중립'?'neutral':'negative';if(it.sent!==fs)continue;}
-    if(mf&&it.mgr!==mf)continue;
-    if(q){var f=false,h=it.headers,row=it.row;for(var j=0;j<h.length;j++)if(String(row[h[j]]||'').toLowerCase().indexOf(q)>=0){f=true;break;}if(!f)continue;}
-    r.push(it);}return r;
+  // 페이지네이션
+  var pgHtml='<tr><td colspan="11"><div style="display:flex;justify-content:center;align-items:center;gap:4px;padding:12px 0;">';
+  pgHtml+='<button class="btn btn-sm btn-gray" onclick="goTablePage(\''+pageKey+'\',0)" '+(page===0?'disabled':'')+' style="padding:4px 10px;">◀◀</button>';
+  pgHtml+='<button class="btn btn-sm btn-gray" onclick="goTablePage(\''+pageKey+'\','+(page-1)+')" '+(page===0?'disabled':'')+' style="padding:4px 10px;">◀</button>';
+  var startPg=Math.max(0,page-2);
+  var endPg=Math.min(totalPages-1,page+2);
+  for(var p=startPg;p<=endPg;p++){
+    pgHtml+='<button class="btn btn-sm '+(p===page?'btn-primary':'btn-gray')+'" onclick="goTablePage(\''+pageKey+'\','+p+')" style="padding:4px 12px;">'+(p+1)+'</button>';
+  }
+  pgHtml+='<button class="btn btn-sm btn-gray" onclick="goTablePage(\''+pageKey+'\','+(page+1)+')" '+(page>=totalPages-1?'disabled':'')+' style="padding:4px 10px;">▶</button>';
+  pgHtml+='<button class="btn btn-sm btn-gray" onclick="goTablePage(\''+pageKey+'\','+(totalPages-1)+')" '+(page>=totalPages-1?'disabled':'')+' style="padding:4px 10px;">▶▶</button>';
+  pgHtml+='<span style="margin-left:8px;font-size:12px;color:#888;">'+(page+1)+' / '+totalPages+'</span>';
+  pgHtml+='</div></td></tr>';
+
+  var tbId=pageKey==='act'?'actTB':pageKey==='src'?'srcTB':pageKey==='daily'?'dailyTB':pageKey==='weekly'?'weeklyTB':pageKey==='monthly'?'monthlyTB':'actTB';
+  document.getElementById(tbId).innerHTML=b+pgHtml;
+}
+
+function goTablePage(pageKey,pg){
+  var list=window['_d_'+pageKey]||[];
+  var totalPages=Math.ceil(list.length/50)||1;
+  if(pg<0)pg=0;
+  if(pg>=totalPages)pg=totalPages-1;
+  window['_pg_'+pageKey]=pg;
+  mkTablePage(pageKey);
 }
 
 // ===== 영업활동 =====
