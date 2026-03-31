@@ -497,10 +497,10 @@ function init(){
   // 데이터 로드
   apiGet({action:'getSheets'},function(data){
     var sheets=data.sheets||[],loaded=0;
-    var sm=document.getElementById('sheetMenus');sm.innerHTML='';
+    var sm=document.getElementById('sheetMenus');if(sm)sm.innerHTML='';
     var actSheet=document.getElementById('actSheet');actSheet.innerHTML='<option value="">전체 시트</option>';
     for(var i=0;i<sheets.length;i++){
-      sm.innerHTML+='<div class="menu-item" onclick="goSheet(\''+sheets[i]+'\')"><span class="icon">📄</span> '+sheets[i]+'</div>';
+      if(sm)sm.innerHTML+='<div class="menu-item" onclick="goSheet(\''+sheets[i]+'\')"><span class="icon">📄</span> '+sheets[i]+'</div>';
       actSheet.innerHTML+='<option value="'+sheets[i]+'">'+sheets[i]+'</option>';
     }
     if(!sheets.length){
