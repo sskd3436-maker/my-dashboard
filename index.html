@@ -814,7 +814,7 @@ function renderActTable(mode){
     btnHtml+='<span style="width:16px;height:16px;border-radius:50%;border:2px solid '+(active?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(active?'<span style="width:8px;height:8px;border-radius:50%;background:#fff;"></span>':'')+'</span> '+sns[i]+'</label>';
   }
   btnHtml+='</div>';
-  document.getElementById('actTitle').innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;">영업활동 목록 ('+display.length+'건)'+btnHtml+'</div>';
+  document.getElementById('actTitle').innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;width:100%;">영업활동 목록 ('+display.length+'건)<div style="margin-left:auto;">'+btnHtml+'</div></div>';
   mkTable(display,'actTH','actTB','act',q);
 }
 
