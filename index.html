@@ -651,7 +651,7 @@ function mkTable(list,thId,tbId,pageKey,q){
     var ctEnd=fv(it.row,it.headers,'계약종료')||'';
     if(ctStart&&ctStart.indexOf('T')>0)ctStart=ctStart.split('T')[0];
     if(ctEnd&&ctEnd.indexOf('T')>0)ctEnd=ctEnd.split('T')[0];
-    b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td>';
+    b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td style="max-width:200px;">'+hl(esc(it.content),q)+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td>';
     b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
     b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';}
   if(!list.length)b='<tr><td colspan="10"><div class="empty-msg">데이터 없음</div></td></tr>';
