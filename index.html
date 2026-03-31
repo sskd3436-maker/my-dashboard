@@ -490,7 +490,7 @@ function init(){
   dataLoaded=false;allSheetsData={};allFlat=[];
   var n=new Date();n.setHours(0,0,0,0);
   dailyDt=new Date(n);setWeekStart(n);mYear=n.getFullYear();mMon=n.getMonth();
-  curPage='stats';
+  curPage='activity';
 
   // 로딩 표시
   document.getElementById('actStats').innerHTML='<div class="loading"><div class="spinner"></div></div>';
@@ -522,7 +522,7 @@ if(loaded>=sheets.length){
   console.log('renderActivity호출직전');
   renderActivity();
   console.log('renderActivity호출완료');
-  goPage('stats');
+  goPage('activity');
   toast('로드 완료','ok');
 }
     });})(sheets[i]);
