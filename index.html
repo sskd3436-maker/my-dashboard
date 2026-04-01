@@ -656,7 +656,7 @@ function mkTable(list,thId,tbId,pageKey,q){
     var fs=list[fi].sent||'';if(fs)sentSet[fs]=1;
     var fm=list[fi].mgr||'';if(fm)mgrSet[fm]=1;
   }
-  window['_ft_'+pageKey]={biz:'',kind:'',sent:'',mgr:''};
+  window['_ft_'+pageKey]={biz:'',kind:'',sent:'',mgr:'',visit:''};
    function mkFilter(id,label,items){
     var h='<th>'+label+' <select style="font-size:11px;padding:1px 2px;border:none;cursor:pointer;background:transparent;color:#666;vertical-align:middle;appearance:none;-webkit-appearance:none;" onchange="applyTableFilter(\''+pageKey+'\',\''+id+'\',this.value)">';
     h+='<option value="">▼</option>';
@@ -665,7 +665,7 @@ function mkTable(list,thId,tbId,pageKey,q){
     h+='</select></th>';
     return h;
   }
-  document.getElementById(thId).innerHTML='<tr><th>#</th><th>시트</th><th>방문일자</th><th>사이트명</th>'+mkFilter('biz','사업구분',bizSet)+mkFilter('kind','종류',kindSet)+'<th>충전기수</th><th>계약시작</th><th>계약종료</th><th>영업내용</th>'+mkFilter('sent','감정',sentSet)+mkFilter('mgr','담당자',mgrSet)+'<th>상세</th></tr>';
+  document.getElementById(thId).innerHTML='<tr><th>#</th><th>시트</th><th>방문일자 <select style="font-size:11px;padding:1px 2px;border:none;cursor:pointer;background:transparent;color:#666;vertical-align:middle;appearance:none;-webkit-appearance:none;" onchange="applyTableFilter(\''+pageKey+'\',\'visit\',this.value)"><option value="">▼</option><option value="방문">방문</option><option value="미방문">미방문</option></select></th><th>사이트명</th>'+mkFilter('biz','사업구분',bizSet)+mkFilter('kind','종류',kindSet)+'<th>충전기수</th><th>계약시작</th><th>계약종료</th><th>영업내용</th>'+mkFilter('sent','감정',sentSet)+mkFilter('mgr','담당자',mgrSet)+'<th>상세</th></tr>';
   var contractSites={};
   if(contractData&&contractData.rows){
     var ch=contractData.headers;
@@ -748,7 +748,7 @@ function goTablePage(pageKey,pg){
 }
 
   function applyTableFilter(pageKey,filterType,value){
-  var ft=window['_ft_'+pageKey]||{biz:'',kind:'',sent:'',mgr:''};
+  var ft=window['_ft_'+pageKey]||{biz:'',kind:'',sent:'',mgr:'',visit:''};
   ft[filterType]=value;
   window['_ft_'+pageKey]=ft;
   var origList=window['_d_'+pageKey]||[];
@@ -759,6 +759,7 @@ function goTablePage(pageKey,pg){
     if(ft.kind){var k=it.kinds?Object.values(it.kinds).join(','):fv(it.row,it.headers,'종류')||'';if(k.indexOf(ft.kind)<0)continue;}
     if(ft.sent&&it.sent!==ft.sent)continue;
     if(ft.mgr&&it.mgr!==ft.mgr)continue;
+    if(ft.visit){var dt=it.date?fmt(it.date):fv(it.row,it.headers,'방문일자')||'';if(ft.visit==='방문'&&!dt)continue;if(ft.visit==='미방문'&&dt)continue;}
     filtered.push(it);
   }
   window['_df_'+pageKey]=filtered;
