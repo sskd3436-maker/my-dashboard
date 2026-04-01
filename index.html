@@ -1488,6 +1488,17 @@ function openContractFromSheet(pageKey,idx){
   var mgr=it.mgr||fv(row,h,'담당자')||'';
   document.getElementById('cf_site').value=site;
   document.getElementById('cf_mgr').value=mgr;
+  // 계약서에서 진행사항 가져오기
+  if(contractData&&contractData.rows){
+    var ch3=contractData.headers;
+    var siteCheck=(fv(row,h,'사이트명')||'').trim();
+    for(var ci=0;ci<contractData.rows.length;ci++){
+      if((fv(contractData.rows[ci],ch3,'사이트명')||'').trim()===siteCheck){
+        document.getElementById('cf_status').value=fv(contractData.rows[ci],ch3,'진행사항')||'상담';
+        break;
+      }
+    }
+  }
   if(!document.getElementById('cf_status').value)document.getElementById('cf_status').value='상담';
 
     // 왼쪽 시트 데이터 표시 (수정 가능)
