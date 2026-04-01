@@ -269,7 +269,7 @@
 <div class="main">
   <div class="top-bar">
     <h1 id="pageTitle">📋 영업활동 조회</h1>
-    <button class="refresh-btn" onclick="init()">🔄 새로고침</button>
+    <button class="refresh-btn" onclick="refreshPage()">🔄 새로고침</button>
   </div>
   <div class="content">
 
@@ -712,6 +712,33 @@ function goTablePage(pageKey,pg){
   window['_pg_'+pageKey]=pg;
   mkTablePage(pageKey);
 }
+
+  function refreshPage(){
+  var page=curPage;
+  dataLoaded=false;
+  allSheetsData={};allFlat=[];contractData=null;
+  apiGet({action:'getSheets'},function(data){
+    var sheets=data.sheets||[],loaded=0;
+    var sm=document.getElementById('sheetMenus');if(sm)sm.innerHTML='';
+    var actSheet=document.getElementById('actSheet');actSheet.innerHTML='<option value="">전체 시트</option>';
+    for(var i=0;i<sheets.length;i++){
+      if(sm)sm.innerHTML+='<div class="menu-item" onclick="goSheet(\''+sheets[i]+'\')"><span class="icon">📄</span> '+sheets[i]+'</div>';
+      actSheet.innerHTML+='<option value="'+sheets[i]+'">'+sheets[i]+'</option>';
+    }
+    for(var i=0;i<sheets.length;i++){
+      (function(nm){apiGet({action:'getData',sheet:nm},function(d){
+        allSheetsData[nm]=d;loaded++;
+        if(loaded>=sheets.length){
+          dataLoaded=true;
+          buildFlat();buildFilters();
+          goPage(page);
+          toast('새로고침 완료','ok');
+        }
+      });})(sheets[i]);
+    }
+  });
+}
+  
   function showDet(key,idx){var list=window['_d_'+key]||[];var it=list[idx];if(!it)return;
   var row=it.row,h=it.headers;document.getElementById('detailTitle').textContent='상세 - '+it.sheet;
   var html='';for(var i=0;i<h.length;i++){var v=row[h[i]]!==undefined?row[h[i]]:'',lo=String(v).length>40;
