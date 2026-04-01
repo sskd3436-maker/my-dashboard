@@ -604,7 +604,21 @@ function buildFlat(){
           headers:h,
           sent:getRowSent(row,h),
           date:parseDate(fv(row,h,'방문일자')),
-          mgr:fv(row,h,'담당자'),
+          mgr:(function(){
+            var m=fv(row,h,'담당자')||'';
+            if(!m){
+              var area=fv(row,h,'권역별')||'';
+              var areaMgr={'수도권남동':'김준우','수도권북동':'신준명','수도권북서':'정재규','수도권남서':'전두현'};
+              if(areaMgr[area]){
+                m=areaMgr[area];
+                row['담당자']=m;
+                var mgrCol=-1;
+                for(var ci=0;ci<h.length;ci++){if(h[ci]==='담당자'){mgrCol=ci+1;break;}}
+                if(mgrCol>0){apiPost({action:'updateCell',sheet:nm,row:r+2,col:mgrCol,value:m},function(){});}
+              }
+            }
+            return m;
+          }()),
           site:fv(row,h,'사이트명'),
           content:fv(row,h,'영업내용')
         });
