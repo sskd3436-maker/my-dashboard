@@ -1628,9 +1628,19 @@ function openContractFromSheet(pageKey,idx){
   var h=window._sheetEditHeaders;
   var row=window._sheetEditRow;
   var rowData=[];
+  var areaIdx=-1,mgrIdx=-1;
+  var areaMgr={'수도권남동':'김준우','수도권북동':'신준명','수도권북서':'정재규','수도권남서':'전두현'};
   for(var i=0;i<h.length;i++){
     var val=row[h[i]]!==undefined?row[h[i]]:'';
+    if(h[i]==='권역별')areaIdx=i;
+    if(h[i]==='담당자')mgrIdx=i;
     rowData.push(String(val));
+  }
+  if(areaIdx>=0&&mgrIdx>=0){
+    var area=rowData[areaIdx]||'';
+    if(areaMgr[area]){
+      rowData[mgrIdx]=areaMgr[area];
+    }
   }
   apiPost({action:'addRow',sheet:newSheet,rowData:rowData},function(res){
     if(res.success||res.ok){
