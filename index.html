@@ -690,8 +690,8 @@ function mkTablePage(pageKey){
     b+='<td>'+sheetDisplay.split('<br>').map(function(s){var sc=sheetColors[s.trim()]||'#1a73e8';return '<span style="background:'+sc+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:inline-block;margin:1px 0;">'+esc(s)+'</span>';}).join('<br>')+' ';
     if(isContract){var ctSt=contractSites[siteName]||'상담';var ctColors={'상담':'#3498db','제안':'#e67e22','입대위':'#f39c12','실사':'#9b59b6','계약':'#27ae60'};b+=' <span style="background:'+(ctColors[ctSt]||'#999')+';color:white;padding:2px 6px;border-radius:4px;font-size:10px;">'+ctSt+'</span>';}
     b+='</td>';
-    var bizType=fv(it.row,it.headers,'사업구분')||'';
-    var kind=fv(it.row,it.headers,'종류')||'';
+    var bizType=it.bizTypes?Object.values(it.bizTypes).filter(function(v){return v;}).join(', '):fv(it.row,it.headers,'사업구분')||'';
+    var kind=it.kinds?Object.values(it.kinds).filter(function(v){return v;}).join(', '):fv(it.row,it.headers,'종류')||'';
     var charger=fv(it.row,it.headers,'충전기수량')||'';
     var ctStart=fv(it.row,it.headers,'계약시작')||'';
     var ctEnd=fv(it.row,it.headers,'계약종료')||'';
@@ -843,8 +843,10 @@ function renderActivity(){
     var sn=(list[i].site||'').trim();
     if(!sn){merged.push(list[i]);continue;}
     if(!siteMap[sn]){
-      siteMap[sn]={sheet:list[i].sheet,date:list[i].date,site:list[i].site,content:list[i].content,sent:list[i].sent,mgr:list[i].mgr,row:list[i].row,headers:list[i].headers,sheets:[list[i].sheet],contents:{},dates:{},mgrs:{},sents:{}};
+      siteMap[sn]={sheet:list[i].sheet,date:list[i].date,site:list[i].site,content:list[i].content,sent:list[i].sent,mgr:list[i].mgr,row:list[i].row,headers:list[i].headers,sheets:[list[i].sheet],contents:{},dates:{},mgrs:{},sents:{},bizTypes:{},kinds:{}};
       siteMap[sn].contents[list[i].sheet]=list[i].content||'';
+      siteMap[sn].bizTypes[list[i].sheet]=fv(list[i].row,list[i].headers,'사업구분')||'';
+      siteMap[sn].kinds[list[i].sheet]=fv(list[i].row,list[i].headers,'종류')||'';
       siteMap[sn].dates[list[i].sheet]=list[i].date||'';
       siteMap[sn].mgrs[list[i].sheet]=list[i].mgr||'';
       siteMap[sn].sents[list[i].sheet]=list[i].sent||'';
@@ -854,6 +856,8 @@ function renderActivity(){
       if(ex.sheets.indexOf(list[i].sheet)<0)ex.sheets.push(list[i].sheet);
       ex.sheet=ex.sheets.join(', ');
       ex.contents[list[i].sheet]=list[i].content||'';
+      ex.bizTypes[list[i].sheet]=fv(list[i].row,list[i].headers,'사업구분')||'';
+      ex.kinds[list[i].sheet]=fv(list[i].row,list[i].headers,'종류')||'';
       ex.dates[list[i].sheet]=list[i].date||'';
       ex.mgrs[list[i].sheet]=list[i].mgr||'';
       ex.sents[list[i].sheet]=list[i].sent||'';
@@ -879,7 +883,7 @@ function renderActTable(mode){
       display.push(it);
     }else{
       if(!it.sheets||it.sheets.indexOf(mode)<0)continue;
-      var copy={sheet:it.sheet,date:it.dates?it.dates[mode]||it.date:it.date,site:it.site,content:it.contents?it.contents[mode]||it.content:it.content,sent:it.sents?it.sents[mode]||it.sent:it.sent,mgr:it.mgrs?it.mgrs[mode]||it.mgr:it.mgr,row:it.row,headers:it.headers,sheets:it.sheets};
+      var copy={sheet:it.sheet,date:it.dates?it.dates[mode]||it.date:it.date,site:it.site,content:it.contents?it.contents[mode]||it.content:it.content,sent:it.sents?it.sents[mode]||it.sent:it.sent,mgr:it.mgrs?it.mgrs[mode]||it.mgr:it.mgr,row:it.row,headers:it.headers,sheets:it.sheets,bizTypes:it.bizTypes,kinds:it.kinds};
       display.push(copy);
     }
   }
