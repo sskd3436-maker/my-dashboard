@@ -658,13 +658,13 @@ function mkTable(list,thId,tbId,pageKey,q){
   }
   window['_ft_'+pageKey]={biz:'',kind:'',sent:'',mgr:'',visit:'',status:''};
    function mkFilter(id,label,items){
-    var h='<th>'+label+' <select style="font-size:11px;padding:1px 2px;border:none;cursor:pointer;background:transparent;color:#666;vertical-align:middle;appearance:none;-webkit-appearance:none;" onchange="applyTableFilter(\''+pageKey+'\',\''+id+'\',this.value)">';
-    h+='<option value="">▼</option>';
-    var keys=Object.keys(items).sort();
-    for(var i=0;i<keys.length;i++){h+='<option value="'+items[keys[i]]+'">'+keys[i]+'</option>';}
-    h+='</select></th>';
-    return h;
-  }
+  var h='<th>'+label+' <select style="font-size:11px;padding:1px 2px;border:none;cursor:pointer;background:transparent;color:#666;vertical-align:middle;appearance:none;-webkit-appearance:none;max-width:20px;" onchange="applyTableFilter(\''+pageKey+'\',\''+id+'\',this.value)">';
+  h+='<option value="">전체</option>';
+  var keys=Object.keys(items).sort();
+  for(var i=0;i<keys.length;i++){h+='<option value="'+items[keys[i]]+'">'+keys[i]+'</option>';}
+  h+='</select></th>';
+  return h;
+}
    var statusFlt='<select style="font-size:11px;padding:1px 2px;border:none;cursor:pointer;background:transparent;color:#666;appearance:none;-webkit-appearance:none;" onchange="applyTableFilter(\''+pageKey+'\',\'status\',this.value)"><option value="">▼</option><option value="상담">상담</option><option value="제안">제안</option><option value="입대위">입대위</option><option value="실사">실사</option><option value="계약">계약</option></select>';
   document.getElementById(thId).innerHTML='<tr><th>#</th><th>시트 '+statusFlt+'</th><th>방문일자 <select style="font-size:11px;padding:1px 2px;border:none;cursor:pointer;background:transparent;color:#666;vertical-align:middle;appearance:none;-webkit-appearance:none;" onchange="applyTableFilter(\''+pageKey+'\',\'visit\',this.value)"><option value="">▼</option><option value="방문">방문</option><option value="미방문">미방문</option></select></th><th>사이트명</th>'+mkFilter('biz','사업구분',bizSet)+mkFilter('kind','종류',kindSet)+'<th>충전기수</th><th>계약시작</th><th>계약종료</th><th>영업내용</th>'+mkFilter('sent','감정',sentSet)+mkFilter('mgr','담당자',mgrSet)+'<th>상세</th></tr>';
   var contractSites={};
