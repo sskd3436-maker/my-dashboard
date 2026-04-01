@@ -658,8 +658,8 @@ function mkTable(list,thId,tbId,pageKey,q){
   }
   window['_ft_'+pageKey]={biz:'',kind:'',sent:'',mgr:''};
   function mkFilter(id,label,items){
-    var h='<th>'+label+' <select style="font-size:10px;padding:1px;border-radius:3px;border:1px solid #ccc;cursor:pointer;" onchange="applyTableFilter(\''+pageKey+'\',\''+id+'\',this.value)">';
-    h+='<option value="">전체</option>';
+    var h='<th style="position:relative;">'+label+'<br><select style="font-size:10px;padding:2px 4px;border-radius:4px;border:1px solid #ddd;cursor:pointer;background:#f8f9fa;color:#333;appearance:none;-webkit-appearance:none;padding-right:16px;background-image:url(\'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22><path d=%22M0 0l5 6 5-6z%22 fill=%22%23666%22/></svg>\');background-repeat:no-repeat;background-position:right 4px center;" onchange="applyTableFilter(\''+pageKey+'\',\''+id+'\',this.value)">';
+    h+='<option value="">전체 ▼</option>';
     var keys=Object.keys(items).sort();
     for(var i=0;i<keys.length;i++){h+='<option value="'+keys[i]+'">'+keys[i]+'</option>';}
     h+='</select></th>';
