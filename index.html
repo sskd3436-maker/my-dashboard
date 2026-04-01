@@ -658,8 +658,8 @@ function mkTable(list,thId,tbId,pageKey,q){
   }
   window['_ft_'+pageKey]={biz:'',kind:'',sent:'',mgr:''};
    function mkFilter(id,label,items){
-    var h='<th>'+label+' <select style="font-size:0;width:14px;height:14px;border:none;cursor:pointer;background:transparent;appearance:none;-webkit-appearance:none;background-image:url(\'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22><path d=%22M0 0l5 6 5-6z%22 fill=%22%23666%22/></svg>\');background-repeat:no-repeat;background-position:center;vertical-align:middle;" onchange="applyTableFilter(\''+pageKey+'\',\''+id+'\',this.value)">';
-    h+='<option value="">전체</option>';
+    var h='<th>'+label+' <select style="font-size:11px;padding:1px 2px;border:none;cursor:pointer;background:transparent;color:#666;vertical-align:middle;" onchange="applyTableFilter(\''+pageKey+'\',\''+id+'\',this.value)">';
+    h+='<option value="">▼</option>';
     var keys=Object.keys(items).sort();
     for(var i=0;i<keys.length;i++){h+='<option value="'+keys[i]+'">'+keys[i]+'</option>';}
     h+='</select></th>';
