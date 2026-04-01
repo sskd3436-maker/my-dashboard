@@ -614,7 +614,7 @@ function buildFlat(){
                 row['담당자']=m;
                 var mgrCol=-1;
                 for(var ci=0;ci<h.length;ci++){if(h[ci]==='담당자'){mgrCol=ci+1;break;}}
-                if(mgrCol>0){apiPost({action:'updateCell',sheet:nm,row:r+2,col:mgrCol,value:m},function(){});}
+                 if(mgrCol>0){apiPost({action:'updateCell',sheet:nm,row:r+2,col:mgrCol+1,value:m},function(){});}
               }
             }
             return m;
