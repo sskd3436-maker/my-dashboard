@@ -705,8 +705,8 @@ function mkTablePage(pageKey){
     b+='<tr>';
     b+='<td style="color:#999;font-size:11px;">'+(i+1)+'</td>';
     var sheetColors={'26년만료현장':'#1a73e8','27년만료현장':'#5b9cf6'};
-    b+='<td>'+sheetDisplay.split('<br>').map(function(s){var sc=sheetColors[s.trim()]||'#1a73e8';return '<span style="background:'+sc+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:inline-block;margin:1px 0;">'+esc(s)+'</span>';}).join('<br>')+' ';
-      if(isContract){var ctSt=contractSites[siteName]||'상담';var ctColors={'상담':'#3498db','제안':'#e67e22','입대위':'#f39c12','실사':'#9b59b6','계약':'#27ae60'};var ctLabel={'상담':'상담','제안':'제안','입대위':'입대','실사':'실사','계약':'계약'};b+=' <span style="background:'+(ctColors[ctSt]||'#999')+';color:white;padding:2px 6px;border-radius:4px;font-size:10px;">'+(ctLabel[ctSt]||ctSt)+'</span>';}
+   b+='<td><div>'+sheetDisplay.split('<br>').map(function(s){var sc=sheetColors[s.trim()]||'#1a73e8';return '<span style="background:'+sc+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:inline-block;margin:1px 0;">'+esc(s)+'</span>';}).join('<br>')+'</div>';
+    if(isContract){var ctSt=contractSites[siteName]||'상담';var ctColors={'상담':'#3498db','제안':'#e67e22','입대위':'#f39c12','실사':'#9b59b6','계약':'#27ae60'};var ctLabel={'상담':'상담','제안':'제안','입대위':'입대','실사':'실사','계약':'계약'};b+='<div style="margin-top:2px;"><span style="background:'+(ctColors[ctSt]||'#999')+';color:white;padding:2px 6px;border-radius:4px;font-size:10px;">'+(ctLabel[ctSt]||ctSt)+'</span></div>';}
     b+='</td>';
     var bizType=it.bizTypes?Object.values(it.bizTypes).filter(function(v){return v;}).join(', '):fv(it.row,it.headers,'사업구분')||'';
     var kind=it.kinds?Object.values(it.kinds).filter(function(v){return v;}).join(', '):fv(it.row,it.headers,'종류')||'';
@@ -816,8 +816,8 @@ function mkTablePageFiltered(pageKey){
     var sheetColors={'26년만료현장':'#1a73e8','27년만료현장':'#5b9cf6'};
     b+='<tr>';
     b+='<td style="color:#999;font-size:11px;">'+(i+1)+'</td>';
-    b+='<td>'+sheetDisplay.split('<br>').map(function(s){var sc=sheetColors[s.trim()]||'#1a73e8';return '<span style="background:'+sc+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:inline-block;margin:1px 0;">'+esc(s)+'</span>';}).join('<br>')+' ';
-      if(isContract){var ctSt=contractSites[siteName]||'상담';var ctColors={'상담':'#3498db','제안':'#e67e22','입대위':'#f39c12','실사':'#9b59b6','계약':'#27ae60'};var ctLabel={'상담':'상담','제안':'제안','입대위':'입대','실사':'실사','계약':'계약'};b+=' <span style="background:'+(ctColors[ctSt]||'#999')+';color:white;padding:2px 6px;border-radius:4px;font-size:10px;">'+(ctLabel[ctSt]||ctSt)+'</span>';}
+    b+='<td><div>'+sheetDisplay.split('<br>').map(function(s){var sc=sheetColors[s.trim()]||'#1a73e8';return '<span style="background:'+sc+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:inline-block;margin:1px 0;">'+esc(s)+'</span>';}).join('<br>')+'</div>';
+    if(isContract){var ctSt=contractSites[siteName]||'상담';var ctColors={'상담':'#3498db','제안':'#e67e22','입대위':'#f39c12','실사':'#9b59b6','계약':'#27ae60'};var ctLabel={'상담':'상담','제안':'제안','입대위':'입대','실사':'실사','계약':'계약'};b+='<div style="margin-top:2px;"><span style="background:'+(ctColors[ctSt]||'#999')+';color:white;padding:2px 6px;border-radius:4px;font-size:10px;">'+(ctLabel[ctSt]||ctSt)+'</span></div>';}
     b+='</td>';
     var bizType=it.bizTypes?Object.values(it.bizTypes).filter(function(v){return v;}).join(', '):fv(it.row,it.headers,'사업구분')||'';
     var kind=it.kinds?Object.values(it.kinds).filter(function(v){return v;}).join(', '):fv(it.row,it.headers,'종류')||'';
