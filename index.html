@@ -1466,6 +1466,7 @@ function delContract(rowIdx){
 function openContractFromSheet(pageKey,idx){
   var list=window['_d_'+pageKey]||[];
   var it=list[idx];if(!it)return;
+  if(!contractData){loadContract(function(){openContractFromSheet(pageKey,idx);});return;}
   var row=it.row,h=it.headers;
    // 계약서에 이미 있으면 수정 모드로
   editContractRow=null;
