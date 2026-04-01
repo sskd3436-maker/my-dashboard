@@ -1531,6 +1531,13 @@ function openContractFromSheet(pageKey,idx){
 
     // 왼쪽 시트 데이터 표시 (수정 가능)
   var sdHtml='';
+  var sheetNames=[];
+  for(var k in allSheetsData){if(k!=='계약서')sheetNames.push(k);}
+  sdHtml+='<div style="display:flex;align-items:center;padding:8px 0;border-bottom:2px solid #1a73e8;margin-bottom:8px;">';
+  sdHtml+='<div style="min-width:100px;font-weight:700;font-size:13px;color:#1a73e8;">시트</div>';
+  sdHtml+='<select id="editRowSheet" class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" onchange="copyToSheet(this.value)">';
+  for(var si=0;si<sheetNames.length;si++){sdHtml+='<option value="'+sheetNames[si]+'"'+(sheetNames[si]===it.sheet?' selected':'')+'>'+sheetNames[si]+'</option>';}
+  sdHtml+='</select></div>';
   window._sheetEditRow=row;
   window._sheetEditHeaders=h;
   window._sheetEditSheet=it.sheet;
@@ -1612,6 +1619,34 @@ function openContractFromSheet(pageKey,idx){
   }
   toast('감정상태 → '+picked+' 저장','ok');
 }
+
+  function copyToSheet(newSheet){
+  var origSheet=window._sheetEditSheet;
+  if(newSheet===origSheet){return;}
+  if(!confirm(origSheet+' → '+newSheet+'로 복사하시겠습니까?'))
+  {document.getElementById('editRowSheet').value=origSheet;return;}
+  var h=window._sheetEditHeaders;
+  var row=window._sheetEditRow;
+  var rowData=[];
+  for(var i=0;i<h.length;i++){
+    var val=row[h[i]]!==undefined?row[h[i]]:'';
+    rowData.push(String(val));
+  }
+  apiPost({action:'addRow',sheet:newSheet,rowData:rowData},function(res){
+    if(res.success||res.ok){
+      toast(newSheet+'에 복사 완료','ok');
+      apiGet({action:'getData',sheet:newSheet},function(d){
+        allSheetsData[newSheet]=d;
+        buildFlat();buildFilters();renderActivity();
+      });
+    }else{
+      toast('복사 실패','err');
+      document.getElementById('editRowSheet').value=origSheet;
+    }
+  });
+}
+
+  
   function mkContractStats(siteList){
   if(!contractData){return '<div style="color:#999;font-size:13px;">계약 데이터 로딩중...</div>';}
   var ch=contractData.headers,rows=contractData.rows;
