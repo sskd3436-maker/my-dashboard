@@ -895,10 +895,10 @@ function renderActTable(mode){
   }
   sdHtml+='<div style="text-align:right;margin-top:12px;"><button class="btn btn-primary" onclick="submitAddRow()">저장</button></div>';
   document.getElementById('cf_sheetData').innerHTML=sdHtml;
-    document.getElementById('contractSubmitBtn').style.display='none';
     document.getElementById('contractSubmitBtn').style.display='';
     document.getElementById('contractSubmitBtn').style.display='';
   document.getElementById('contractModal').classList.add('show');
+    document.getElementById('contractSubmitBtn').style.display='none';
 }
 
 function submitAddRow(){
