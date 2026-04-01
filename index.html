@@ -893,7 +893,7 @@ function renderActTable(mode){
     sdHtml+='<input type="text" class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" id="addRow_'+i+'" data-header="'+esc(headers[i])+'" data-col="'+(i+1)+'">';
     sdHtml+='</div>';
   }
-  sdHtml+='<div style="text-align:right;margin-top:12px;"><button class="btn btn-primary" onclick="submitAddRow()">시트에 저장</button></div>';
+  sdHtml+='<div style="text-align:right;margin-top:12px;"><button class="btn btn-primary" onclick="submitAddRow()">저장</button></div>';
   document.getElementById('cf_sheetData').innerHTML=sdHtml;
   document.getElementById('contractModal').classList.add('show');
 }
