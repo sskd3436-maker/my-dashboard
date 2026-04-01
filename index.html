@@ -651,17 +651,17 @@ function mkTable(list,thId,tbId,pageKey,q){
    // 필터용 목록 수집
   var bizSet={},kindSet={},sentSet={},mgrSet={};
   for(var fi=0;fi<list.length;fi++){
-    var fb=fv(list[fi].row,list[fi].headers,'사업구분')||'';if(fb)bizSet[fb]=1;
-    var fk=fv(list[fi].row,list[fi].headers,'종류')||'';if(fk)kindSet[fk]=1;
-    var fs=list[fi].sent||'';if(fs)sentSet[fs]=1;
-    var fm=list[fi].mgr||'';if(fm)mgrSet[fm]=1;
+    var fb=fv(list[fi].row,list[fi].headers,'사업구분')||'';if(fb)bizSet[fb]=fb;
+    var fk=fv(list[fi].row,list[fi].headers,'종류')||'';if(fk)kindSet[fk]=fk;
+    var fs=list[fi].sent||'';if(fs){var sentLabel={'positive':'긍정','neutral':'중립','negative':'부정','etc':'기타'};sentSet[sentLabel[fs]||fs]=fs;}
+    var fm=list[fi].mgr||'';if(fm)mgrSet[fm]=fm;
   }
   window['_ft_'+pageKey]={biz:'',kind:'',sent:'',mgr:'',visit:''};
    function mkFilter(id,label,items){
     var h='<th>'+label+' <select style="font-size:11px;padding:1px 2px;border:none;cursor:pointer;background:transparent;color:#666;vertical-align:middle;appearance:none;-webkit-appearance:none;" onchange="applyTableFilter(\''+pageKey+'\',\''+id+'\',this.value)">';
     h+='<option value="">▼</option>';
     var keys=Object.keys(items).sort();
-    for(var i=0;i<keys.length;i++){h+='<option value="'+keys[i]+'">'+keys[i]+'</option>';}
+    for(var i=0;i<keys.length;i++){h+='<option value="'+items[keys[i]]+'">'+keys[i]+'</option>';}
     h+='</select></th>';
     return h;
   }
