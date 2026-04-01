@@ -714,7 +714,12 @@ function mkTablePage(pageKey){
     var ctEnd=fv(it.row,it.headers,'계약종료')||'';
     if(ctStart&&ctStart.indexOf('T')>0)ctStart=ctStart.split('T')[0];
     if(ctEnd&&ctEnd.indexOf('T')>0)ctEnd=ctEnd.split('T')[0];
-        b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td>'+esc(bizType)+'</td><td>'+esc(kind)+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td><td style="max-width:200px;">'+hl(esc(it.content),q)+'</td>';
+            var bizColors={'투자설치':'#1a73e8','자비설치/이관':'#e67e22','에버온 인프라투자':'#9b59b6'};
+    var kindColors={'구형대':'#6c757d','알박구형':'#e74c3c','알박신형':'#27ae60','신형소':'#3498db','신형대':'#2980b9','10kW':'#f39c12','이카플러그':'#8e44ad','스필_7kW':'#d35400'};
+    var bizBadge=bizType?'<span style="background:'+(bizColors[bizType]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;">'+esc(bizType)+'</span>':'';
+    var kindBadge=kind?kind.split(', ').map(function(k){return '<span style="background:'+(kindColors[k.trim()]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:inline-block;margin:1px 0;">'+esc(k)+'</span>';}).join(' '):'';
+    b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td>'+bizBadge+'</td><td>'+kindBadge+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td><td style="max-width:200px;">'+hl(esc(it.content),q)+'</td>';
+
     b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
     b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';
   }
@@ -819,7 +824,12 @@ function mkTablePageFiltered(pageKey){
     var ctEnd=fv(it.row,it.headers,'계약종료')||'';
     if(ctStart&&ctStart.indexOf('T')>0)ctStart=ctStart.split('T')[0];
     if(ctEnd&&ctEnd.indexOf('T')>0)ctEnd=ctEnd.split('T')[0];
-    b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td>'+esc(bizType)+'</td><td>'+esc(kind)+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td><td style="max-width:200px;">'+hl(esc(it.content),q)+'</td>';
+        var bizColors={'투자설치':'#1a73e8','자비설치/이관':'#e67e22','에버온 인프라투자':'#9b59b6'};
+    var kindColors={'구형대':'#6c757d','알박구형':'#e74c3c','알박신형':'#27ae60','신형소':'#3498db','신형대':'#2980b9','10kW':'#f39c12','이카플러그':'#8e44ad','스필_7kW':'#d35400'};
+    var bizBadge=bizType?'<span style="background:'+(bizColors[bizType]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;">'+esc(bizType)+'</span>':'';
+    var kindBadge=kind?kind.split(', ').map(function(k){return '<span style="background:'+(kindColors[k.trim()]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:inline-block;margin:1px 0;">'+esc(k)+'</span>';}).join(' '):'';
+    b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td>'+bizBadge+'</td><td>'+kindBadge+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td><td style="max-width:200px;">'+hl(esc(it.content),q)+'</td>';
+
     b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
     b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';
   }
