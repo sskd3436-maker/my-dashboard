@@ -648,7 +648,24 @@ function mkMgr(list){
   return h||'<div class="empty-msg">데이터 없음</div>';
 }
 function mkTable(list,thId,tbId,pageKey,q){
-  document.getElementById(thId).innerHTML='<tr><th>#</th><th>시트</th><th>방문일자</th><th>사이트명</th><th>사업구분</th><th>종류</th><th>충전기수</th><th>계약시작</th><th>계약종료</th><th>영업내용</th><th>감정</th><th>담당자</th><th>상세</th></tr>';
+   // 필터용 목록 수집
+  var bizSet={},kindSet={},sentSet={},mgrSet={};
+  for(var fi=0;fi<list.length;fi++){
+    var fb=fv(list[fi].row,list[fi].headers,'사업구분')||'';if(fb)bizSet[fb]=1;
+    var fk=fv(list[fi].row,list[fi].headers,'종류')||'';if(fk)kindSet[fk]=1;
+    var fs=list[fi].sent||'';if(fs)sentSet[fs]=1;
+    var fm=list[fi].mgr||'';if(fm)mgrSet[fm]=1;
+  }
+  window['_ft_'+pageKey]={biz:'',kind:'',sent:'',mgr:''};
+  function mkFilter(id,label,items){
+    var h='<th>'+label+' <select style="font-size:10px;padding:1px;border-radius:3px;border:1px solid #ccc;cursor:pointer;" onchange="applyTableFilter(\''+pageKey+'\',\''+id+'\',this.value)">';
+    h+='<option value="">전체</option>';
+    var keys=Object.keys(items).sort();
+    for(var i=0;i<keys.length;i++){h+='<option value="'+keys[i]+'">'+keys[i]+'</option>';}
+    h+='</select></th>';
+    return h;
+  }
+  document.getElementById(thId).innerHTML='<tr><th>#</th><th>시트</th><th>방문일자</th><th>사이트명</th>'+mkFilter('biz','사업구분',bizSet)+mkFilter('kind','종류',kindSet)+'<th>충전기수</th><th>계약시작</th><th>계약종료</th><th>영업내용</th>'+mkFilter('sent','감정',sentSet)+mkFilter('mgr','담당자',mgrSet)+'<th>상세</th></tr>';
   var contractSites={};
   if(contractData&&contractData.rows){
     var ch=contractData.headers;
@@ -729,6 +746,110 @@ function goTablePage(pageKey,pg){
   window['_pg_'+pageKey]=pg;
   mkTablePage(pageKey);
 }
+
+  function applyTableFilter(pageKey,filterType,value){
+  var ft=window['_ft_'+pageKey]||{biz:'',kind:'',sent:'',mgr:''};
+  ft[filterType]=value;
+  window['_ft_'+pageKey]=ft;
+  var origList=window['_d_'+pageKey]||[];
+  var filtered=[];
+  for(var i=0;i<origList.length;i++){
+    var it=origList[i];
+    if(ft.biz){var b=it.bizTypes?Object.values(it.bizTypes).join(','):fv(it.row,it.headers,'사업구분')||'';if(b.indexOf(ft.biz)<0)continue;}
+    if(ft.kind){var k=it.kinds?Object.values(it.kinds).join(','):fv(it.row,it.headers,'종류')||'';if(k.indexOf(ft.kind)<0)continue;}
+    if(ft.sent&&it.sent!==ft.sent)continue;
+    if(ft.mgr&&it.mgr!==ft.mgr)continue;
+    filtered.push(it);
+  }
+  window['_df_'+pageKey]=filtered;
+  window['_pg_'+pageKey]=0;
+  mkTablePageFiltered(pageKey);
+  // 필터 결과 표시
+  var summary='';
+  if(ft.biz)summary+='사업구분:'+ft.biz+' ';
+  if(ft.kind)summary+='종류:'+ft.kind+' ';
+  if(ft.sent)summary+='감정:'+ft.sent+' ';
+  if(ft.mgr)summary+='담당자:'+ft.mgr+' ';
+  var titleEl=document.getElementById('actTitle');
+  if(titleEl){
+    var existing=titleEl.innerHTML;
+    var filterTag=document.getElementById('filterSummary');
+    if(filterTag)filterTag.remove();
+    if(summary){
+      var span=document.createElement('span');
+      span.id='filterSummary';
+      span.style.cssText='font-size:12px;color:#1a73e8;font-weight:600;margin-left:12px;';
+      span.textContent='[필터: '+summary.trim()+' / '+filtered.length+'건]';
+      titleEl.appendChild(span);
+    }
+  }
+}
+
+function mkTablePageFiltered(pageKey){
+  var list=window['_df_'+pageKey]||window['_d_'+pageKey]||[];
+  var q=window['_q_'+pageKey]||'';
+  var contractSites=window['_cs_'+pageKey]||{};
+  var page=window['_pg_'+pageKey]||0;
+  var perPage=50;
+  var start=page*perPage;
+  var end=Math.min(start+perPage,list.length);
+  var totalPages=Math.ceil(list.length/perPage)||1;
+
+  var b='';
+  for(var i=start;i<end;i++){
+    var it=list[i],dt=it.date?fmt(it.date):fv(it.row,it.headers,'방문일자');
+    var siteName=(it.site||'').trim();
+    var isContract=contractSites[siteName]?true:false;
+    var sheetDisplay=it.sheet||'';
+    if(it.sheets){
+      var filtered=it.sheets.filter(function(s){return s!=='계약서';});
+      sheetDisplay=filtered.join('<br>');
+    }else if(sheetDisplay==='계약서'){sheetDisplay='';}
+    var sheetColors={'26년만료현장':'#1a73e8','27년만료현장':'#5b9cf6'};
+    b+='<tr>';
+    b+='<td style="color:#999;font-size:11px;">'+(i+1)+'</td>';
+    b+='<td>'+sheetDisplay.split('<br>').map(function(s){var sc=sheetColors[s.trim()]||'#1a73e8';return '<span style="background:'+sc+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:inline-block;margin:1px 0;">'+esc(s)+'</span>';}).join('<br>')+' ';
+    if(isContract){var ctSt=contractSites[siteName]||'상담';var ctColors={'상담':'#3498db','제안':'#e67e22','입대위':'#f39c12','실사':'#9b59b6','계약':'#27ae60'};b+=' <span style="background:'+(ctColors[ctSt]||'#999')+';color:white;padding:2px 6px;border-radius:4px;font-size:10px;">'+ctSt+'</span>';}
+    b+='</td>';
+    var bizType=it.bizTypes?Object.values(it.bizTypes).filter(function(v){return v;}).join(', '):fv(it.row,it.headers,'사업구분')||'';
+    var kind=it.kinds?Object.values(it.kinds).filter(function(v){return v;}).join(', '):fv(it.row,it.headers,'종류')||'';
+    var charger=fv(it.row,it.headers,'충전기수량')||'';
+    var ctStart=fv(it.row,it.headers,'계약시작')||'';
+    var ctEnd=fv(it.row,it.headers,'계약종료')||'';
+    if(ctStart&&ctStart.indexOf('T')>0)ctStart=ctStart.split('T')[0];
+    if(ctEnd&&ctEnd.indexOf('T')>0)ctEnd=ctEnd.split('T')[0];
+    b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td>'+esc(bizType)+'</td><td>'+esc(kind)+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td><td style="max-width:200px;">'+hl(esc(it.content),q)+'</td>';
+    b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
+    b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';
+  }
+  if(!list.length)b='<tr><td colspan="13"><div class="empty-msg">데이터 없음</div></td></tr>';
+
+  var pgHtml='<tr><td colspan="13"><div style="display:flex;justify-content:center;align-items:center;gap:4px;padding:12px 0;">';
+  pgHtml+='<button class="btn btn-sm btn-gray" onclick="goTablePageF(\''+pageKey+'\',0)" '+(page===0?'disabled':'')+'>◀◀</button>';
+  pgHtml+='<button class="btn btn-sm btn-gray" onclick="goTablePageF(\''+pageKey+'\','+(page-1)+')" '+(page===0?'disabled':'')+'>◀</button>';
+  var startPg=Math.max(0,page-2);
+  var endPg=Math.min(totalPages-1,page+2);
+  for(var p=startPg;p<=endPg;p++){
+    pgHtml+='<button class="btn btn-sm '+(p===page?'btn-primary':'btn-gray')+'" onclick="goTablePageF(\''+pageKey+'\','+p+')">'+(p+1)+'</button>';
+  }
+  pgHtml+='<button class="btn btn-sm btn-gray" onclick="goTablePageF(\''+pageKey+'\','+(page+1)+')" '+(page>=totalPages-1?'disabled':'')+'>▶</button>';
+  pgHtml+='<button class="btn btn-sm btn-gray" onclick="goTablePageF(\''+pageKey+'\','+(totalPages-1)+')" '+(page>=totalPages-1?'disabled':'')+'>▶▶</button>';
+  pgHtml+='<span style="margin-left:8px;font-size:12px;color:#888;">'+(page+1)+' / '+totalPages+'</span>';
+  pgHtml+='</div></td></tr>';
+
+  var tbId=pageKey==='act'?'actTB':pageKey==='src'?'srcTB':pageKey==='daily'?'dailyTB':pageKey==='weekly'?'weeklyTB':pageKey==='monthly'?'monthlyTB':'actTB';
+  document.getElementById(tbId).innerHTML=b+pgHtml;
+}
+
+function goTablePageF(pageKey,pg){
+  var list=window['_df_'+pageKey]||window['_d_'+pageKey]||[];
+  var totalPages=Math.ceil(list.length/50)||1;
+  if(pg<0)pg=0;
+  if(pg>=totalPages)pg=totalPages-1;
+  window['_pg_'+pageKey]=pg;
+  mkTablePageFiltered(pageKey);
+}
+
 
   function refreshPage(){
   var page=curPage;
