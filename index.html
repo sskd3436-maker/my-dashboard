@@ -770,6 +770,7 @@ b+='</td>';
   var tbId=pageKey==='act'?'actTB':pageKey==='src'?'srcTB':pageKey==='daily'?'dailyTB':pageKey==='weekly'?'weeklyTB':pageKey==='monthly'?'monthlyTB':'actTB';
   document.getElementById(tbId).innerHTML=b+pgHtml;
 }
+}
 
 function goTablePage(pageKey,pg){
   var list=window['_d_'+pageKey]||[];
