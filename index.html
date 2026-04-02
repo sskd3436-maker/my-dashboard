@@ -749,7 +749,7 @@ b+='</td>';
       var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
       b+='<td><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a></td></tr>';
     }else{
-        f(pageKey==='sch'){
+        if(pageKey==='sch'){
       var addr2=fv(it.row,it.headers,'주소')||it.site||'';
       var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
       b+='<td style="white-space:nowrap;"><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a> <button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\'sch\','+i+')">수정</button></td></tr>';
@@ -871,7 +871,7 @@ b+='</td>';
       var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
       b+='<td><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a></td></tr>';
     }else{
-        f(pageKey==='sch'){
+        if(pageKey==='sch'){
       var addr2=fv(it.row,it.headers,'주소')||it.site||'';
       var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
       b+='<td style="white-space:nowrap;"><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a> <button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\'sch\','+i+')">수정</button></td></tr>';
