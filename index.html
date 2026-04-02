@@ -1466,13 +1466,18 @@ function closeModal(id){document.getElementById(id).classList.remove('show');}
 function submitAdd(){var d=[];for(var i=0;i<sheetHeaders.length;i++)d.push(document.getElementById('af_'+i).value);apiPost({action:'addRow',sheet:nowSheet,rowData:d},function(r){if(r.success){toast('추가!','ok');closeModal('addModal');delete allSheetsData[nowSheet];buildFlat();loadSheetPage(nowSheet);}else toast('실패','fail');});}
 function delRow(sheet,row){if(!confirm('삭제?'))return;apiPost({action:'deleteRow',sheet:sheet,row:row},function(r){if(r.success){toast('삭제!','ok');delete allSheetsData[nowSheet];buildFlat();loadSheetPage(nowSheet);}else toast('실패','fail');});}
 
-// ===== 영업일정 관리 =====
+ ===== 영업일정 관리 =====
 function renderSchedule(){
-  if(!dataLoaded)return;
   var q=(document.getElementById('schSearch').value||'').toLowerCase();
-  var list=filterList(q,'',document.getElementById('schMgr').value,'');
-  mkTable(list,'schTH','schTB','sch',q);
-}
+  var mf=document.getElementById('schMgr').value;
+  var list=[];
+  for(var i=0;i<allFlat.length;i++){
+    var it=allFlat[i];
+    if(it.sheet==='계약서')continue;
+    if(mf&&it.mgr!==mf)continue;
+    if(q){var site=(it.site||'').toLowerCase();if(site.indexOf(q)<0)continue;}
+    list.push(it);
+  }
 
 // ===== 계약서 관리 =====
 var contractData=null;
