@@ -305,7 +305,6 @@
       </div>
     </div>
 
-
 <!-- ========== 계약서 관리 ========== -->
 <div class="page" id="page-contract">
   <div class="search-bar">
@@ -503,7 +502,6 @@ var nowSheet=null,sheetHeaders=[],sheetRows=[],sheetFiltered=[],sheetStartCol=2;
 var dailyDt,weekStart,mYear,mMon;
 var curPage='activity',curSubTab='all';
 
-  
 function init(){
   dataLoaded=false;allSheetsData={};allFlat=[];
   var n=new Date();n.setHours(0,0,0,0);
@@ -677,7 +675,7 @@ function mkTable(list,thId,tbId,pageKey,q){
     var fm=list[fi].mgr||'';if(fm)mgrSet[fm]=fm;
   }
   window['_ft_'+pageKey]={biz:'',kind:'',sent:'',mgr:'',visit:'',status:''};
-   var mkFilter = function(id,label,items){
+   function mkFilter(id,label,items){
   var h='<th style="white-space:nowrap;">'+label+' <select style="font-size:11px;padding:1px 2px;border:none;cursor:pointer;background:transparent;color:#666;vertical-align:middle;appearance:none;-webkit-appearance:none;" onchange="applyTableFilter(\''+pageKey+'\',\''+id+'\',this.value)">';
   h+='<option value="">▼</option>';
   var keys=Object.keys(items).sort();
@@ -770,7 +768,6 @@ b+='</td>';
 
   var tbId=pageKey==='act'?'actTB':pageKey==='src'?'srcTB':pageKey==='daily'?'dailyTB':pageKey==='weekly'?'weeklyTB':pageKey==='monthly'?'monthlyTB':'actTB';
   document.getElementById(tbId).innerHTML=b+pgHtml;
-}
 }
 
 function goTablePage(pageKey,pg){
@@ -888,7 +885,6 @@ b+='</td>';
 
   var tbId=pageKey==='act'?'actTB':pageKey==='src'?'srcTB':pageKey==='daily'?'dailyTB':pageKey==='weekly'?'weeklyTB':pageKey==='monthly'?'monthlyTB':'actTB';
   document.getElementById(tbId).innerHTML=b+pgHtml;
-}
 }
 
 function goTablePageF(pageKey,pg){
@@ -1450,7 +1446,7 @@ function drawSheet(list){
     bb+='<td><button class="btn btn-red btn-sm" onclick="delRow(\''+nowSheet+'\','+row._rowIndex+')">삭제</button></td></tr>';}
   if(!list.length)bb='<tr><td colspan="'+(sheetHeaders.length+3)+'"><div class="empty-msg">데이터 없음</div></td></tr>';
   document.getElementById('sTB').innerHTML=bb;
-
+}
 function filterSheet(){var q=(document.getElementById('sheetSearch').value||'').toLowerCase().trim();if(!q){drawSheet(sheetRows);return;}
   var r=[];for(var i=0;i<sheetRows.length;i++){var row=sheetRows[i],f=false;for(var j=0;j<sheetHeaders.length;j++)if(String(row[sheetHeaders[j]]||'').toLowerCase().indexOf(q)>=0){f=true;break;}if(f)r.push(row);}sheetFiltered=r;drawSheet(r);}
 function showSheetDet(idx){var list=sheetFiltered.length?sheetFiltered:sheetRows;var row=list[idx];if(!row)return;
@@ -1466,18 +1462,53 @@ function closeModal(id){document.getElementById(id).classList.remove('show');}
 function submitAdd(){var d=[];for(var i=0;i<sheetHeaders.length;i++)d.push(document.getElementById('af_'+i).value);apiPost({action:'addRow',sheet:nowSheet,rowData:d},function(r){if(r.success){toast('추가!','ok');closeModal('addModal');delete allSheetsData[nowSheet];buildFlat();loadSheetPage(nowSheet);}else toast('실패','fail');});}
 function delRow(sheet,row){if(!confirm('삭제?'))return;apiPost({action:'deleteRow',sheet:sheet,row:row},function(r){if(r.success){toast('삭제!','ok');delete allSheetsData[nowSheet];buildFlat();loadSheetPage(nowSheet);}else toast('실패','fail');});}
 
- ===== 영업일정 관리 =====
+
+// ===== 영업일정 관리 =====
 function renderSchedule(){
-  var q=(document.getElementById('schSearch').value||'').toLowerCase();
-  var mf=document.getElementById('schMgr').value;
-  var list=[];
-  for(var i=0;i<allFlat.length;i++){
-    var it=allFlat[i];
-    if(it.sheet==='계약서')continue;
-    if(mf&&it.mgr!==mf)continue;
-    if(q){var site=(it.site||'').toLowerCase();if(site.indexOf(q)<0)continue;}
-    list.push(it);
+  if(!dataLoaded)return;
+  var list=filterList(
+    (document.getElementById('schSearch').value||'').toLowerCase(),
+    '',
+    document.getElementById('schMgr').value,
+    ''
+  );
+  mkTable('sch',list);
+}
+  // 담당자 필터 옵션
+  var mgrSet={};
+  for(var i=0;i<allFlat.length;i++){var m=allFlat[i].mgr||'';if(m)mgrSet[m]=1;}
+  var mgrSel=document.getElementById('schMgr');
+  var curVal=mgrSel.value;
+  mgrSel.innerHTML='<option value="">전체 담당자</option>';
+  Object.keys(mgrSet).sort().forEach(function(m){mgrSel.innerHTML+='<option value="'+m+'">'+m+'</option>';});
+  mgrSel.value=curVal;
+
+  // 사이트 중복 제거 (최신 데이터 기준)
+  var siteMap={};
+  for(var i=0;i<list.length;i++){
+    var sn=(list[i].site||'').trim();
+    if(!sn)continue;
+    if(!siteMap[sn]){
+      siteMap[sn]=list[i];
+    }
   }
+  var sites=Object.values(siteMap);
+
+  document.getElementById('schTitle').textContent='영업일정 목록 ('+sites.length+'건)';
+  document.getElementById('schTH').innerHTML='<tr><th>#</th><th>사이트명</th><th>주소</th><th>충전기수</th><th>담당자</th><th>지도</th></tr>';
+  var tb='';
+  for(var i=0;i<sites.length;i++){
+    var it=sites[i];
+    var site=it.site||'';
+    var addr=fv(it.row,it.headers,'주소')||fv(it.row,it.headers,'사이트명')||'';
+    var charger=fv(it.row,it.headers,'충전기수량')||'';
+    var mgr=it.mgr||'';
+    var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr);
+    tb+='<tr><td>'+(i+1)+'</td><td>'+esc(site)+'</td><td>'+esc(addr)+'</td><td>'+esc(charger)+'</td><td>'+esc(mgr)+'</td><td><a href="'+mapUrl+'" target="_blank" class="btn btn-sm btn-blue">지도</a></td></tr>';
+  }
+  document.getElementById('schTB').innerHTML=tb||'<tr><td colspan="6" style="text-align:center;padding:40px;color:#999;">데이터가 없습니다</td></tr>';
+}
+  
 
 // ===== 계약서 관리 =====
 var contractData=null;
@@ -1593,7 +1624,6 @@ function renderContract(){
         tb+='<td><button class="btn btn-sm btn-primary" onclick="editContract('+r._rowIndex+')">수정</button> <button class="btn btn-sm btn-blue" onclick="generateContract(\'contract\','+(r._rowIndex-4)+')">계약서</button> <button class="btn btn-sm btn-red" onclick="delContract('+r._rowIndex+')">삭제</button></td>';
     tb+='</tr>';
   }
-}
   if(filtered.length===0)tb='<tr><td colspan="9"><div class="empty-msg">데이터가 없습니다</div></td></tr>';
   document.getElementById('ctTB').innerHTML=tb;
   }
@@ -1810,6 +1840,7 @@ function openContractFromSheet(pageKey,idx){
   var h=window._sheetEditHeaders;
   if(!sheet||!rowIdx){toast('시트 정보 없음','err');return;}
   var cols={'긍정':0,'중립':0,'부정':0,'기타':0};
+    if(h[i]==='긍정'||h[i]==='중립'||h[i]==='부정')cols[h[i]]=i+1;
   for(var i=0;i<h.length;i++){
     if(h[i]==='긍정'||h[i]==='중립'||h[i]==='부정')cols[h[i]]=i+1;
   }
@@ -1965,7 +1996,7 @@ function generateContract(source, idx) {
   xhr.onerror=function(){toast('네트워크 오류','fail');};
   xhr.send();
 }
-
+}
 
 window.onload=init;
   
