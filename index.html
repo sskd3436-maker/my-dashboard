@@ -124,7 +124,7 @@
     .table-box .box-header h3 { font-size: 16px; }
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 1200px; }
-    th { background: #f8f9fa; padding: 11px 6px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #e0e0e0; white-space: nowrap; }
+    th { background: #f8f9fa; padding: 11px 12px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #e0e0e0; white-space: nowrap; }
     td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
     tr:hover td { background: #f8f9ff; }
     td.editable { cursor: pointer; }
@@ -253,7 +253,6 @@
     <div class="menu-group">
       <div class="menu-group-title">영업활동관리</div>
       <div class="menu-item" onclick="goPage('activity',this)"><span class="icon">📋</span> 영업활동 조회</div>
-      <div class="menu-item" onclick="goPage('schedule',this)"><span class="icon">📍</span> 영업일정 관리</div>
     </div>
     <div class="menu-group">
       <div class="menu-group-title">계약관리</div>
@@ -328,21 +327,6 @@
     <div class="table-wrap"><table><thead id="ctTH"></thead><tbody id="ctTB"></tbody></table></div>
   </div>
 </div>
-
-<!-- ========== 영업일정 관리 ========== -->
-<div class="page" id="page-schedule">
-  <div class="search-bar">
-    <input type="text" class="search-input" id="schSearch" placeholder="🔍 사이트명 검색..." oninput="renderSchedule()">
-    <select id="schMgr" class="filter-select" onchange="renderSchedule()">
-      <option value="">전체 담당자</option>
-    </select>
-  </div>
-  <div class="table-box">
-    <div class="box-header"><h3 id="schTitle">영업일정 목록</h3></div>
-    <div class="table-wrap"><table><thead id="schTH"></thead><tbody id="schTB"></tbody></table></div>
-  </div>
-</div>
-    
     
 <!-- 계약서 작성/수정 모달 -->
 <div class="modal-overlay" id="contractModal">
@@ -571,7 +555,7 @@ function goPage(page,el){
   document.getElementById('page-'+page).classList.add('active');
   var items=document.querySelectorAll('.menu-item');for(var i=0;i<items.length;i++)items[i].classList.remove('active');
   if(el)el.classList.add('active');
-  var titles={activity:'📋 영업활동 조회',search:'🔍 검색',stats:'📊 현황 통계',sheet:'📄 시트 데이터',contract:'📋 계약서 관리',schedule:'📍 영업일정 관리'};
+ var titles={activity:'📋 영업활동 조회',search:'🔍 검색',stats:'📊 현황 통계',sheet:'📄 시트 데이터',contract:'📋 계약서 관리'};
   document.getElementById('pageTitle').textContent=titles[page]||page;
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('overlay').classList.remove('show');
@@ -579,10 +563,8 @@ function goPage(page,el){
     if(page==='activity')renderActivity();
     else if(page==='contract'){loadContract(function(){renderContract();});}
     else if(page==='stats')renderSubTab();
-    else if(page==='schedule')renderSchedule();
   }
 }
-
 
 function goSheet(name){
   nowSheet=name;curPage='sheet';
@@ -676,7 +658,7 @@ function mkTable(list,thId,tbId,pageKey,q){
   }
   window['_ft_'+pageKey]={biz:'',kind:'',sent:'',mgr:'',visit:'',status:''};
    function mkFilter(id,label,items){
-  var h='<th style="white-space:nowrap;">'+label+' <select style="font-size:11px;padding:1px 2px;border:none;cursor:pointer;background:transparent;color:#666;vertical-align:middle;appearance:none;-webkit-appearance:none;" onchange="applyTableFilter(\''+pageKey+'\',\''+id+'\',this.value)">';
+  var h='<th style="white-space:nowrap;">'+label+' <select style="font-size:11px;padding:1px 2px;border:none;cursor:pointer;background:transparent;color:#666;vertical-align:middle;" onchange="applyTableFilter(\''+pageKey+'\',\''+id+'\',this.value)">';
   h+='<option value="">▼</option>';
   var keys=Object.keys(items).sort();
   for(var i=0;i<keys.length;i++){h+='<option value="'+items[keys[i]]+'">'+keys[i]+'</option>';}
@@ -740,16 +722,8 @@ b+='</td>';
     b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td style="padding-right:2px;">'+bizBadge+'</td><td style="padding-left:2px;">'+kindBadge+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td><td style="max-width:200px;">'+hl(esc(it.content),q)+'</td>';
 
     b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
-   if(pageKey==='sch'){
-  var addr2=fv(it.row,it.headers,'주소')||it.site||'';
-  var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
-  b+='<td><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a></td></tr>';
-}else{
-  b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';
-}
-
-
-
+    b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';
+  }
   if(!list.length)b='<tr><td colspan="13"><div class="empty-msg">데이터 없음</div></td></tr>';
 
   // 페이지네이션
@@ -858,16 +832,8 @@ b+='</td>';
     var kindBadge=kind?kind.split(', ').map(function(k){return '<span style="background:'+(kindColors[k.trim()]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:inline-block;margin:1px 0;">'+esc(k)+'</span>';}).join(' '):'';
     b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td style="padding-right:2px;">'+bizBadge+'</td><td style="padding-left:2px;">'+kindBadge+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td><td style="max-width:200px;">'+hl(esc(it.content),q)+'</td>';
     b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
-    if(pageKey==='sch'){
-  var addr2=fv(it.row,it.headers,'주소')||it.site||'';
-  var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
-  b+='<td><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a></td></tr>';
-}else{
-  b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';
-}
-
-
-
+    b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';
+  }
   if(!list.length)b='<tr><td colspan="13"><div class="empty-msg">데이터 없음</div></td></tr>';
 
   var pgHtml='<tr><td colspan="13"><div style="display:flex;justify-content:center;align-items:center;gap:4px;padding:12px 0;">';
@@ -1462,53 +1428,7 @@ function closeModal(id){document.getElementById(id).classList.remove('show');}
 function submitAdd(){var d=[];for(var i=0;i<sheetHeaders.length;i++)d.push(document.getElementById('af_'+i).value);apiPost({action:'addRow',sheet:nowSheet,rowData:d},function(r){if(r.success){toast('추가!','ok');closeModal('addModal');delete allSheetsData[nowSheet];buildFlat();loadSheetPage(nowSheet);}else toast('실패','fail');});}
 function delRow(sheet,row){if(!confirm('삭제?'))return;apiPost({action:'deleteRow',sheet:sheet,row:row},function(r){if(r.success){toast('삭제!','ok');delete allSheetsData[nowSheet];buildFlat();loadSheetPage(nowSheet);}else toast('실패','fail');});}
 
-
-// ===== 영업일정 관리 =====
-function renderSchedule(){
-  if(!dataLoaded)return;
-  var list=filterList(
-    (document.getElementById('schSearch').value||'').toLowerCase(),
-    '',
-    document.getElementById('schMgr').value,
-    ''
-  );
-  mkTable('sch',list);
-}
-  // 담당자 필터 옵션
-  var mgrSet={};
-  for(var i=0;i<allFlat.length;i++){var m=allFlat[i].mgr||'';if(m)mgrSet[m]=1;}
-  var mgrSel=document.getElementById('schMgr');
-  var curVal=mgrSel.value;
-  mgrSel.innerHTML='<option value="">전체 담당자</option>';
-  Object.keys(mgrSet).sort().forEach(function(m){mgrSel.innerHTML+='<option value="'+m+'">'+m+'</option>';});
-  mgrSel.value=curVal;
-
-  // 사이트 중복 제거 (최신 데이터 기준)
-  var siteMap={};
-  for(var i=0;i<list.length;i++){
-    var sn=(list[i].site||'').trim();
-    if(!sn)continue;
-    if(!siteMap[sn]){
-      siteMap[sn]=list[i];
-    }
-  }
-  var sites=Object.values(siteMap);
-
-  document.getElementById('schTitle').textContent='영업일정 목록 ('+sites.length+'건)';
-  document.getElementById('schTH').innerHTML='<tr><th>#</th><th>사이트명</th><th>주소</th><th>충전기수</th><th>담당자</th><th>지도</th></tr>';
-  var tb='';
-  for(var i=0;i<sites.length;i++){
-    var it=sites[i];
-    var site=it.site||'';
-    var addr=fv(it.row,it.headers,'주소')||fv(it.row,it.headers,'사이트명')||'';
-    var charger=fv(it.row,it.headers,'충전기수량')||'';
-    var mgr=it.mgr||'';
-    var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr);
-    tb+='<tr><td>'+(i+1)+'</td><td>'+esc(site)+'</td><td>'+esc(addr)+'</td><td>'+esc(charger)+'</td><td>'+esc(mgr)+'</td><td><a href="'+mapUrl+'" target="_blank" class="btn btn-sm btn-blue">지도</a></td></tr>';
-  }
-  document.getElementById('schTB').innerHTML=tb||'<tr><td colspan="6" style="text-align:center;padding:40px;color:#999;">데이터가 없습니다</td></tr>';
-}
-  
+window.onload=init;
 
 // ===== 계약서 관리 =====
 var contractData=null;
@@ -1996,9 +1916,7 @@ function generateContract(source, idx) {
   xhr.onerror=function(){toast('네트워크 오류','fail');};
   xhr.send();
 }
-}
 
-window.onload=init;
   
 </script>
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.6/dist/pizzip.js"></script>
