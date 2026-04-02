@@ -675,7 +675,7 @@ function mkTable(list,thId,tbId,pageKey,q){
     var fm=list[fi].mgr||'';if(fm)mgrSet[fm]=fm;
   }
   window['_ft_'+pageKey]={biz:'',kind:'',sent:'',mgr:'',visit:'',status:''};
-   function mkFilter(id,label,items){
+   var mkFilter = function(id,label,items){
   var h='<th style="white-space:nowrap;">'+label+' <select style="font-size:11px;padding:1px 2px;border:none;cursor:pointer;background:transparent;color:#666;vertical-align:middle;appearance:none;-webkit-appearance:none;" onchange="applyTableFilter(\''+pageKey+'\',\''+id+'\',this.value)">';
   h+='<option value="">▼</option>';
   var keys=Object.keys(items).sort();
@@ -698,7 +698,7 @@ function mkTable(list,thId,tbId,pageKey,q){
   window['_q_'+pageKey]=q;
   window['_cs_'+pageKey]=contractSites;
   mkTablePage(pageKey);
-}}
+}
 
 function mkTablePage(pageKey){
   var list=window['_d_'+pageKey]||[];
