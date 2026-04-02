@@ -502,6 +502,7 @@ var nowSheet=null,sheetHeaders=[],sheetRows=[],sheetFiltered=[],sheetStartCol=2;
 var dailyDt,weekStart,mYear,mMon;
 var curPage='activity',curSubTab='all';
 
+  }
 function init(){
   dataLoaded=false;allSheetsData={};allFlat=[];
   var n=new Date();n.setHours(0,0,0,0);
@@ -1446,7 +1447,7 @@ function drawSheet(list){
     bb+='<td><button class="btn btn-red btn-sm" onclick="delRow(\''+nowSheet+'\','+row._rowIndex+')">삭제</button></td></tr>';}
   if(!list.length)bb='<tr><td colspan="'+(sheetHeaders.length+3)+'"><div class="empty-msg">데이터 없음</div></td></tr>';
   document.getElementById('sTB').innerHTML=bb;
-}
+
 function filterSheet(){var q=(document.getElementById('sheetSearch').value||'').toLowerCase().trim();if(!q){drawSheet(sheetRows);return;}
   var r=[];for(var i=0;i<sheetRows.length;i++){var row=sheetRows[i],f=false;for(var j=0;j<sheetHeaders.length;j++)if(String(row[sheetHeaders[j]]||'').toLowerCase().indexOf(q)>=0){f=true;break;}if(f)r.push(row);}sheetFiltered=r;drawSheet(r);}
 function showSheetDet(idx){var list=sheetFiltered.length?sheetFiltered:sheetRows;var row=list[idx];if(!row)return;
@@ -1578,6 +1579,7 @@ function renderContract(){
         tb+='<td><button class="btn btn-sm btn-primary" onclick="editContract('+r._rowIndex+')">수정</button> <button class="btn btn-sm btn-blue" onclick="generateContract(\'contract\','+(r._rowIndex-4)+')">계약서</button> <button class="btn btn-sm btn-red" onclick="delContract('+r._rowIndex+')">삭제</button></td>';
     tb+='</tr>';
   }
+}
   if(filtered.length===0)tb='<tr><td colspan="9"><div class="empty-msg">데이터가 없습니다</div></td></tr>';
   document.getElementById('ctTB').innerHTML=tb;
   }
