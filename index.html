@@ -751,7 +751,6 @@ b+='</td>';
     }else{
       b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';
     }
-    }
   }
   if(!list.length)b='<tr><td colspan="13"><div class="empty-msg">데이터 없음</div></td></tr>';
 
@@ -867,7 +866,6 @@ b+='</td>';
       b+='<td style="white-space:nowrap;"><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a> <button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\'sch\','+i+')">수정</button></td></tr>';
     }else{
       b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';
-    }
     }
   }
   if(!list.length)b='<tr><td colspan="13"><div class="empty-msg">데이터 없음</div></td></tr>';
