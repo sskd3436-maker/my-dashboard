@@ -305,6 +305,14 @@
       </div>
     </div>
 
+    // ===== 영업일정 관리 =====
+function renderSchedule(){
+  if(!dataLoaded)return;
+  var q=(document.getElementById('schSearch').value||'').toLowerCase();
+  var list=filterList(q,'',document.getElementById('schMgr').value,'');
+  mkTable(list,'schTH','schTB','sch',q);
+}
+
 <!-- ========== 계약서 관리 ========== -->
 <div class="page" id="page-contract">
   <div class="search-bar">
