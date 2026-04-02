@@ -1462,7 +1462,6 @@ function closeModal(id){document.getElementById(id).classList.remove('show');}
 function submitAdd(){var d=[];for(var i=0;i<sheetHeaders.length;i++)d.push(document.getElementById('af_'+i).value);apiPost({action:'addRow',sheet:nowSheet,rowData:d},function(r){if(r.success){toast('추가!','ok');closeModal('addModal');delete allSheetsData[nowSheet];buildFlat();loadSheetPage(nowSheet);}else toast('실패','fail');});}
 function delRow(sheet,row){if(!confirm('삭제?'))return;apiPost({action:'deleteRow',sheet:sheet,row:row},function(r){if(r.success){toast('삭제!','ok');delete allSheetsData[nowSheet];buildFlat();loadSheetPage(nowSheet);}else toast('실패','fail');});}
 
-window.onload=init;
 
 // ===== 영업일정 관리 =====
 function renderSchedule(){
@@ -1999,6 +1998,7 @@ function generateContract(source, idx) {
 }
 }
 
+window.onload=init;
   
 </script>
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.6/dist/pizzip.js"></script>
