@@ -305,13 +305,6 @@
       </div>
     </div>
 
-    // ===== 영업일정 관리 =====
-function renderSchedule(){
-  if(!dataLoaded)return;
-  var q=(document.getElementById('schSearch').value||'').toLowerCase();
-  var list=filterList(q,'',document.getElementById('schMgr').value,'');
-  mkTable(list,'schTH','schTB','sch',q);
-}
 
 <!-- ========== 계약서 관리 ========== -->
 <div class="page" id="page-contract">
@@ -1473,7 +1466,13 @@ function closeModal(id){document.getElementById(id).classList.remove('show');}
 function submitAdd(){var d=[];for(var i=0;i<sheetHeaders.length;i++)d.push(document.getElementById('af_'+i).value);apiPost({action:'addRow',sheet:nowSheet,rowData:d},function(r){if(r.success){toast('추가!','ok');closeModal('addModal');delete allSheetsData[nowSheet];buildFlat();loadSheetPage(nowSheet);}else toast('실패','fail');});}
 function delRow(sheet,row){if(!confirm('삭제?'))return;apiPost({action:'deleteRow',sheet:sheet,row:row},function(r){if(r.success){toast('삭제!','ok');delete allSheetsData[nowSheet];buildFlat();loadSheetPage(nowSheet);}else toast('실패','fail');});}
 
-
+// ===== 영업일정 관리 =====
+function renderSchedule(){
+  if(!dataLoaded)return;
+  var q=(document.getElementById('schSearch').value||'').toLowerCase();
+  var list=filterList(q,'',document.getElementById('schMgr').value,'');
+  mkTable(list,'schTH','schTB','sch',q);
+}
 
 // ===== 계약서 관리 =====
 var contractData=null;
