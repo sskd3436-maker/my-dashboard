@@ -1803,7 +1803,7 @@ function openContractFromSheet(pageKey,idx){
   var it=list[idx];if(!it)return;
   if(!contractData){loadContract(function(){openContractFromSheet(pageKey,idx);});return;}
   var row=it.row,h=it.headers;
-   // 계약서에 이미 있으면 수정 모드로
+  // 계약서에 이미 있으면 수정 모드로
   editContractRow=null;
   if(contractData&&contractData.rows){
     var ch2=contractData.headers;
@@ -1815,7 +1815,9 @@ function openContractFromSheet(pageKey,idx){
       }
     }
   }
-  document.getElementById('contractModalTitle').textContent='사이트 정보';
+
+  var isSch=(pageKey==='sch');
+  document.getElementById('contractModalTitle').textContent=isSch?'시트 데이터 수정':'사이트 정보';
   document.getElementById('contractSubmitBtn').textContent='저장';
   var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
   for(var i=0;i<fields.length;i++){var el=document.getElementById(fields[i]);if(el)el.value='';}
@@ -1836,7 +1838,7 @@ function openContractFromSheet(pageKey,idx){
   }
   if(!document.getElementById('cf_status').value)document.getElementById('cf_status').value='상담';
 
-    // 왼쪽 시트 데이터 표시 (수정 가능)
+  // 왼쪽 시트 데이터 표시 (수정 가능)
   var sdHtml='';
   var sheetNames=[];
   for(var k in allSheetsData){if(k!=='계약서')sheetNames.push(k);}
@@ -1884,9 +1886,22 @@ function openContractFromSheet(pageKey,idx){
 
   document.getElementById('cf_sheetData').innerHTML=sdHtml;
 
+  // sch일 때: 계약서 부분 숨기고 모달 크기 축소
+  var contractFormRight=document.querySelector('#contractForm > div:nth-child(2)');
+  var modalBox=document.querySelector('#contractModal .modal');
+  if(isSch){
+    if(contractFormRight)contractFormRight.style.display='none';
+    if(modalBox)modalBox.style.maxWidth='600px';
+    document.getElementById('contractSubmitBtn').style.display='none';
+  }else{
+    if(contractFormRight)contractFormRight.style.display='';
+    if(modalBox)modalBox.style.maxWidth='1200px';
+    document.getElementById('contractSubmitBtn').style.display='';
+  }
+
   document.getElementById('contractModal').classList.add('show');
-  document.getElementById('contractSubmitBtn').style.display='';
 }
+
 
   function updateSheetCell(el){
   var col=parseInt(el.getAttribute('data-col'));
