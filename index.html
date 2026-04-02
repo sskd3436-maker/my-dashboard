@@ -743,19 +743,15 @@ b+='</td>';
     var kindBadge=kind?kind.split(', ').map(function(k){return '<span style="background:'+(kindColors[k.trim()]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:inline-block;margin:1px 0;">'+esc(k)+'</span>';}).join(' '):'';
     b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td style="padding-right:2px;">'+bizBadge+'</td><td style="padding-left:2px;">'+kindBadge+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td><td style="max-width:200px;">'+hl(esc(it.content),q)+'</td>';
 
-    b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
-     if(pageKey==='sch'){
-      var addr2=fv(it.row,it.headers,'주소')||it.site||'';
-      var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
-      b+='<td><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a></td></tr>';
-    }else{
-        if(pageKey==='sch'){
+        b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
+    if(pageKey==='sch'){
       var addr2=fv(it.row,it.headers,'주소')||it.site||'';
       var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
       b+='<td style="white-space:nowrap;"><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a> <button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\'sch\','+i+')">수정</button></td></tr>';
     }else{
       b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';
     }
+
     }
   }
   if(!list.length)b='<tr><td colspan="13"><div class="empty-msg">데이터 없음</div></td></tr>';
@@ -865,19 +861,15 @@ b+='</td>';
     var bizBadge=bizType?'<span style="background:'+(bizColors[bizType]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;">'+esc(bizType)+'</span>':'';
     var kindBadge=kind?kind.split(', ').map(function(k){return '<span style="background:'+(kindColors[k.trim()]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:inline-block;margin:1px 0;">'+esc(k)+'</span>';}).join(' '):'';
     b+='<td>'+hl(esc(dt),q)+'</td><td>'+hl(esc(it.site),q)+'</td><td style="padding-right:2px;">'+bizBadge+'</td><td style="padding-left:2px;">'+kindBadge+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td><td style="max-width:200px;">'+hl(esc(it.content),q)+'</td>';
-    b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
-     if(pageKey==='sch'){
-      var addr2=fv(it.row,it.headers,'주소')||it.site||'';
-      var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
-      b+='<td><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a></td></tr>';
-    }else{
-        if(pageKey==='sch'){
+       b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
+    if(pageKey==='sch'){
       var addr2=fv(it.row,it.headers,'주소')||it.site||'';
       var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
       b+='<td style="white-space:nowrap;"><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a> <button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\'sch\','+i+')">수정</button></td></tr>';
     }else{
       b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';
     }
+
     }
   }
   if(!list.length)b='<tr><td colspan="13"><div class="empty-msg">데이터 없음</div></td></tr>';
