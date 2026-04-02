@@ -1466,13 +1466,9 @@ function delRow(sheet,row){if(!confirm('삭제?'))return;apiPost({action:'delete
 // ===== 영업일정 관리 =====
 function renderSchedule(){
   if(!dataLoaded)return;
-  var list=filterList(
-    (document.getElementById('schSearch').value||'').toLowerCase(),
-    '',
-    document.getElementById('schMgr').value,
-    ''
-  );
-  mkTable('sch',list);
+  var q=(document.getElementById('schSearch').value||'').toLowerCase();
+  var list=filterList(q,'',document.getElementById('schMgr').value,'');
+  mkTable(list,'schTH','schTB','sch',q);
 }
   // 담당자 필터 옵션
   var mgrSet={};
