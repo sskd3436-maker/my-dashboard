@@ -332,13 +332,17 @@
 <!-- ========== 영업일정 관리 ========== -->
 <div class="page" id="page-schedule">
   <div class="search-bar">
-    <input type="text" class="search-input" id="schSearch" placeholder="🔍 사이트명 검색..." oninput="renderSchedule()">
-    <select id="schMgr" class="filter-select" onchange="renderSchedule()">
-      <option value="">전체 담당자</option>
+    <input type="text" class="search-input" id="schSearch" placeholder="🔍 사이트명, 담당자, 내용 검색..." oninput="renderSchedule()">
+    <select class="filter-select" id="schSent" onchange="renderSchedule()">
+      <option value="">전체 감정</option><option value="긍정">긍정</option><option value="중립">중립</option><option value="부정">부정</option><option value="기타">기타(재계약)</option>
     </select>
+    <select class="filter-select" id="schMgr" onchange="renderSchedule()"><option value="">전체 담당자</option></select>
+    <select class="filter-select" id="schSheet" onchange="renderSchedule()"><option value="">전체 시트</option></select>
   </div>
+  <div class="stats-grid" id="schStats"></div>
+  <div class="section-box" id="schContractStats" style="margin-bottom:16px;"><h3>📋 계약 진행 현황</h3><div id="schContractArea"></div></div>
   <div class="table-box">
-    <div class="box-header"><h3 id="schTitle">영업일정 목록</h3></div>
+    <div id="schTitle" style="font-size:16px;font-weight:700;padding:16px 20px;"></div>
     <div class="table-wrap"><table><thead id="schTH"></thead><tbody id="schTB"></tbody></table></div>
   </div>
 </div>
@@ -745,10 +749,10 @@ b+='</td>';
       var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
       b+='<td><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a></td></tr>';
     }else{
-        if(pageKey==='sch'){
+        f(pageKey==='sch'){
       var addr2=fv(it.row,it.headers,'주소')||it.site||'';
       var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
-      b+='<td><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a></td></tr>';
+      b+='<td style="white-space:nowrap;"><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a> <button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\'sch\','+i+')">수정</button></td></tr>';
     }else{
       b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';
     }
@@ -867,10 +871,10 @@ b+='</td>';
       var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
       b+='<td><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a></td></tr>';
     }else{
-        if(pageKey==='sch'){
+        f(pageKey==='sch'){
       var addr2=fv(it.row,it.headers,'주소')||it.site||'';
       var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
-      b+='<td><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a></td></tr>';
+      b+='<td style="white-space:nowrap;"><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a> <button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\'sch\','+i+')">수정</button></td></tr>';
     }else{
       b+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromSheet(\''+pageKey+'\','+i+')">보기</button></td></tr>';
     }
@@ -1475,8 +1479,12 @@ window.onload=init;
 // ===== 영업일정 관리 =====
 function renderSchedule(){
   if(!dataLoaded)return;
-  var q=(document.getElementById('schSearch').value||'').toLowerCase();
+  var q=(document.getElementById('schSearch').value||'').toLowerCase().trim();
+  var sf=document.getElementById('schSent').value;
   var mf=document.getElementById('schMgr').value;
+  var shf=document.getElementById('schSheet').value;
+  var list=filterList(q,sf,mf,shf);
+  document.getElementById('schStats').innerHTML=mkStats(list);
 
   // 담당자 필터 옵션
   var mgrSet={};
@@ -1487,9 +1495,103 @@ function renderSchedule(){
   Object.keys(mgrSet).sort().forEach(function(m){mgrSel.innerHTML+='<option value="'+m+'">'+m+'</option>';});
   mgrSel.value=curVal;
 
-  var list=filterList(q,'',mf,'');
-  document.getElementById('schTitle').textContent='영업일정 목록 ('+list.length+'건)';
-  mkTable(list,'schTH','schTB','sch',q);
+  // 시트 필터 옵션
+  var sheetSet={};
+  for(var i=0;i<allFlat.length;i++){var s=allFlat[i].sheet;if(s&&s!=='계약서')sheetSet[s]=1;}
+  var sheetSel=document.getElementById('schSheet');
+  var curSheet=sheetSel.value;
+  sheetSel.innerHTML='<option value="">전체 시트</option>';
+  Object.keys(sheetSet).sort().forEach(function(s){sheetSel.innerHTML+='<option value="'+s+'">'+s+'</option>';});
+  sheetSel.value=curSheet;
+
+  // 계약 진행 현황
+  if(!contractData){loadContract(function(){renderSchedule();});return;}
+  var ctTotal=0,ct상담=0,ct제안=0,ct입대위=0,ct실사=0,ct계약=0;
+  if(contractData&&contractData.rows){
+    var ch2=contractData.headers;
+    for(var i=0;i<contractData.rows.length;i++){
+      var sn=(fv(contractData.rows[i],ch2,'사이트명')||'').trim();
+      var mg=fv(contractData.rows[i],ch2,'담당자')||'';
+      if(mf&&mg!==mf)continue;
+      if(shf){
+        var matched=false;
+        for(var af=0;af<allFlat.length;af++){
+          if((allFlat[af].site||'').trim()===sn&&allFlat[af].sheet===shf){matched=true;break;}
+        }
+        if(!matched)continue;
+      }
+      var st=fv(contractData.rows[i],ch2,'진행사항')||'상담';
+      ctTotal++;
+      if(st==='상담')ct상담++;else if(st==='제안')ct제안++;else if(st==='입대위')ct입대위++;else if(st==='실사')ct실사++;else if(st==='계약')ct계약++;
+    }
+  }
+  var existSites={};
+  if(contractData&&contractData.rows){
+    var ch3=contractData.headers;
+    for(var i=0;i<contractData.rows.length;i++){var sn2=(fv(contractData.rows[i],ch3,'사이트명')||'').trim();if(sn2)existSites[sn2]=1;}
+  }
+  for(var i=0;i<allFlat.length;i++){
+    var sn=(allFlat[i].site||'').trim();
+    if(shf&&allFlat[i].sheet!==shf)continue;
+    if(mf&&allFlat[i].mgr!==mf)continue;
+    if(sn&&!existSites[sn]){existSites[sn]=1;ctTotal++;ct상담++;}
+  }
+  var ctPct상담=ctTotal>0?Math.round(ct상담/ctTotal*100):0;
+  var ctPct제안=ctTotal>0?Math.round(ct제안/ctTotal*100):0;
+  var ctPct입대위=ctTotal>0?Math.round(ct입대위/ctTotal*100):0;
+  var ctPct실사=ctTotal>0?Math.round(ct실사/ctTotal*100):0;
+  var ctPct계약=ctTotal>0?Math.round(ct계약/ctTotal*100):0;
+  var ctHtml='<div style="display:flex;gap:12px;margin-bottom:12px;">';
+  ctHtml+='<div style="flex:1;background:#eff6ff;border-radius:8px;padding:12px;text-align:center;border-top:4px solid #3498db;"><div style="font-size:12px;color:#3498db;font-weight:700;">상담</div><div style="font-size:28px;font-weight:800;color:#3498db;">'+ct상담+'</div><div style="font-size:11px;color:#888;">'+ctPct상담+'%</div></div>';
+  ctHtml+='<div style="flex:1;background:#fef5ee;border-radius:8px;padding:12px;text-align:center;border-top:4px solid #e67e22;"><div style="font-size:12px;color:#e67e22;font-weight:700;">제안</div><div style="font-size:28px;font-weight:800;color:#e67e22;">'+ct제안+'</div><div style="font-size:11px;color:#888;">'+ctPct제안+'%</div></div>';
+  ctHtml+='<div style="flex:1;background:#fff8ee;border-radius:8px;padding:12px;text-align:center;border-top:4px solid #f39c12;"><div style="font-size:12px;color:#f39c12;font-weight:700;">입대위</div><div style="font-size:28px;font-weight:800;color:#f39c12;">'+ct입대위+'</div><div style="font-size:11px;color:#888;">'+ctPct입대위+'%</div></div>';
+  ctHtml+='<div style="flex:1;background:#f5f0ff;border-radius:8px;padding:12px;text-align:center;border-top:4px solid #9b59b6;"><div style="font-size:12px;color:#9b59b6;font-weight:700;">실사</div><div style="font-size:28px;font-weight:800;color:#9b59b6;">'+ct실사+'</div><div style="font-size:11px;color:#888;">'+ctPct실사+'%</div></div>';
+  ctHtml+='<div style="flex:1;background:#eefbf3;border-radius:8px;padding:12px;text-align:center;border-top:4px solid #27ae60;"><div style="font-size:12px;color:#27ae60;font-weight:700;">계약</div><div style="font-size:28px;font-weight:800;color:#27ae60;">'+ct계약+'</div><div style="font-size:11px;color:#888;">'+ctPct계약+'%</div></div>';
+  ctHtml+='</div>';
+  ctHtml+='<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12px;color:#666;font-weight:600;">총 '+ctTotal+'건</span>';
+  ctHtml+='<div style="flex:1;height:8px;background:#eee;border-radius:4px;overflow:hidden;display:flex;">';
+  ctHtml+='<div style="width:'+ctPct상담+'%;background:#3498db;"></div>';
+  ctHtml+='<div style="width:'+ctPct제안+'%;background:#e67e22;"></div>';
+  ctHtml+='<div style="width:'+ctPct입대위+'%;background:#f39c12;"></div>';
+  ctHtml+='<div style="width:'+ctPct실사+'%;background:#9b59b6;"></div>';
+  ctHtml+='<div style="width:'+ctPct계약+'%;background:#27ae60;"></div>';
+  ctHtml+='</div></div>';
+  document.getElementById('schContractArea').innerHTML=ctHtml;
+
+  // 사이트명 기준 합치기
+  var siteMap={};
+  var merged=[];
+  for(var i=0;i<list.length;i++){
+    var sn=(list[i].site||'').trim();
+    if(!sn){merged.push(list[i]);continue;}
+    if(!siteMap[sn]){
+      siteMap[sn]={sheet:list[i].sheet,date:list[i].date,site:list[i].site,content:list[i].content,sent:list[i].sent,mgr:list[i].mgr,row:list[i].row,headers:list[i].headers,sheets:[list[i].sheet],contents:{},dates:{},mgrs:{},sents:{},bizTypes:{},kinds:{}};
+      siteMap[sn].contents[list[i].sheet]=list[i].content||'';
+      siteMap[sn].bizTypes[list[i].sheet]=fv(list[i].row,list[i].headers,'사업구분')||'';
+      siteMap[sn].kinds[list[i].sheet]=fv(list[i].row,list[i].headers,'종류')||'';
+      siteMap[sn].dates[list[i].sheet]=list[i].date||'';
+      siteMap[sn].mgrs[list[i].sheet]=list[i].mgr||'';
+      siteMap[sn].sents[list[i].sheet]=list[i].sent||'';
+      merged.push(siteMap[sn]);
+    }else{
+      var ex=siteMap[sn];
+      if(ex.sheets.indexOf(list[i].sheet)<0)ex.sheets.push(list[i].sheet);
+      ex.sheet=ex.sheets.join(', ');
+      ex.contents[list[i].sheet]=list[i].content||'';
+      ex.bizTypes[list[i].sheet]=fv(list[i].row,list[i].headers,'사업구분')||'';
+      ex.kinds[list[i].sheet]=fv(list[i].row,list[i].headers,'종류')||'';
+      ex.dates[list[i].sheet]=list[i].date||'';
+      ex.mgrs[list[i].sheet]=list[i].mgr||'';
+      ex.sents[list[i].sheet]=list[i].sent||'';
+      if(list[i].date&&(!ex.date||list[i].date>ex.date)){ex.date=list[i].date;ex.row=list[i].row;ex.headers=list[i].headers;}
+      if(list[i].content&&!ex.content)ex.content=list[i].content;
+      if(list[i].mgr&&!ex.mgr)ex.mgr=list[i].mgr;
+      if(list[i].sent&&!ex.sent)ex.sent=list[i].sent;
+    }
+  }
+
+  document.getElementById('schTitle').innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;width:100%;">영업일정 목록 ('+merged.length+'건)</div>';
+  mkTable(merged,'schTH','schTB','sch',q);
 }
 
   
