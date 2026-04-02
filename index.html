@@ -1463,48 +1463,6 @@ function submitAdd(){var d=[];for(var i=0;i<sheetHeaders.length;i++)d.push(docum
 function delRow(sheet,row){if(!confirm('삭제?'))return;apiPost({action:'deleteRow',sheet:sheet,row:row},function(r){if(r.success){toast('삭제!','ok');delete allSheetsData[nowSheet];buildFlat();loadSheetPage(nowSheet);}else toast('실패','fail');});}
 
 
-// ===== 영업일정 관리 =====
-function renderSchedule(){
-  if(!dataLoaded)return;
-  var q=(document.getElementById('schSearch').value||'').toLowerCase();
-  var list=filterList(q,'',document.getElementById('schMgr').value,'');
-  mkTable(list,'schTH','schTB','sch',q);
-}
-  // 담당자 필터 옵션
-  var mgrSet={};
-  for(var i=0;i<allFlat.length;i++){var m=allFlat[i].mgr||'';if(m)mgrSet[m]=1;}
-  var mgrSel=document.getElementById('schMgr');
-  var curVal=mgrSel.value;
-  mgrSel.innerHTML='<option value="">전체 담당자</option>';
-  Object.keys(mgrSet).sort().forEach(function(m){mgrSel.innerHTML+='<option value="'+m+'">'+m+'</option>';});
-  mgrSel.value=curVal;
-
-  // 사이트 중복 제거 (최신 데이터 기준)
-  var siteMap={};
-  for(var i=0;i<list.length;i++){
-    var sn=(list[i].site||'').trim();
-    if(!sn)continue;
-    if(!siteMap[sn]){
-      siteMap[sn]=list[i];
-    }
-  }
-  var sites=Object.values(siteMap);
-
-  document.getElementById('schTitle').textContent='영업일정 목록 ('+sites.length+'건)';
-  document.getElementById('schTH').innerHTML='<tr><th>#</th><th>사이트명</th><th>주소</th><th>충전기수</th><th>담당자</th><th>지도</th></tr>';
-  var tb='';
-  for(var i=0;i<sites.length;i++){
-    var it=sites[i];
-    var site=it.site||'';
-    var addr=fv(it.row,it.headers,'주소')||fv(it.row,it.headers,'사이트명')||'';
-    var charger=fv(it.row,it.headers,'충전기수량')||'';
-    var mgr=it.mgr||'';
-    var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr);
-    tb+='<tr><td>'+(i+1)+'</td><td>'+esc(site)+'</td><td>'+esc(addr)+'</td><td>'+esc(charger)+'</td><td>'+esc(mgr)+'</td><td><a href="'+mapUrl+'" target="_blank" class="btn btn-sm btn-blue">지도</a></td></tr>';
-  }
-  document.getElementById('schTB').innerHTML=tb||'<tr><td colspan="6" style="text-align:center;padding:40px;color:#999;">데이터가 없습니다</td></tr>';
-}
-  
 
 // ===== 계약서 관리 =====
 var contractData=null;
@@ -1836,7 +1794,6 @@ function openContractFromSheet(pageKey,idx){
   var h=window._sheetEditHeaders;
   if(!sheet||!rowIdx){toast('시트 정보 없음','err');return;}
   var cols={'긍정':0,'중립':0,'부정':0,'기타':0};
-    if(h[i]==='긍정'||h[i]==='중립'||h[i]==='부정')cols[h[i]]=i+1;
   for(var i=0;i<h.length;i++){
     if(h[i]==='긍정'||h[i]==='중립'||h[i]==='부정')cols[h[i]]=i+1;
   }
@@ -1991,7 +1948,7 @@ function generateContract(source, idx) {
   };
   xhr.onerror=function(){toast('네트워크 오류','fail');};
   xhr.send();
-}}
+}
 
 
 window.onload=init;
