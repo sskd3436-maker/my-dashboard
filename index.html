@@ -895,7 +895,7 @@ function goTablePageF(pageKey,pg){
   window['_pg_'+pageKey]=pg;
   mkTablePageFiltered(pageKey);
 }
-
+}
 
   function refreshPage(){
   var page=curPage;
@@ -1996,7 +1996,7 @@ function generateContract(source, idx) {
   xhr.onerror=function(){toast('네트워크 오류','fail');};
   xhr.send();
 }
-}
+
 
 window.onload=init;
   
