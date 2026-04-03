@@ -1867,7 +1867,7 @@ function openContractFromSheet(pageKey,idx){
     }
   }
 
-  var isSch=(pageKey==='sch');
+  var isSch=(pageKey==='sch'||pageKey==='sch_temp');
   document.getElementById('contractModalTitle').textContent=isSch?'시트 데이터 수정':'사이트 정보';
   document.getElementById('contractSubmitBtn').textContent='저장';
   var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
