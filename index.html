@@ -1966,6 +1966,7 @@ function openContractFromSheet(pageKey,idx){
   for(var i=0;i<h.length;i++){
     if(h[i]===header){col=i+1;break;}
   }
+   console.log('저장:', header, '열번호:', col, '행번호:', rowIdx, '값:', newVal); 
   if(col<0){toast('열을 찾을 수 없음','err');return;}
   apiPost({action:'updateCell',sheet:sheet,row:rowIdx,col:col,value:newVal},function(res){
     if(res.ok){
