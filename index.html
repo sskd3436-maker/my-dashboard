@@ -1464,11 +1464,12 @@ function delRow(sheet,row){if(!confirm('삭제?'))return;apiPost({action:'delete
 
 window.onload=init;
 
-  function openSchEdit(idx){
+ function openSchEdit(idx){
   var list=window['_df_sch']||window['_d_sch']||[];
   var it=list[idx];if(!it)return;
-  window['_d_sch_temp']=[it];
-  openContractFromSheet('sch_temp',0);
+  window['_d_sch']=[it];
+  openContractFromSheet('sch',0);
+  window['_d_sch']=list;
 }
 
 // ===== 영업일정 관리 =====
