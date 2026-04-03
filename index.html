@@ -1606,41 +1606,45 @@ function renderSchedule(){
     }
   }
 
-   // 시트 버튼 (영업활동 조회와 동일)
-  var schMode=window._schMode||'all';
-   var display=[];
+     // 시트 필터 + 미방문 필터 (복수 선택 가능)
+  var schSheet=window._schSheet||'all';
+  var schVisit=window._schVisit||false;
+  var display=[];
   for(var i=0;i<merged.length;i++){
     var it=merged[i];
-    if(schMode==='unvisited'){
+    // 시트 필터
+    if(schSheet!=='all'){
+      if(!it.sheets||it.sheets.indexOf(schSheet)<0)continue;
+    }
+    // 미방문 필터
+    if(schVisit){
       var dt=it.date?fmt(it.date):fv(it.row,it.headers,'방문일자')||'';
-      if(!dt)display.push(it);
-    }else if(schMode==='all'){
-      display.push(it);
-    }else{
-      if(!it.sheets||it.sheets.indexOf(schMode)<0)continue;
-      var copy={sheet:it.sheet,date:it.dates?it.dates[schMode]||it.date:it.date,site:it.site,content:it.contents?it.contents[schMode]||it.content:it.content,sent:it.sents?it.sents[schMode]||it.sent:it.sent,mgr:it.mgrs?it.mgrs[schMode]||it.mgr:it.mgr,row:it.row,headers:it.headers,sheets:it.sheets,bizTypes:it.bizTypes,kinds:it.kinds};
+      if(dt)continue;
+    }
+    if(schSheet!=='all'&&schSheet!==''){
+      var copy={sheet:it.sheet,date:it.dates?it.dates[schSheet]||it.date:it.date,site:it.site,content:it.contents?it.contents[schSheet]||it.content:it.content,sent:it.sents?it.sents[schSheet]||it.sent:it.sent,mgr:it.mgrs?it.mgrs[schSheet]||it.mgr:it.mgr,row:it.row,headers:it.headers,sheets:it.sheets,bizTypes:it.bizTypes,kinds:it.kinds};
       display.push(copy);
+    }else{
+      display.push(it);
     }
   }
   var sheetNames={};
   for(var i=0;i<merged.length;i++){if(merged[i].sheets){for(var j=0;j<merged[i].sheets.length;j++){if(merged[i].sheets[j]!=='계약서')sheetNames[merged[i].sheets[j]]=1;}}}
   var btnHtml='<div style="display:flex;align-items:center;gap:0;">';
-  var allActive=schMode==='all';
-  btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;'+(allActive?'background:#1a73e8;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="window._schMode=\'all\';renderSchedule()">';
+  var allActive=schSheet==='all';
+  btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;'+(allActive?'background:#1a73e8;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="window._schSheet=\'all\';renderSchedule()">';
   btnHtml+='<span style="width:16px;height:16px;border-radius:50%;border:2px solid '+(allActive?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(allActive?'<span style="width:8px;height:8px;border-radius:50%;background:#fff;"></span>':'')+'</span> 전체</label>';
   var sns=Object.keys(sheetNames).sort();
   for(var i=0;i<sns.length;i++){
-    var active=schMode===sns[i];
-    btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;margin-left:6px;'+(active?'background:#1a73e8;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="window._schMode=\''+sns[i]+'\';renderSchedule()">';
+    var active=schSheet===sns[i];
+    btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;margin-left:6px;'+(active?'background:#1a73e8;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="window._schSheet=\''+sns[i]+'\';renderSchedule()">';
     btnHtml+='<span style="width:16px;height:16px;border-radius:50%;border:2px solid '+(active?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(active?'<span style="width:8px;height:8px;border-radius:50%;background:#fff;"></span>':'')+'</span> '+sns[i]+'</label>';
   }
-
-   var visitActive=schMode==='unvisited';
-  btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;margin-left:12px;'+(visitActive?'background:#dc3545;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="window._schMode=\'unvisited\';renderSchedule()">';
-  btnHtml+='<span style="width:16px;height:16px;border-radius:50%;border:2px solid '+(visitActive?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(visitActive?'<span style="width:8px;height:8px;border-radius:50%;background:#fff;"></span>':'')+'</span> 미방문</label>';
-  
+  btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;margin-left:12px;'+(schVisit?'background:#dc3545;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="window._schVisit=!window._schVisit;renderSchedule()">';
+  btnHtml+='<span style="width:16px;height:16px;border-radius:4px;border:2px solid '+(schVisit?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(schVisit?'✓':'')+'</span> 미방문</label>';
   btnHtml+='</div>';
   document.getElementById('schTitle').innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;width:100%;">영업일정 목록 ('+display.length+'건)<div style="margin-left:auto;">'+btnHtml+'</div></div>';
+
    // 통계 (display 기준)
   var areas2={'수도권':0,'충청':0,'경상':0,'전라':0,'강원':0};
   var areasVisit2={'수도권':0,'충청':0,'경상':0,'전라':0,'강원':0};
