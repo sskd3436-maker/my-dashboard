@@ -1580,10 +1580,13 @@ function renderSchedule(){
 
    // 시트 버튼 (영업활동 조회와 동일)
   var schMode=window._schMode||'all';
-  var display=[];
+   var display=[];
   for(var i=0;i<merged.length;i++){
     var it=merged[i];
-    if(schMode==='all'){
+    if(schMode==='unvisited'){
+      var dt=it.date?fmt(it.date):fv(it.row,it.headers,'방문일자')||'';
+      if(!dt)display.push(it);
+    }else if(schMode==='all'){
       display.push(it);
     }else{
       if(!it.sheets||it.sheets.indexOf(schMode)<0)continue;
@@ -1603,6 +1606,11 @@ function renderSchedule(){
     btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;margin-left:6px;'+(active?'background:#1a73e8;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="window._schMode=\''+sns[i]+'\';renderSchedule()">';
     btnHtml+='<span style="width:16px;height:16px;border-radius:50%;border:2px solid '+(active?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(active?'<span style="width:8px;height:8px;border-radius:50%;background:#fff;"></span>':'')+'</span> '+sns[i]+'</label>';
   }
+
+   var visitActive=schMode==='unvisited';
+  btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;margin-left:12px;'+(visitActive?'background:#dc3545;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="window._schMode=\'unvisited\';renderSchedule()">';
+  btnHtml+='<span style="width:16px;height:16px;border-radius:50%;border:2px solid '+(visitActive?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(visitActive?'<span style="width:8px;height:8px;border-radius:50%;background:#fff;"></span>':'')+'</span> 미방문</label>';
+  
   btnHtml+='</div>';
   document.getElementById('schTitle').innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;width:100%;">영업일정 목록 ('+display.length+'건)<div style="margin-left:auto;">'+btnHtml+'</div></div>';
   mkTable(display,'schTH','schTB','sch',q);
