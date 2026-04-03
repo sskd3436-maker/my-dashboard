@@ -1955,12 +1955,17 @@ function openContractFromSheet(pageKey,idx){
 
 
   function updateSheetCell(el){
-  var col=parseInt(el.getAttribute('data-col'));
   var header=el.getAttribute('data-header');
   var newVal=el.value;
   var sheet=window._sheetEditSheet;
   var rowIdx=window._sheetEditRowIdx;
+  var h=window._sheetEditHeaders;
   if(!sheet||!rowIdx){toast('시트 정보 없음','err');return;}
+  var col=-1;
+  for(var i=0;i<h.length;i++){
+    if(h[i]===header){col=i+1;break;}
+  }
+  if(col<0){toast('열을 찾을 수 없음','err');return;}
   apiPost({action:'updateCell',sheet:sheet,row:rowIdx,col:col,value:newVal},function(res){
     if(res.ok){
       toast(header+' 저장 완료','ok');
