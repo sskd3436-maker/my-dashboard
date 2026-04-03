@@ -340,6 +340,7 @@
     <select class="filter-select" id="schSheet" onchange="renderSchedule()"><option value="">전체 시트</option></select>
   </div>
   <div class="stats-grid" id="schStats"></div>
+  <div class="section-box" id="schContractStats" style="margin-bottom:16px;"><h3>📋 계약 진행 현황</h3><div id="schContractArea"></div></div>
   <div class="table-box">
     <div id="schTitle" style="font-size:16px;font-weight:700;padding:16px 20px;"></div>
     <div class="table-wrap"><table><thead id="schTH"></thead><tbody id="schTB"></tbody></table></div>
@@ -1471,38 +1472,7 @@ function renderSchedule(){
   var mf=document.getElementById('schMgr').value;
   var shf=document.getElementById('schSheet').value;
   var list=filterList(q,sf,mf,shf);
-   // 권역별 방문달성률
-  var areas={'수도권':0,'충청':0,'경상':0,'전라':0,'강원':0};
-  var areasVisit={'수도권':0,'충청':0,'경상':0,'전라':0,'강원':0};
-  for(var i=0;i<list.length;i++){
-    var area=fv(list[i].row,list[i].headers,'권역별')||'';
-    var areaKey='';
-    if(area.indexOf('수도권')>=0)areaKey='수도권';
-    else if(area.indexOf('충청')>=0)areaKey='충청';
-    else if(area.indexOf('경상')>=0)areaKey='경상';
-    else if(area.indexOf('전라')>=0)areaKey='전라';
-    else if(area.indexOf('강원')>=0)areaKey='강원';
-    if(areaKey){
-      areas[areaKey]++;
-      var dt=list[i].date?fmt(list[i].date):fv(list[i].row,list[i].headers,'방문일자')||'';
-      if(dt)areasVisit[areaKey]++;
-    }
-  }
-  var visitHtml='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:12px;">';
-  var areaColors={'수도권':'#1a73e8','충청':'#e67e22','경상':'#9b59b6','전라':'#27ae60','강원':'#3498db'};
-  var areaKeys=Object.keys(areas);
-  var totalAll=0,totalVisit=0;
-  for(var i=0;i<areaKeys.length;i++){totalAll+=areas[areaKeys[i]];totalVisit+=areasVisit[areaKeys[i]];}
-  // 전체 달성률 카드
-  var totalPct=totalAll>0?Math.round(totalVisit/totalAll*100):0;
-  visitHtml+='<div style="background:white;border-radius:12px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,0.08);text-align:center;border-top:4px solid #333;"><div style="font-size:13px;color:#333;font-weight:700;">전체</div><div style="font-size:32px;font-weight:800;color:#333;">'+totalPct+'%</div><div style="font-size:11px;color:#888;">'+totalVisit+' / '+totalAll+'</div><div style="height:5px;background:#eee;border-radius:3px;margin-top:6px;overflow:hidden;"><div style="height:100%;background:#333;width:'+totalPct+'%;border-radius:3px;"></div></div></div>';
-  for(var i=0;i<areaKeys.length;i++){
-    var ak=areaKeys[i],c=areaColors[ak]||'#999';
-    var pct=areas[ak]>0?Math.round(areasVisit[ak]/areas[ak]*100):0;
-    visitHtml+='<div style="background:white;border-radius:12px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,0.08);text-align:center;border-top:4px solid '+c+';"><div style="font-size:13px;color:'+c+';font-weight:700;">'+ak+'</div><div style="font-size:32px;font-weight:800;color:'+c+';">'+pct+'%</div><div style="font-size:11px;color:#888;">'+areasVisit[ak]+' / '+areas[ak]+'</div><div style="height:5px;background:#eee;border-radius:3px;margin-top:6px;overflow:hidden;"><div style="height:100%;background:'+c+';width:'+pct+'%;border-radius:3px;"></div></div></div>';
-  }
-  visitHtml+='</div>';
-  document.getElementById('schStats').innerHTML=visitHtml+mkStats(list);
+  document.getElementById('schStats').innerHTML=mkStats(list);
 
   // 담당자 필터 옵션
   var mgrSet={};
