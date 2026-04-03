@@ -1467,10 +1467,7 @@ window.onload=init;
   function openSchEdit(idx){
   var list=window['_df_sch']||window['_d_sch']||[];
   var it=list[idx];if(!it)return;
-  var copy={};
-  for(var k in it)copy[k]=it[k];
-  if(!copy.row._rowIndex&&it.row._rowIndex)copy.row._rowIndex=it.row._rowIndex;
-  window['_d_sch_temp']=[copy];
+  window['_d_sch_temp']=[it];
   openContractFromSheet('sch_temp',0);
 }
 
