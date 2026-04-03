@@ -1479,6 +1479,7 @@ function renderSchedule(){
   mgrSel.innerHTML='<option value="">전체 담당자</option>';
   Object.keys(mgrSet).sort().forEach(function(m){mgrSel.innerHTML+='<option value="'+m+'">'+m+'</option>';});
   mgrSel.value=curVal;
+  console.log('담당자:', curVal, mgrSel.value);
 
   // 시트 필터 옵션
   var shSet={};
