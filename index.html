@@ -1587,13 +1587,14 @@ function renderSchedule(){
   for(var vi=0;vi<areaKeys2.length;vi++){totalAll2+=areas2[areaKeys2[vi]];totalVisit2+=areasVisit2[areaKeys2[vi]];}
   var totalPct2=totalAll2>0?Math.round(totalVisit2/totalAll2*100):0;
   var vHtml='';
-  vHtml+='<div class="stat-card" style="border-top:4px solid #333;"><div class="stat-label">전체</div><div class="stat-number" style="color:#333;">'+totalPct2+'%</div><div class="stat-percent">'+totalVisit2+'/'+totalAll2+'</div></div>';
   for(var vi=0;vi<areaKeys2.length;vi++){
     var ak2=areaKeys2[vi],c2=areaColors2[ak2]||'#999';
     var pct2=areas2[ak2]>0?Math.round(areasVisit2[ak2]/areas2[ak2]*100):0;
     vHtml+='<div class="stat-card" style="border-top:4px solid '+c2+';"><div class="stat-label" style="color:'+c2+';">'+ak2+'</div><div class="stat-number" style="color:'+c2+';">'+pct2+'%</div><div class="stat-percent">'+areasVisit2[ak2]+'/'+areas2[ak2]+'</div></div>';
   }
-  document.getElementById('schStats').innerHTML='<div style="margin-bottom:20px;"><h3 style="font-size:16px;margin-bottom:12px;">📍 방문달성 현황</h3><div class="stats-grid">'+vHtml+'</div></div><div><h3 style="font-size:16px;margin-bottom:12px;">💬 감정 현황</h3><div class="stats-grid">'+mkStats(display)+'</div></div>';
+  document.getElementById('schStats').innerHTML=
+    '<div style="margin-bottom:16px;"><h3 style="font-size:14px;margin-bottom:8px;">📍 방문달성 현황</h3><div style="display:flex;gap:10px;flex-wrap:nowrap;">'+vHtml+'</div></div>'+
+    '<div><h3 style="font-size:14px;margin-bottom:8px;">💬 감정 현황</h3><div style="display:flex;gap:10px;flex-wrap:nowrap;">'+mkStats(display)+'</div></div>';
    // 담당자별 건수 표시
   var mgrCount={};
   for(var i=0;i<display.length;i++){
