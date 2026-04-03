@@ -1501,7 +1501,7 @@ function renderSchedule(){
     var pct=areas[ak]>0?Math.round(areasVisit[ak]/areas[ak]*100):0;
     visitHtml+='<div class="stat-card" style="border-top:4px solid '+c+';"><div class="stat-label" style="color:'+c+';">'+ak+'</div><div class="stat-number" style="color:'+c+';">'+pct+'%</div><div class="stat-percent">'+areasVisit[ak]+'/'+areas[ak]+'</div></div>';
   }
-  document.getElementById('schStats').innerHTML=visitHtml+mkStats(list);
+  document.getElementById('schStats').innerHTML='<div style="margin-bottom:20px;"><h3 style="font-size:16px;margin-bottom:12px;">📍 방문달성 현황</h3><div class="stats-grid">'+visitHtml+'</div></div><div><h3 style="font-size:16px;margin-bottom:12px;">💬 감정 현황</h3><div class="stats-grid">'+mkStats(list)+'</div></div>';
 
   // 담당자 필터 옵션
   var mgrSet={};
