@@ -1471,6 +1471,24 @@ function renderSchedule(){
   var sf=document.getElementById('schSent').value;
   var mf=document.getElementById('schMgr').value;
   var shf=document.getElementById('schSheet').value;
+    // 담당자 필터 옵션
+  var mgrSet={};
+  for(var i=0;i<allFlat.length;i++){var m=allFlat[i].mgr||'';if(m)mgrSet[m]=1;}
+  var mgrSel=document.getElementById('schMgr');
+  var curVal=mgrSel.value;
+  mgrSel.innerHTML='<option value="">전체 담당자</option>';
+  Object.keys(mgrSet).sort().forEach(function(m){mgrSel.innerHTML+='<option value="'+m+'">'+m+'</option>';});
+  mgrSel.value=curVal;
+
+  // 시트 필터 옵션
+  var shSet={};
+  for(var i=0;i<allFlat.length;i++){var s=allFlat[i].sheet||'';if(s&&s!=='계약서')shSet[s]=1;}
+  var shSel=document.getElementById('schSheet');
+  var curSh=shSel.value;
+  shSel.innerHTML='<option value="">전체 시트</option>';
+  Object.keys(shSet).sort().forEach(function(s){shSel.innerHTML+='<option value="'+s+'">'+s+'</option>';});
+  shSel.value=curSh;
+
   var list=filterList(q,sf,mf,shf);
    
 
