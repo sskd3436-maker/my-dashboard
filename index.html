@@ -1594,19 +1594,21 @@ function renderSchedule(){
     vHtml+='<div class="stat-card" style="border-top:4px solid '+c2+';"><div class="stat-label" style="color:'+c2+';">'+ak2+'</div><div class="stat-number" style="color:'+c2+';">'+pct2+'%</div><div class="stat-percent">'+areasVisit2[ak2]+'/'+areas2[ak2]+'</div></div>';
   }
   document.getElementById('schStats').innerHTML='<div style="margin-bottom:20px;"><h3 style="font-size:16px;margin-bottom:12px;">📍 방문달성 현황</h3><div class="stats-grid">'+vHtml+'</div></div><div><h3 style="font-size:16px;margin-bottom:12px;">💬 감정 현황</h3><div class="stats-grid">'+mkStats(display)+'</div></div>';
-  // 필터 요약 표시
-  var filterInfo=[];
-  if(mf)filterInfo.push('담당자:'+mf);
-  if(sf)filterInfo.push('감정:'+sf);
-  if(shf)filterInfo.push('시트:'+shf);
-  var schMode=window._schSheet||'all';
-  if(schMode!=='all')filterInfo.push('시트버튼:'+schMode);
-  if(window._schVisit)filterInfo.push('미방문');
-  var filterHtml='';
-  if(filterInfo.length>0){
-    filterHtml='<div style="padding:4px 20px 8px;font-size:13px;color:#1a73e8;font-weight:600;">[필터: '+filterInfo.join(' · ')+' / '+display.length+'건]</div>';
+   // 담당자별 건수 표시
+  var mgrCount={};
+  for(var i=0;i<display.length;i++){
+    var mg=display[i].mgr||'미지정';
+    if(!mgrCount[mg])mgrCount[mg]=0;
+    mgrCount[mg]++;
   }
-  document.getElementById('schTitle').innerHTML+= filterHtml;
+  var mgrInfoHtml='<div style="padding:4px 20px 8px;font-size:13px;color:#1a73e8;font-weight:600;">';
+  var mgrNames=Object.keys(mgrCount).sort();
+  var mgrParts=[];
+  for(var i=0;i<mgrNames.length;i++){
+    mgrParts.push(mgrNames[i]+':'+mgrCount[mgrNames[i]]+'건');
+  }
+  mgrInfoHtml+='[담당자: '+mgrParts.join(' · ')+']</div>';
+  document.getElementById('schTitle').innerHTML+=mgrInfoHtml;
   mkTable(display,'schTH','schTB','sch',q);
 }
 
