@@ -945,6 +945,7 @@ function renderActivity(){
   var mf=document.getElementById('actMgr').value;
   var shf=document.getElementById('actSheet').value;
   var list=filterList(q,sf,mf,shf);
+  list=list.filter(function(it){return it.sheet!=='계약서';});
   document.getElementById('actStats').innerHTML=mkStats(list);
 
    // 계약 진행 현황 (필터 적용)
