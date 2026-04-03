@@ -1902,6 +1902,7 @@ function openContractFromSheet(pageKey,idx){
   window._sheetEditHeaders=h;
   window._sheetEditSheet=it.sheet;
   window._sheetEditRowIdx=row._rowIndex||(allFlat.indexOf(it)+4);
+  console.log('행번호:', window._sheetEditRowIdx, 'rowIndex:', row._rowIndex, 'indexOf:', allFlat.indexOf(it));
   var sentFields=['긍정','중립','부정'];
   var hideFields=['재계약'];
   var sentDone=false;
