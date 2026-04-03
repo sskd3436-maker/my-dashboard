@@ -1008,6 +1008,7 @@ function renderActivity(){
   var merged=[];
   for(var i=0;i<list.length;i++){
     var sn=(list[i].site||'').trim();
+    if(list[i].sheet==='계약서')continue;
     if(!sn){merged.push(list[i]);continue;}
     if(!siteMap[sn]){
       siteMap[sn]={sheet:list[i].sheet,date:list[i].date,site:list[i].site,content:list[i].content,sent:list[i].sent,mgr:list[i].mgr,row:list[i].row,headers:list[i].headers,sheets:[list[i].sheet],contents:{},dates:{},mgrs:{},sents:{},bizTypes:{},kinds:{}};
