@@ -1501,8 +1501,7 @@ function renderSchedule(){
     var pct=areas[ak]>0?Math.round(areasVisit[ak]/areas[ak]*100):0;
     visitHtml+='<div class="stat-card" style="border-top:4px solid '+c+';"><div class="stat-label" style="color:'+c+';">'+ak+'</div><div class="stat-number" style="color:'+c+';">'+pct+'%</div><div class="stat-percent">'+areasVisit[ak]+'/'+areas[ak]+'</div></div>';
   }
-  document.getElementById('schStats').innerHTML='<div style="margin-bottom:20px;"><h3 style="font-size:16px;margin-bottom:12px;">📍 방문달성 현황</h3><div class="stats-grid">'+visitHtml+'</div></div><div><h3 style="font-size:16px;margin-bottom:12px;">💬 감정 현황</h3><div class="stats-grid">'+mkStats(list)+'</div></div>';
-
+  
   // 담당자 필터 옵션
   var mgrSet={};
   for(var i=0;i<allFlat.length;i++){var m=allFlat[i].mgr||'';if(m)mgrSet[m]=1;}
@@ -1642,6 +1641,36 @@ function renderSchedule(){
   
   btnHtml+='</div>';
   document.getElementById('schTitle').innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;width:100%;">영업일정 목록 ('+display.length+'건)<div style="margin-left:auto;">'+btnHtml+'</div></div>';
+   // 통계 (display 기준)
+  var areas2={'수도권':0,'충청':0,'경상':0,'전라':0,'강원':0};
+  var areasVisit2={'수도권':0,'충청':0,'경상':0,'전라':0,'강원':0};
+  for(var vi=0;vi<display.length;vi++){
+    var area2=fv(display[vi].row,display[vi].headers,'권역별')||'';
+    var areaKey2='';
+    if(area2.indexOf('수도권')>=0)areaKey2='수도권';
+    else if(area2.indexOf('충청')>=0)areaKey2='충청';
+    else if(area2.indexOf('경상')>=0)areaKey2='경상';
+    else if(area2.indexOf('전라')>=0)areaKey2='전라';
+    else if(area2.indexOf('강원')>=0)areaKey2='강원';
+    if(areaKey2){
+      areas2[areaKey2]++;
+      var dt2=display[vi].date?fmt(display[vi].date):fv(display[vi].row,display[vi].headers,'방문일자')||'';
+      if(dt2)areasVisit2[areaKey2]++;
+    }
+  }
+  var areaColors2={'수도권':'#1a73e8','충청':'#e67e22','경상':'#9b59b6','전라':'#27ae60','강원':'#3498db'};
+  var areaKeys2=Object.keys(areas2);
+  var totalAll2=0,totalVisit2=0;
+  for(var vi=0;vi<areaKeys2.length;vi++){totalAll2+=areas2[areaKeys2[vi]];totalVisit2+=areasVisit2[areaKeys2[vi]];}
+  var totalPct2=totalAll2>0?Math.round(totalVisit2/totalAll2*100):0;
+  var vHtml='';
+  vHtml+='<div class="stat-card" style="border-top:4px solid #333;"><div class="stat-label">전체</div><div class="stat-number" style="color:#333;">'+totalPct2+'%</div><div class="stat-percent">'+totalVisit2+'/'+totalAll2+'</div></div>';
+  for(var vi=0;vi<areaKeys2.length;vi++){
+    var ak2=areaKeys2[vi],c2=areaColors2[ak2]||'#999';
+    var pct2=areas2[ak2]>0?Math.round(areasVisit2[ak2]/areas2[ak2]*100):0;
+    vHtml+='<div class="stat-card" style="border-top:4px solid '+c2+';"><div class="stat-label" style="color:'+c2+';">'+ak2+'</div><div class="stat-number" style="color:'+c2+';">'+pct2+'%</div><div class="stat-percent">'+areasVisit2[ak2]+'/'+areas2[ak2]+'</div></div>';
+  }
+  document.getElementById('schStats').innerHTML='<div style="margin-bottom:20px;"><h3 style="font-size:16px;margin-bottom:12px;">📍 방문달성 현황</h3><div class="stats-grid">'+vHtml+'</div></div><div><h3 style="font-size:16px;margin-bottom:12px;">💬 감정 현황</h3><div class="stats-grid">'+mkStats(display)+'</div></div>';
   mkTable(display,'schTH','schTB','sch',q);
 }
 
