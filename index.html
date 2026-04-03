@@ -1978,6 +1978,8 @@ function openContractFromSheet(pageKey,idx){
     document.getElementById('contractSubmitBtn').style.display='';
     document.getElementById('contractSubmitBtn').setAttribute('onclick','submitContract()');
   }
+  document.getElementById('contractModal').classList.add('show');
+}
 
 
   function updateSheetCell(el){
