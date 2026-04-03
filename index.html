@@ -1590,11 +1590,11 @@ function renderSchedule(){
   for(var vi=0;vi<areaKeys2.length;vi++){
     var ak2=areaKeys2[vi],c2=areaColors2[ak2]||'#999';
     var pct2=areas2[ak2]>0?Math.round(areasVisit2[ak2]/areas2[ak2]*100):0;
-    vHtml+='<div class="stat-card" style="border-top:4px solid '+c2+';"><div class="stat-label" style="color:'+c2+';">'+ak2+'</div><div class="stat-number" style="color:'+c2+';">'+pct2+'%</div><div class="stat-percent">'+areasVisit2[ak2]+'/'+areas2[ak2]+'</div></div>';
+     vHtml+='<div style="flex:1;background:white;border-radius:10px;padding:10px;box-shadow:0 1px 3px rgba(0,0,0,0.08);text-align:center;border-top:3px solid '+c2+';"><div style="font-size:11px;color:'+c2+';font-weight:700;">'+ak2+'</div><div style="font-size:22px;font-weight:800;color:'+c2+';">'+pct2+'%</div><div style="font-size:10px;color:#888;">'+areasVisit2[ak2]+'/'+areas2[ak2]+'</div></div>';
   }
-   document.getElementById('schStats').innerHTML=
-    '<div style="margin-bottom:12px;"><h3 style="font-size:14px;margin-bottom:8px;">📍 방문달성 현황</h3><div style="display:flex;gap:10px;">'+vHtml+'</div></div>'+
-    '<div style="margin-bottom:12px;"><h3 style="font-size:14px;margin-bottom:8px;">💬 감정 현황</h3><div style="display:flex;gap:10px;">'+mkStats(display)+'</div></div>';
+    document.getElementById('schStats').innerHTML=
+    '<div style="margin-bottom:8px;"><h3 style="font-size:13px;margin-bottom:6px;">📍 방문달성 현황</h3><div style="display:flex;gap:8px;">'+vHtml+'</div></div>'+
+    '<div style="margin-bottom:8px;"><h3 style="font-size:13px;margin-bottom:6px;">💬 감정 현황</h3><div style="display:flex;gap:8px;">'+mkStats(display)+'</div></div>';
    // 담당자별 건수 표시
   var mgrCount={};
   for(var i=0;i<display.length;i++){
