@@ -1478,8 +1478,8 @@ function renderSchedule(){
   var curVal=mgrSel.value;
   mgrSel.innerHTML='<option value="">전체 담당자</option>';
   Object.keys(mgrSet).sort().forEach(function(m){mgrSel.innerHTML+='<option value="'+m+'">'+m+'</option>';});
-  mgrSel.value=curVal;
-  console.log('담당자:', curVal, mgrSel.value);
+  mgrSel.value=mf;
+  
 
   // 시트 필터 옵션
   var shSet={};
@@ -1488,7 +1488,7 @@ function renderSchedule(){
   var curSh=shSel.value;
   shSel.innerHTML='<option value="">전체 시트</option>';
   Object.keys(shSet).sort().forEach(function(s){shSel.innerHTML+='<option value="'+s+'">'+s+'</option>';});
-  shSel.value=curSh;
+  shSel.value=shf;
 
   var list=filterList(q,sf,mf,shf);
    
