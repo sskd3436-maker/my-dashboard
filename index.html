@@ -1856,8 +1856,8 @@ function openContractFromSheet(pageKey,idx){
   if(!contractData){loadContract(function(){openContractFromSheet(pageKey,idx);});return;}
   var row=it.row,h=it.headers;
   // 계약서에 이미 있으면 수정 모드로
-  editContractRow=null;
-  if(contractData&&contractData.rows){
+    editContractRow=null;
+  if(!isSch&&contractData&&contractData.rows){
     var ch2=contractData.headers;
     var siteName=(fv(row,h,'사이트명')||'').trim();
     for(var ci=0;ci<contractData.rows.length;ci++){
