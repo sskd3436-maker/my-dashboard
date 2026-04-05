@@ -1943,14 +1943,16 @@ function openContractFromSheet(pageKey,idx){
   // sch일 때: 계약서 부분 숨기고 모달 크기 축소
   var contractFormRight=document.querySelector('#contractForm > div:nth-child(2)');
   var modalBox=document.querySelector('#contractModal .modal');
-  if(isSch){
+    if(isSch){
     if(contractFormRight)contractFormRight.style.display='none';
     if(modalBox)modalBox.style.maxWidth='600px';
     document.getElementById('contractSubmitBtn').style.display='';
+    document.getElementById('contractSubmitBtn').setAttribute('onclick','submitSchEdit()');
   }else{
     if(contractFormRight)contractFormRight.style.display='';
     if(modalBox)modalBox.style.maxWidth='1200px';
     document.getElementById('contractSubmitBtn').style.display='';
+    document.getElementById('contractSubmitBtn').setAttribute('onclick','submitContract()');
   }
 
   document.getElementById('contractModal').classList.add('show');
