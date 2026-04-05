@@ -1468,9 +1468,8 @@ window.onload=init;
  function openSchEdit(idx){
   var list=window['_df_sch']||window['_d_sch']||[];
   var it=list[idx];if(!it)return;
-  window['_d_sch']=[it];
-  openContractFromSheet('sch',0);
-  window['_d_sch']=list;
+  window['_d_schedit']=[it];
+  openContractFromSheet('schedit',0);
 }
 
 // ===== 영업일정 관리 =====
@@ -1869,7 +1868,7 @@ function openContractFromSheet(pageKey,idx){
     }
   }
 
-  var isSch=(pageKey==='sch'||pageKey==='sch_temp');
+  var isSch=(pageKey==='sch'||pageKey==='sch_temp'||pageKey==='schedit');
   document.getElementById('contractModalTitle').textContent=isSch?'시트 데이터 수정':'사이트 정보';
   document.getElementById('contractSubmitBtn').textContent='저장';
   var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
