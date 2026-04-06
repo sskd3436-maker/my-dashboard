@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>현장 업무수행 대시보드</title>
@@ -286,6 +288,9 @@
       </div>
       <div class="stats-grid" id="actStats"></div>
       <div class="section-box" id="actContractStats" style="margin-bottom:16px;"><h3>📋 계약 진행 현황</h3><div id="actContractArea"></div></div>
+      <div id="actMapBox" style="margin-bottom:16px;border-radius:12px;overflow:hidden;border:1px solid #e0e0e0;">
+  <div id="actMap" style="height:400px;"></div>
+</div>
       <div class="table-box">
         <div id="actTitle" style="font-size:16px;font-weight:700;padding:16px 20px;"></div>
         <div class="table-wrap"><table><thead id="actTH"></thead><tbody id="actTB"></tbody></table></div>
@@ -1001,6 +1006,36 @@ function renderActivity(){
   ctHtml+='<div style="width:'+ctPct계약+'%;background:#27ae60;"></div>';
   ctHtml+='</div></div>';
   document.getElementById('actContractArea').innerHTML=ctHtml;
+
+  // Leaflet 지도 (시트2 기반)
+if(!window._actMap){
+  window._actMap=L.map('actMap').setView([36.5,127.5],7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'OSM'}).addTo(window._actMap);
+}
+if(window._actMarkers){for(var mi=0;mi<window._actMarkers.length;mi++)window._actMap.removeLayer(window._actMarkers[mi]);}
+window._actMarkers=[];
+var mapBounds=[];
+for(var i=0;i<list.length;i++){
+  var it=list[i];
+  var lat=parseFloat(fv(it.row,it.headers,'Y좌표'));
+  var lng=parseFloat(fv(it.row,it.headers,'X좌표'));
+  if(!lat||!lng||isNaN(lat)||isNaN(lng))continue;
+  var visited=!!(it.date||fv(it.row,it.headers,'방문일자'));
+  var color=visited?'#27ae60':'#e74c3c';
+  var icon=L.divIcon({
+    className:'',
+    html:'<div style="width:14px;height:14px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>',
+    iconSize:[14,14],
+    iconAnchor:[7,7]
+  });
+  var site=it.site||'';
+  var mgr=it.mgr||'';
+  var marker=L.marker([lat,lng],{icon:icon}).addTo(window._actMap);
+  marker.bindPopup('<b>'+site+'</b><br>담당자: '+mgr+'<br>'+(visited?'<span style="color:#27ae60;">방문완료</span>':'<span style="color:#e74c3c;">미방문</span>'));
+  window._actMarkers.push(marker);
+  mapBounds.push([lat,lng]);
+}
+if(mapBounds.length>0)window._actMap.fitBounds(mapBounds,{padding:[30,30]});
 
 
    // 사이트명 기준 합치기
