@@ -1468,7 +1468,17 @@ window.onload=init;
  function openSchEdit(idx){
   var list=window['_df_sch']||window['_d_sch']||[];
   var it=list[idx];if(!it)return;
-  window['_d_schedit']=[it];
+  var siteName=(it.site||'').trim();
+  var found=null;
+  for(var i=0;i<allFlat.length;i++){
+    if(allFlat[i].sheet==='계약서')continue;
+    if((allFlat[i].site||'').trim()===siteName){
+      found=allFlat[i];
+      break;
+    }
+  }
+  if(!found)found=it;
+  window['_d_schedit']=[found];
   openContractFromSheet('schedit',0);
 }
 
