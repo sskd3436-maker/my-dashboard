@@ -1491,6 +1491,7 @@ function submitSchEdit(){
  function openSchEdit(idx){
   var list=window['_df_sch']||window['_d_sch']||[];
   var it=list[idx];if(!it)return;
+  console.log('idx:', idx, '사이트:', it.site, '리스트길이:', list.length);
   var siteName=(it.site||'').trim();
   var found=null;
   for(var i=0;i<allFlat.length;i++){
@@ -1501,6 +1502,7 @@ function submitSchEdit(){
     }
   }
   if(!found)found=it;
+  console.log('found 사이트:', found.site);
   window['_d_schedit']=[found];
   openContractFromSheet('schedit',0);
 }
