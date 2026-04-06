@@ -1042,11 +1042,17 @@ function renderActivity(){
 }
 
 function renderActTable(mode){
+  window._actMode=mode;
   var merged=window._actMerged||[];
   var q=window._actQuery||'';
+  var actVisit=window._actVisit||false;
   var display=[];
   for(var i=0;i<merged.length;i++){
     var it=merged[i];
+    if(actVisit){
+      var dt=it.date||fv(it.row,it.headers,'방문일자')||'';
+      if(dt)continue;
+    }
     if(mode==='all'){
       display.push(it);
     }else{
@@ -1068,6 +1074,9 @@ function renderActTable(mode){
     btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;margin-left:6px;'+(active?'background:#1a73e8;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="renderActTable(\''+sns[i]+'\')">';
     btnHtml+='<span style="width:16px;height:16px;border-radius:50%;border:2px solid '+(active?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(active?'<span style="width:8px;height:8px;border-radius:50%;background:#fff;"></span>':'')+'</span> '+sns[i]+'</label>';
   }
+   var actVisit=window._actVisit||false;
+  btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;margin-left:12px;'+(actVisit?'background:#dc3545;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="window._actVisit=!window._actVisit;renderActTable(window._actMode||\'all\')">';
+  btnHtml+='<span style="width:16px;height:16px;border-radius:4px;border:2px solid '+(actVisit?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(actVisit?'✓':'')+'</span> 미방문</label>';
   btnHtml+='<button class="btn btn-sm btn-primary" style="margin-left:12px;border-radius:20px;padding:6px 16px;font-size:12px;font-weight:600;" onclick="openAddRow()">+ 행추가</button>';
   btnHtml+='</div>';
   document.getElementById('actTitle').innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;width:100%;">영업활동 목록 ('+display.length+'건)<div style="margin-left:auto;">'+btnHtml+'</div></div>';
