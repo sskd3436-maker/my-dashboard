@@ -1471,12 +1471,15 @@ function submitSchEdit(){
   var sheet=window._sheetEditSheet;
   var rowIdx=window._sheetEditRowIdx;
   if(!sheet||!rowIdx){toast('시트 정보 없음','err');return;}
+  console.log('시트:', sheet, '행:', rowIdx, '헤더:', h);
   var inputs=document.querySelectorAll('#cf_sheetData input[data-header]');
+  console.log('input 개수:', inputs.length);
   for(var i=0;i<inputs.length;i++){
     var header=inputs[i].getAttribute('data-header');
     var val=inputs[i].value;
     var col=-1;
     for(var j=0;j<h.length;j++){if(h[j]===header){col=j+1;break;}}
+    console.log('헤더:', header, '열:', col, '값:', val);
     if(col>0){
       apiPost({action:'updateCell',sheet:sheet,row:rowIdx,col:col,value:val},function(){});
       if(row)row[header]=val;
