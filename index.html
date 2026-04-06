@@ -1489,10 +1489,22 @@ function submitSchEdit(){
 
   
  function openSchEdit(idx){
-  var list=window['_df_sch']||window['_d_sch']||[];
-  var it=list[idx];if(!it)return;
-  console.log('idx:', idx, '사이트:', it.site, '리스트길이:', list.length);
-  var siteName=(it.site||'').trim();
+  var tbody=document.getElementById('schTB');
+  var rows=tbody.getElementsByTagName('tr');
+  var pageOffset=(window['_pg_sch']||0)*50;
+  var realIdx=pageOffset+idx;
+  
+  var btn=event.target;
+  var tr=btn.closest('tr');
+  var siteTd=tr.getElementsByTagName('td')[3];
+  var siteName=siteTd?siteTd.textContent.trim():'';
+  
+  if(!siteName){
+    var list=window['_df_sch']||window['_d_sch']||[];
+    var it=list[idx];
+    if(it)siteName=(it.site||'').trim();
+  }
+  
   var found=null;
   for(var i=0;i<allFlat.length;i++){
     if(allFlat[i].sheet==='계약서')continue;
@@ -1501,8 +1513,7 @@ function submitSchEdit(){
       break;
     }
   }
-  if(!found)found=it;
-  console.log('found 사이트:', found.site);
+  if(!found){toast('데이터를 찾을 수 없음','err');return;}
   window['_d_schedit']=[found];
   openContractFromSheet('schedit',0);
 }
