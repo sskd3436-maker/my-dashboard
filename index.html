@@ -1465,6 +1465,29 @@ function delRow(sheet,row){if(!confirm('삭제?'))return;apiPost({action:'delete
 
 window.onload=init;
 
+function submitSchEdit(){
+  var h=window._sheetEditHeaders;
+  var row=window._sheetEditRow;
+  var sheet=window._sheetEditSheet;
+  var rowIdx=window._sheetEditRowIdx;
+  if(!sheet||!rowIdx){toast('시트 정보 없음','err');return;}
+  var inputs=document.querySelectorAll('#cf_sheetData input[data-header]');
+  for(var i=0;i<inputs.length;i++){
+    var header=inputs[i].getAttribute('data-header');
+    var val=inputs[i].value;
+    var col=-1;
+    for(var j=0;j<h.length;j++){if(h[j]===header){col=j+1;break;}}
+    if(col>0){
+      apiPost({action:'updateCell',sheet:sheet,row:rowIdx,col:col,value:val},function(){});
+      if(row)row[header]=val;
+    }
+  }
+  toast('저장 완료','ok');
+  document.getElementById('contractModal').classList.remove('show');
+  renderSchedule();
+}
+
+  
  function openSchEdit(idx){
   var list=window['_df_sch']||window['_d_sch']||[];
   var it=list[idx];if(!it)return;
