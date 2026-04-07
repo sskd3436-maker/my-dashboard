@@ -755,7 +755,9 @@ b+='</td>';
       var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
        b+='<td style="white-space:nowrap;"><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a> <button class="btn btn-gray btn-sm" onclick="openSchEdit('+i+')">수정</button></td></tr>';
     }else{
-      b+='<td><button class="btn btn-gray btn-sm" onclick="openDetailFromRow(\''+pageKey+'\',this)">보기</button></td></tr>';
+      var addr2=fv(it.row,it.headers,'주소')||it.site||'';
+var mapUrl2='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
+b+='<td><a href="'+mapUrl2+'" target="_blank" class="btn btn-blue btn-sm">지도</a> <button class="btn btn-gray btn-sm" onclick="openDetailFromRow(\''+pageKey+'\',this)">보기</button></td></tr>';
     }
   }
   if(!list.length)b='<tr><td colspan="13"><div class="empty-msg">데이터 없음</div></td></tr>';
@@ -871,7 +873,9 @@ b+='</td>';
       var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
        b+='<td style="white-space:nowrap;"><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a> <button class="btn btn-gray btn-sm" onclick="openSchEdit('+i+')">수정</button></td></tr>';
     }else{
-      b+='<td><button class="btn btn-gray btn-sm" onclick="openDetailFromRow(\''+pageKey+'\',this)">보기</button></td></tr>';
+      var addr2=fv(it.row,it.headers,'주소')||it.site||'';
+var mapUrl2='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
+b+='<td><a href="'+mapUrl2+'" target="_blank" class="btn btn-blue btn-sm">지도</a> <button class="btn btn-gray btn-sm" onclick="openDetailFromRow(\''+pageKey+'\',this)">보기</button></td></tr>';
     }
   }
   if(!list.length)b='<tr><td colspan="13"><div class="empty-msg">데이터 없음</div></td></tr>';
