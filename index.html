@@ -1541,7 +1541,7 @@ function submitSchEdit(){
     var header=inputs[i].getAttribute('data-header');
     var val=inputs[i].value;
     var col=-1;
-    for(var j=0;j<h.length;j++){if(h[j]===header){col=j+1;break;}}
+    for(var j=0;j<h.length;j++){if(h[j]===header){col=j+2;break;}}
     console.log('헤더:', header, '열:', col, '값:', val);
     if(col>0){
       apiPost({action:'updateCell',sheet:sheet,row:rowIdx,col:col,value:val},function(){});
@@ -2079,7 +2079,7 @@ function openContractFromSheet(pageKey,idx){
   if(!sheet||!rowIdx){toast('시트 정보 없음','err');return;}
   var col=-1;
   for(var i=0;i<h.length;i++){
-    if(h[i]===header){col=i+1;break;}
+    if(h[i]===header){col=i+2;break;}
   }
    console.log('저장:', header, '열번호:', col, '행번호:', rowIdx, '값:', newVal); 
   if(col<0){toast('열을 찾을 수 없음','err');return;}
