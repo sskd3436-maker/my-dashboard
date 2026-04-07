@@ -860,7 +860,7 @@ b+='</td>';
     var ctEnd=fv(it.row,it.headers,'계약종료')||'';
     if(ctStart&&ctStart.indexOf('T')>0)ctStart=ctStart.split('T')[0];
     if(ctEnd&&ctEnd.indexOf('T')>0)ctEnd=ctEnd.split('T')[0];
-        var bizColors={'(투자20)':'#e74c3c','(투자21)':'#e67e22','(투자22)':'#f1c40f','(투자23)':'#2ecc71','(투자24)':'#1abc9c','(투자25)':'#3498db','(투자26)':'#9b59b6','(투자27)':'#e91e63'};
+        var bizColors={'(투자20)':'#e74c3c','(투자21)':'#e67e22','(투자22)':'#f1c40f','(투자23)':'#2ecc71','(투자24)':'#1abc9c','(투자25)':'#3498db','(투자26)':'#9b59b6','(투자27)':'#00bcd4'};
     var kindColors={'구형대':'#6c757d','알박구형':'#e74c3c','알박신형':'#27ae60','신형소':'#3498db','신형대':'#2980b9','10kW':'#f39c12','이카플러그':'#8e44ad','스필_7kW':'#d35400'};
     var bizBadge=bizType?'<span style="background:'+(bizColors[bizType]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;">'+esc(bizType)+'</span>':'';
     var kindBadge=kind?kind.split(', ').map(function(k){return '<span style="background:'+(kindColors[k.trim()]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:inline-block;margin:1px 0;">'+esc(k)+'</span>';}).join(' '):'';
