@@ -1167,7 +1167,7 @@ function renderActTable(mode){
   btnHtml+='<button class="btn btn-sm btn-primary" style="margin-left:12px;border-radius:20px;padding:6px 16px;font-size:12px;font-weight:600;" onclick="openAddRow()">+ 행추가</button>';
   btnHtml+='</div>';
   document.getElementById('actTitle').innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;width:100%;">영업활동 목록 ('+display.length+'건)<div style="margin-left:auto;">'+btnHtml+'</div></div>';
-  var msHtml='<div style="font-size:14px;font-weight:700;margin-bottom:10px;color:#1a73e8;">📊 권역별 현황</div>';
+  var msHtml='<div style="font-size:13px;font-weight:700;margin-bottom:6px;color:#1a73e8;">📊 권역별 현황</div>';
 var areaCount={},areaVisit={};
 for(var i=0;i<display.length;i++){
   var area=fv(display[i].row,display[i].headers,'권역별')||'미지정';
@@ -1176,15 +1176,29 @@ for(var i=0;i<display.length;i++){
   if(vd)areaVisit[area]=(areaVisit[area]||0)+1;
 }
 var areaColors={'수도권남동':'#e74c3c','수도권북동':'#3498db','수도권북서':'#2ecc71','수도권남서':'#e67e22','미지정':'#999'};
-for(var a in areaCount){
-  var total=areaCount[a],visited=areaVisit[a]||0,pct=total>0?Math.round(visited/total*100):0;
-  msHtml+='<div style="margin-bottom:8px;padding:8px;background:#f8f9fa;border-radius:8px;">';
-  msHtml+='<div style="font-size:12px;font-weight:700;color:'+(areaColors[a]||'#666')+';">'+a+'</div>';
-  msHtml+='<div style="font-size:11px;color:#666;">총 '+total+'건 / 방문 '+visited+'건 ('+pct+'%)</div>';
-  msHtml+='<div style="height:6px;background:#eee;border-radius:3px;margin-top:4px;"><div style="height:100%;width:'+pct+'%;background:'+(areaColors[a]||'#999')+';border-radius:3px;"></div></div>';
+var areaKeys=Object.keys(areaCount);
+var half=Math.ceil(areaKeys.length/2);
+msHtml+='<div style="display:flex;gap:6px;">';
+msHtml+='<div style="flex:1;">';
+for(var ai=0;ai<half;ai++){
+  var a=areaKeys[ai],total=areaCount[a],visited=areaVisit[a]||0,pct=total>0?Math.round(visited/total*100):0;
+  msHtml+='<div style="margin-bottom:4px;padding:4px 6px;background:#f8f9fa;border-radius:6px;">';
+  msHtml+='<div style="font-size:10px;font-weight:700;color:'+(areaColors[a]||'#666')+';">'+a+'</div>';
+  msHtml+='<div style="font-size:9px;color:#666;">'+total+'건/방문'+visited+' ('+pct+'%)</div>';
+  msHtml+='<div style="height:4px;background:#eee;border-radius:2px;margin-top:2px;"><div style="height:100%;width:'+pct+'%;background:'+(areaColors[a]||'#999')+';border-radius:2px;"></div></div>';
   msHtml+='</div>';
 }
-msHtml+='<div style="font-size:14px;font-weight:700;margin:12px 0 10px;color:#1a73e8;">😊 감정상태</div>';
+msHtml+='</div><div style="flex:1;">';
+for(var ai=half;ai<areaKeys.length;ai++){
+  var a=areaKeys[ai],total=areaCount[a],visited=areaVisit[a]||0,pct=total>0?Math.round(visited/total*100):0;
+  msHtml+='<div style="margin-bottom:4px;padding:4px 6px;background:#f8f9fa;border-radius:6px;">';
+  msHtml+='<div style="font-size:10px;font-weight:700;color:'+(areaColors[a]||'#666')+';">'+a+'</div>';
+  msHtml+='<div style="font-size:9px;color:#666;">'+total+'건/방문'+visited+' ('+pct+'%)</div>';
+  msHtml+='<div style="height:4px;background:#eee;border-radius:2px;margin-top:2px;"><div style="height:100%;width:'+pct+'%;background:'+(areaColors[a]||'#999')+';border-radius:2px;"></div></div>';
+  msHtml+='</div>';
+}
+msHtml+='</div></div>';
+msHtml+='<div style="font-size:13px;font-weight:700;margin:8px 0 4px;color:#1a73e8;">😊 감정상태</div>';
 var sentCount={positive:0,neutral:0,negative:0,etc:0,none:0};
 for(var i=0;i<display.length;i++){
   var s=display[i].sent;
@@ -1197,13 +1211,14 @@ for(var i=0;i<display.length;i++){
 var sentItems=[{k:'positive',l:'긍정',c:'#27ae60'},{k:'neutral',l:'중립',c:'#f39c12'},{k:'negative',l:'부정',c:'#e74c3c'},{k:'etc',l:'기타',c:'#9b59b6'},{k:'none',l:'미분류',c:'#999'}];
 for(var si=0;si<sentItems.length;si++){
   var s=sentItems[si],cnt=sentCount[s.k],pct=display.length>0?Math.round(cnt/display.length*100):0;
-  msHtml+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">';
-  msHtml+='<span style="width:8px;height:8px;border-radius:50%;background:'+s.c+';"></span>';
-  msHtml+='<span style="font-size:11px;color:#555;flex:1;">'+s.l+'</span>';
-  msHtml+='<span style="font-size:11px;font-weight:700;color:'+s.c+';">'+cnt+'건 ('+pct+'%)</span>';
+  msHtml+='<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">';
+  msHtml+='<span style="width:6px;height:6px;border-radius:50%;background:'+s.c+';"></span>';
+  msHtml+='<span style="font-size:10px;color:#555;flex:1;">'+s.l+'</span>';
+  msHtml+='<span style="font-size:10px;font-weight:700;color:'+s.c+';">'+cnt+'('+pct+'%)</span>';
   msHtml+='</div>';
 }
 if(document.getElementById('actMapStats'))document.getElementById('actMapStats').innerHTML=msHtml;
+
   mkTable(display,'actTH','actTB','act',q);
 }
   function openAddRow(){
