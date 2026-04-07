@@ -242,21 +242,26 @@
 @media (max-width: 768px) {
   .sidebar { width: 0; padding: 0; }
   .sidebar.open { width: 260px; padding: 20px 16px; }
-  .main { margin-left: 0 !important; padding: 10px !important; }
-  .search-bar { flex-direction: column; gap: 8px; }
-  .search-input, .filter-select { width: 100% !important; font-size: 14px !important; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+  .main { margin-left: 0 !important; padding: 8px !important; }
+  .search-bar { flex-direction: column; gap: 6px; padding: 8px !important; }
+  .search-input, .filter-select { width: 100% !important; font-size: 13px !important; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
   .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .table-wrap table { min-width: 800px; font-size: 12px; }
-  .table-wrap td, .table-wrap th { padding: 6px 4px !important; font-size: 11px !important; }
-  #actMap { height: 250px !important; }
+  .table-wrap table { min-width: 600px; font-size: 11px; }
+  .table-wrap td, .table-wrap th { padding: 4px 3px !important; font-size: 10px !important; white-space: nowrap; }
+  #actMap { height: 200px !important; }
+  #actMapBox { margin-bottom: 8px !important; }
   .modal { width: 95% !important; max-width: 95% !important; margin: 10px auto !important; max-height: 90vh; overflow-y: auto; }
   #contractForm { flex-direction: column !important; }
   #contractForm > div { width: 100% !important; }
-  .btn-sm { padding: 4px 8px !important; font-size: 11px !important; }
+  .btn-sm { padding: 3px 6px !important; font-size: 10px !important; }
   .hamburger { display: flex !important; }
-  .section-box { padding: 10px !important; }
-  #actTitle div { flex-direction: column !important; gap: 8px !important; }
+  .section-box { padding: 8px !important; }
+  .badge { font-size: 9px !important; padding: 1px 5px !important; }
+  #actTitle { padding: 8px 10px !important; font-size: 13px !important; }
+  #actTitle > div { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
+  #actTitle label { font-size: 10px !important; padding: 4px 8px !important; }
+  .table-box { border-radius: 8px !important; }
 }
     
   </style>
