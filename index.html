@@ -1039,7 +1039,6 @@ function renderActivity(){
   document.getElementById('actContractArea').innerHTML=ctHtml;
 
   // Leaflet 지도 (시트2 기반)
-if(!window._actMap){
  if(!window._actMap){
   window._actMap=L.map('actMap').setView([36.5,127.5],7);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'OSM'}).addTo(window._actMap);
