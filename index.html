@@ -1208,7 +1208,7 @@ for(var i=0;i<display.length;i++){
   else if(s==='etc')sentCount.etc++;
   else sentCount.none++;
 }
-var sentItems=[{k:'positive',l:'긍정',c:'#27ae60'},{k:'neutral',l:'중립',c:'#f39c12'},{k:'negative',l:'부정',c:'#e74c3c'},{k:'etc',l:'기타',c:'#9b59b6'},{k:'none',l:'미분류',c:'#999'}];
+var sentItems=[{k:'positive',l:'긍정',c:'#27ae60'},{k:'neutral',l:'중립',c:'#f39c12'},{k:'negative',l:'부정',c:'#e74c3c'},{k:'none',l:'미분류',c:'#999'}];
 for(var si=0;si<sentItems.length;si++){
   var s=sentItems[si],cnt=sentCount[s.k],pct=display.length>0?Math.round(cnt/display.length*100):0;
   msHtml+='<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">';
