@@ -6,25 +6,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>현장 업무수행 대시보드</title>
-@media (max-width: 768px) {
-  .sidebar { width: 0; padding: 0; }
-  .sidebar.open { width: 260px; padding: 20px 16px; }
-  .main { margin-left: 0 !important; padding: 10px !important; }
-  .search-bar { flex-direction: column; gap: 8px; }
-  .search-input, .filter-select { width: 100% !important; font-size: 14px !important; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
-  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .table-wrap table { min-width: 800px; font-size: 12px; }
-  .table-wrap td, .table-wrap th { padding: 6px 4px !important; font-size: 11px !important; }
-  #actMap { height: 250px !important; }
-  .modal { width: 95% !important; max-width: 95% !important; margin: 10px auto !important; max-height: 90vh; overflow-y: auto; }
-  #contractForm { flex-direction: column !important; }
-  #contractForm > div { width: 100% !important; }
-  .btn-sm { padding: 4px 8px !important; font-size: 11px !important; }
-  .hamburger { display: flex !important; }
-  .section-box { padding: 10px !important; }
-  #actTitle div { flex-direction: column !important; gap: 8px !important; }
-}
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #f0f2f5; color: #1a1a2e; display: flex; min-height: 100vh; }
@@ -256,6 +238,26 @@
 #ctStats .stat-card:nth-child(5){background:#eefbf3;border:2px solid #27ae60;}
 #ctStats .stat-value{font-size:32px;font-weight:800;margin-bottom:6px;}
 #ctStats .stat-label{font-size:15px;font-weight:700;color:#333;}
+
+@media (max-width: 768px) {
+  .sidebar { width: 0; padding: 0; }
+  .sidebar.open { width: 260px; padding: 20px 16px; }
+  .main { margin-left: 0 !important; padding: 10px !important; }
+  .search-bar { flex-direction: column; gap: 8px; }
+  .search-input, .filter-select { width: 100% !important; font-size: 14px !important; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-wrap table { min-width: 800px; font-size: 12px; }
+  .table-wrap td, .table-wrap th { padding: 6px 4px !important; font-size: 11px !important; }
+  #actMap { height: 250px !important; }
+  .modal { width: 95% !important; max-width: 95% !important; margin: 10px auto !important; max-height: 90vh; overflow-y: auto; }
+  #contractForm { flex-direction: column !important; }
+  #contractForm > div { width: 100% !important; }
+  .btn-sm { padding: 4px 8px !important; font-size: 11px !important; }
+  .hamburger { display: flex !important; }
+  .section-box { padding: 10px !important; }
+  #actTitle div { flex-direction: column !important; gap: 8px !important; }
+}
     
   </style>
 </head>
