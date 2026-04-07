@@ -1040,8 +1040,23 @@ function renderActivity(){
 
   // Leaflet 지도 (시트2 기반)
 if(!window._actMap){
+ if(!window._actMap){
   window._actMap=L.map('actMap').setView([36.5,127.5],7);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'OSM'}).addTo(window._actMap);
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var myLat=pos.coords.latitude;
+      var myLng=pos.coords.longitude;
+      window._actMap.setView([myLat,myLng],12);
+      var myIcon=L.divIcon({
+        className:'',
+        html:'<div style="width:18px;height:18px;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>',
+        iconSize:[18,18],
+        iconAnchor:[9,9]
+      });
+      L.marker([myLat,myLng],{icon:myIcon}).addTo(window._actMap).bindPopup('<b>내 위치</b>');
+    });
+  }
 }
 if(window._actMarkers){for(var mi=0;mi<window._actMarkers.length;mi++)window._actMap.removeLayer(window._actMarkers[mi]);}
 window._actMarkers=[];
