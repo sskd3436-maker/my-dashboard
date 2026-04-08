@@ -1717,7 +1717,8 @@ function submitSchEdit(){
       total++;
       if(row)row[header]=val;
       (function(hd,vl,cl){
-        apiPost({action:'updateCell',sheet:sheet,row:rowIdx,col:cl,value:vl},function(){
+        apiPost({action:'updateCell',sheet:sheet,row:rowIdx,col:cl,value:vl},function(res){
+  console.log('저장응답:', JSON.stringify(res));
           done++;
           if(done>=total){
             toast('저장 완료','ok');
