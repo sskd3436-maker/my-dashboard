@@ -1722,7 +1722,22 @@ function submitSchEdit(){
   }
   toast('저장 완료','ok');
   document.getElementById('contractModal').classList.remove('show');
-  renderSchedule();
+  apiGet({action:'getSheets'},function(data){
+    var sheets=data.sheets||[],loaded=0;
+    var newData={};
+    for(var i=0;i<sheets.length;i++){
+      (function(nm){apiGet({action:'getData',sheet:nm},function(d){
+        newData[nm]=d;loaded++;
+        if(loaded>=sheets.length){
+          allSheetsData=newData;
+          localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
+          buildFlat();
+          buildFilters();
+          renderActivity();
+        }
+      });})(sheets[i]);
+    }
+  });
 }
 
   
