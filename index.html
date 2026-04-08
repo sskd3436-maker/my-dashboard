@@ -1723,6 +1723,8 @@ function submitSchEdit(){
   }
   total=pairs.length;
   if(total===0){toast('변경사항 없음','info');return;}
+   toast('저장 중...','info');
+  document.getElementById('contractModal').classList.remove('show');
   for(var i=0;i<pairs.length;i++){
     (function(p){
       apiPost({action:'updateCell',sheet:sheet,row:rowIdx,col:p.col,value:p.val},function(res){
@@ -1730,8 +1732,7 @@ function submitSchEdit(){
         done++;
         if(done>=total){
           console.log('모든필드저장완료, 새로고침시작');
-          toast('저장 완료','ok');
-          document.getElementById('contractModal').classList.remove('show');
+           toast('저장 완료','ok');
           var sq=document.getElementById('actSearch').value;
           var ss=document.getElementById('actSent').value;
           var sm=document.getElementById('actMgr').value;
