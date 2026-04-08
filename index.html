@@ -55,7 +55,7 @@
     }
     .top-bar h1 { font-size: 18px; color: #333; }
     .refresh-btn { background: #1a73e8; border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
-    .content { padding: 24px; max-width: 100%; }
+    .content { padding: 24px; max-width: calc(100vw - 254px); box-sizing: border-box; }
     .page { display: none; }
     .page.active { display: block; }
 
@@ -1115,7 +1115,8 @@ function renderActivity(){
     navigator.geolocation.getCurrentPosition(function(pos){
       var myLat=pos.coords.latitude;
       var myLng=pos.coords.longitude;
-      window._actMap.setView([myLat,myLng],12);
+      window._actMyLoc=[myLat,myLng];
+window._actMap.setView([myLat,myLng],12);
       var myIcon=L.divIcon({
         className:'',
         html:'<div style="width:18px;height:18px;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>',
@@ -1151,7 +1152,11 @@ marker.bindPopup('<b>'+site+'</b><br>주소: '+(addr||'-')+'<br>담당자: '+mgr
   window._actMarkers.push(marker);
   mapBounds.push([lat,lng]);
 }
-if(mapBounds.length>0)window._actMap.fitBounds(mapBounds,{padding:[30,30]});
+if(window._actMyLoc){
+  window._actMap.setView(window._actMyLoc,12);
+}else if(mapBounds.length>0){
+  window._actMap.fitBounds(mapBounds,{padding:[30,30]});
+}
 
 
    // 사이트명 기준 합치기
