@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+  <link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="대시보드">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <meta charset="UTF-8">
@@ -2491,5 +2495,8 @@ function generateContract(source, idx) {
 <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.37.12/build/docxtemplater.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 </div><!-- dashboardWrap 끝 -->
+  <script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}
+</script>
 </body>
 </html>
