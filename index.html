@@ -561,11 +561,22 @@ function init(){
   dailyDt=new Date(n);setWeekStart(n);mYear=n.getFullYear();mMon=n.getMonth();
   curPage='activity';
 
-  // 로딩 표시
-  document.getElementById('actStats').innerHTML='<div class="loading"><div class="spinner"></div></div>';
-  document.getElementById('actTB').innerHTML='<tr><td colspan="8"><div class="loading"><div class="spinner"></div> 데이터 불러오는 중...</div></td></tr>';
+  var cached=localStorage.getItem('dashCache');
+  if(cached){
+    try{
+      allSheetsData=JSON.parse(cached);
+      dataLoaded=true;
+      buildFlat();
+      buildFilters();
+      renderActivity();
+      goPage('activity');
+      toast('캐시 로드 완료','ok');
+    }catch(e){}
+  }else{
+    document.getElementById('actStats').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+    document.getElementById('actTB').innerHTML='<tr><td colspan="8"><div class="loading"><div class="spinner"></div> 데이터 불러오는 중...</div></td></tr>';
+  }
 
-  // 데이터 로드
   apiGet({action:'getSheets'},function(data){
     var sheets=data.sheets||[],loaded=0;
     var sm=document.getElementById('sheetMenus');if(sm)sm.innerHTML='';
@@ -579,22 +590,22 @@ function init(){
       document.getElementById('actTB').innerHTML='<tr><td colspan="8"><div class="empty-msg">데이터 없음</div></td></tr>';
       return;
     }
+    var newData={};
     for(var i=0;i<sheets.length;i++){
     (function(nm){apiGet({action:'getData',sheet:nm},function(d){
-      allSheetsData[nm]=d;loaded++;
-if(loaded>=sheets.length){
-  console.log('모든시트로드완료');
-  dataLoaded=true;
-  buildFlat();
-  buildFilters();
-  console.log('allFlat길이:',allFlat.length);
-  console.log('renderActivity호출직전');
-  renderActivity();
-  console.log('renderActivity호출완료');
-  goPage('activity');
-  toast('로드 완료','ok');
-}
-     });})(sheets[i]);
+      newData[nm]=d;loaded++;
+      if(loaded>=sheets.length){
+        console.log('모든시트로드완료');
+        allSheetsData=newData;
+        dataLoaded=true;
+        localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
+        buildFlat();
+        buildFilters();
+        renderActivity();
+        goPage('activity');
+        toast('최신 데이터 로드 완료','ok');
+      }
+    });})(sheets[i]);
     }
   });
 }
