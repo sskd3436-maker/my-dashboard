@@ -1708,6 +1708,7 @@ function submitSchEdit(){
   var rowIdx=window._sheetEditRowIdx;
   if(!sheet||!rowIdx){toast('시트 정보 없음','err');return;}
   var inputs=document.querySelectorAll('#cf_sheetData input[data-header]');
+  console.log('submitSchEdit호출, input개수:', inputs.length);
   var total=0,done=0;
   var pairs=[];
   for(var i=0;i<inputs.length;i++){
