@@ -1709,63 +1709,62 @@ function submitSchEdit(){
   if(!sheet||!rowIdx){toast('시트 정보 없음','err');return;}
   var inputs=document.querySelectorAll('#cf_sheetData input[data-header]');
   var total=0,done=0;
+  var pairs=[];
   for(var i=0;i<inputs.length;i++){
     var header=inputs[i].getAttribute('data-header');
     var val=inputs[i].value;
     var col=-1;
     for(var j=0;j<h.length;j++){if(h[j]===header){col=j+2;break;}}
     if(col>0){
-      total++;
+      pairs.push({header:header,val:val,col:col});
       if(row)row[header]=val;
-      (function(hd,vl,cl){
-        apiPost({action:'updateCell',sheet:sheet,row:rowIdx,col:cl,value:vl},function(res){
-  console.log('저장응답:', JSON.stringify(res));
-          done++;
-          if(done>=total){
-            toast('저장 완료','ok');
-            document.getElementById('contractModal').classList.remove('show');
-            setTimeout(function(){
-              apiGet({action:'getSheets'},function(data){
-                var sheets=data.sheets||[],loaded=0;
-                var newData={};
-                for(var i=0;i<sheets.length;i++){
-                  (function(nm){apiGet({action:'getData',sheet:nm},function(d){
-                    newData[nm]=d;loaded++;
-                    if(loaded>=sheets.length){
-                      allSheetsData=newData;
-                      localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
-                      buildFlat();
-                      buildFilters();
-                      var savedQuery=document.getElementById('actSearch').value;
-                      var savedSent=document.getElementById('actSent').value;
-                      var savedMgr=document.getElementById('actMgr').value;
-                      var savedSheet=document.getElementById('actSheet').value;
-                      renderActivity();
-                      document.getElementById('actSearch').value=savedQuery;
-                      document.getElementById('actSent').value=savedSent;
-                      document.getElementById('actMgr').value=savedMgr;
-                      document.getElementById('actSheet').value=savedSheet;
-                      renderActTable(window._actMode||'all');
-
-                      document.getElementById('actSearch').value=savedQuery;
-                      document.getElementById('actSent').value=savedSent;
-                      document.getElementById('actMgr').value=savedMgr;
-                      document.getElementById('actSheet').value=savedSheet;
-                      renderActivity();
-                    }
-                  });})(sheets[i]);
-                }
-              });
-            },1000);
-          }
-        });
-      })(header,val,col);
     }
   }
-  if(total===0){
-    toast('변경사항 없음','info');
+  total=pairs.length;
+  if(total===0){toast('변경사항 없음','info');return;}
+  for(var i=0;i<pairs.length;i++){
+    (function(p){
+      apiPost({action:'updateCell',sheet:sheet,row:rowIdx,col:p.col,value:p.val},function(res){
+        console.log('저장응답:',p.header,JSON.stringify(res));
+        done++;
+        if(done>=total){
+          console.log('모든필드저장완료, 새로고침시작');
+          toast('저장 완료','ok');
+          document.getElementById('contractModal').classList.remove('show');
+          var sq=document.getElementById('actSearch').value;
+          var ss=document.getElementById('actSent').value;
+          var sm=document.getElementById('actMgr').value;
+          var sa=document.getElementById('actSheet').value;
+          setTimeout(function(){
+            apiGet({action:'getSheets'},function(data){
+              var sheets=data.sheets||[],loaded=0;
+              var newData={};
+              for(var i=0;i<sheets.length;i++){
+                (function(nm){apiGet({action:'getData',sheet:nm},function(d){
+                  newData[nm]=d;loaded++;
+                  if(loaded>=sheets.length){
+                    console.log('새로고침데이터로드완료');
+                    allSheetsData=newData;
+                    localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
+                    buildFlat();
+                    buildFilters();
+                    renderActivity();
+                    document.getElementById('actSearch').value=sq;
+                    document.getElementById('actSent').value=ss;
+                    document.getElementById('actMgr').value=sm;
+                    document.getElementById('actSheet').value=sa;
+                    renderActTable(window._actMode||'all');
+                  }
+                });})(sheets[i]);
+              }
+            });
+          },1000);
+        }
+      });
+    })(pairs[i]);
   }
 }
+
 
   
  function openSchEdit(idx){
