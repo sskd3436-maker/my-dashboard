@@ -1736,11 +1736,17 @@ function submitSchEdit(){
                       localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
                       buildFlat();
                       buildFilters();
-                        var savedQuery=document.getElementById('actSearch').value;
+                      var savedQuery=document.getElementById('actSearch').value;
                       var savedSent=document.getElementById('actSent').value;
                       var savedMgr=document.getElementById('actMgr').value;
                       var savedSheet=document.getElementById('actSheet').value;
                       renderActivity();
+                      document.getElementById('actSearch').value=savedQuery;
+                      document.getElementById('actSent').value=savedSent;
+                      document.getElementById('actMgr').value=savedMgr;
+                      document.getElementById('actSheet').value=savedSheet;
+                      renderActTable(window._actMode||'all');
+
                       document.getElementById('actSearch').value=savedQuery;
                       document.getElementById('actSent').value=savedSent;
                       document.getElementById('actMgr').value=savedMgr;
