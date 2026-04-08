@@ -83,9 +83,11 @@
     flex: none !important; 
     width: 100% !important; 
   }
-  #actMap { 
-    height: 300px !important; 
+   #actMap { 
+    height: 350px !important; 
     width: 100% !important; 
+    max-width: 50vw !important; 
+    margin: 0 auto !important;
   }
   #actMapStats { 
     display: none !important; 
@@ -1176,6 +1178,13 @@ window._actMap.setView([myLat,myLng],12);
         iconAnchor:[9,9]
       });
       L.marker([myLat,myLng],{icon:myIcon}).addTo(window._actMap).bindPopup('<b>내 위치</b>');
+       var myLocBtn=L.control({position:'topright'});
+      myLocBtn.onAdd=function(){
+        var div=L.DomUtil.create('div','');
+        div.innerHTML='<button onclick="if(window._actMyLoc){window._actMap.setView(window._actMyLoc,14);}" style="background:#fff;border:2px solid #ccc;border-radius:8px;padding:6px 10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.2);">📍 내위치</button>';
+        return div;
+      };
+      myLocBtn.addTo(window._actMap);
     });
   }
 }
