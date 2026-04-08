@@ -1737,30 +1737,32 @@ function submitSchEdit(){
           var ss=document.getElementById('actSent').value;
           var sm=document.getElementById('actMgr').value;
           var sa=document.getElementById('actSheet').value;
+          localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
+          buildFlat();
+          buildFilters();
+          renderActivity();
+          document.getElementById('actSearch').value=sq;
+          document.getElementById('actSent').value=ss;
+          document.getElementById('actMgr').value=sm;
+          document.getElementById('actSheet').value=sa;
+          renderActTable(window._actMode||'all');
           setTimeout(function(){
             apiGet({action:'getSheets'},function(data){
               var sheets=data.sheets||[],loaded=0;
               var newData={};
-              for(var i=0;i<sheets.length;i++){
+              for(var si=0;si<sheets.length;si++){
                 (function(nm){apiGet({action:'getData',sheet:nm},function(d){
                   newData[nm]=d;loaded++;
                   if(loaded>=sheets.length){
-                    console.log('새로고침데이터로드완료');
                     allSheetsData=newData;
                     localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
                     buildFlat();
                     buildFilters();
-                    renderActivity();
-                    document.getElementById('actSearch').value=sq;
-                    document.getElementById('actSent').value=ss;
-                    document.getElementById('actMgr').value=sm;
-                    document.getElementById('actSheet').value=sa;
-                    renderActTable(window._actMode||'all');
                   }
-                });})(sheets[i]);
+                });})(sheets[si]);
               }
             });
-          },1000);
+          },3000);
         }
       });
     })(pairs[i]);
