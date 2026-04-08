@@ -56,7 +56,8 @@
     .top-bar h1 { font-size: 18px; color: #333; }
     .refresh-btn { background: #1a73e8; border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
     .content { padding: 24px; max-width: 1200px; }
-  
+   @media (max-width: 768px) {
+  .content { padding: 8px; max-width: 100%; }
   
   /* 검색바 */
   .search-bar { 
@@ -252,7 +253,17 @@
     @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     .empty-msg { text-align: center; padding: 30px; color: #999; }
 
-    
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .mobile-header { display: flex; }
+      .main { margin-left: 0; padding-top: 52px; }
+      .content { padding: 12px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .detail-grid { grid-template-columns: 1fr; }
+      .stat-number { font-size: 24px; }
+      .sub-tabs { flex-wrap: wrap; }
+    }
     .table-wrap{overflow-x:auto;}
     .content{max-width:100%!important;width:100%!important;}
     .form-group{margin-bottom:12px;}
@@ -284,39 +295,17 @@
 #ctStats .stat-label{font-size:15px;font-weight:700;color:#333;}
 
 @media (max-width: 768px) {
-  .sidebar { width: 0; padding: 0; transform: translateX(-100%); }
-  .sidebar.open { width: 260px; padding: 20px 16px; transform: translateX(0); }
-  .mobile-header { display: flex; }
-  .main { margin-left: 0 !important; padding-top: 52px; }
-  .content { padding: 8px !important; max-width: 100%; }
+  .sidebar { width: 0; padding: 0; }
+  .sidebar.open { width: 260px; padding: 20px 16px; }
+  .main { margin-left: 0 !important; padding: 8px !important; }
   .search-bar { flex-direction: column; gap: 6px; padding: 8px !important; }
-  .search-input { width: 100% !important; font-size: 14px !important; padding: 10px 12px; box-sizing: border-box; }
-  .filter-select { display: none !important; }
+  .search-input, .filter-select { width: 100% !important; font-size: 13px !important; }
   .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
-  .detail-grid { grid-template-columns: 1fr; }
-  .stat-number { font-size: 24px; }
-  .sub-tabs { flex-wrap: wrap; }
-  #actMapBox { flex-direction: column !important; margin-bottom: 8px !important; }
-  #actMapBox > div:first-child { flex: none !important; width: 100% !important; }
-  #actMap { height: 250px !important; width: 100% !important; }
-  #actMapStats { display: none !important; }
-  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 12px; }
-  .table-wrap table { font-size: 11px; }
-  .table-wrap td, .table-wrap th { padding: 6px 4px !important; font-size: 11px !important; }
-  .table-wrap table th:nth-child(1),
-  .table-wrap table td:nth-child(1),
-  .table-wrap table th:nth-child(5),
-  .table-wrap table td:nth-child(5),
-  .table-wrap table th:nth-child(6),
-  .table-wrap table td:nth-child(6),
-  .table-wrap table th:nth-child(7),
-  .table-wrap table td:nth-child(7),
-  .table-wrap table th:nth-child(8),
-  .table-wrap table td:nth-child(8),
-  .table-wrap table th:nth-child(9),
-  .table-wrap table td:nth-child(9),
-  .table-wrap table th:nth-child(11),
-  .table-wrap table td:nth-child(11) { display: none !important; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-wrap table { min-width: 600px; font-size: 11px; }
+  .table-wrap td, .table-wrap th { padding: 4px 3px !important; font-size: 10px !important; white-space: nowrap; }
+  #actMap { height: 200px !important; }
+  #actMapBox { margin-bottom: 8px !important; }
   .modal { width: 95% !important; max-width: 95% !important; margin: 10px auto !important; max-height: 90vh; overflow-y: auto; }
   #contractForm { flex-direction: column !important; }
   #contractForm > div { width: 100% !important; }
@@ -328,9 +317,7 @@
   #actTitle > div { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
   #actTitle label { font-size: 10px !important; padding: 4px 8px !important; }
   .table-box { border-radius: 8px !important; }
-  .top-bar { padding: 8px 12px; }
 }
-
     
   </style>
 </head>
