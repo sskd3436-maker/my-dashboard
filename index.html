@@ -268,6 +268,20 @@
 </head>
 <body>
 
+ <!-- 로그인 화면 -->
+<div id="loginPage" style="display:flex;justify-content:center;align-items:center;height:100vh;background:#f0f2f5;">
+  <div style="background:#fff;padding:40px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);width:360px;text-align:center;">
+    <div style="font-size:40px;margin-bottom:12px;">📊</div>
+    <h2 style="margin:0 0 8px;color:#1a73e8;">업무수행 대시보드</h2>
+    <p style="color:#888;font-size:13px;margin-bottom:24px;">로그인 후 이용해주세요</p>
+    <input type="text" id="loginId" placeholder="아이디" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:10px;box-sizing:border-box;">
+    <input type="password" id="loginPw" placeholder="비밀번호" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:16px;box-sizing:border-box;" onkeypress="if(event.keyCode===13)doLogin()">
+    <button onclick="doLogin()" style="width:100%;padding:12px;background:#1a73e8;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">로그인</button>
+    <div id="loginMsg" style="color:#e74c3c;font-size:13px;margin-top:12px;"></div>
+  </div>
+</div>
+
+<div id="dashboardWrap" style="display:none;">
 <div class="mobile-header">
   <button class="hamburger" onclick="toggleSidebar()">☰</button>
   <span style="font-size:16px;font-weight:600;">📊 업무수행 대시보드</span>
@@ -586,6 +600,27 @@ if(loaded>=sheets.length){
   });
 }
 
+  var users={
+  '김준우':{pw:'1234',name:'김준우'},
+  '신준명':{pw:'1234',name:'신준명'},
+  '정재규':{pw:'1234',name:'정재규'},
+  '전두현':{pw:'1234',name:'전두현'},
+  '관리자':{pw:'admin',name:'관리자'}
+};
+function doLogin(){
+  var id=document.getElementById('loginId').value.trim();
+  var pw=document.getElementById('loginPw').value;
+  if(users[id]&&users[id].pw===pw){
+    document.getElementById('loginPage').style.display='none';
+    document.getElementById('dashboardWrap').style.display='';
+    window._loginUser=users[id].name;
+    init();
+  }else{
+    document.getElementById('loginMsg').textContent='아이디 또는 비밀번호가 올바르지 않습니다.';
+  }
+}
+
+function toast(m,t){...}
 
 function toast(m,t){var b=document.getElementById('toasts'),e=document.createElement('div');e.className='toast '+(t||'info');e.textContent=m;b.appendChild(e);setTimeout(function(){e.remove();},3000);}
 function apiGet(p,cb){var url=API+'?'+Object.keys(p).map(function(k){return k+'='+encodeURIComponent(p[k])}).join('&');fetch(url,{redirect:'follow',mode:'cors'}).then(function(r){return r.text();}).then(function(t){try{cb(JSON.parse(t));}catch(e){console.log('응답:',t.substring(0,100));}}).catch(function(e){console.log('fetch오류:',e);});}
@@ -1612,7 +1647,7 @@ function closeModal(id){document.getElementById(id).classList.remove('show');}
 function submitAdd(){var d=[];for(var i=0;i<sheetHeaders.length;i++)d.push(document.getElementById('af_'+i).value);apiPost({action:'addRow',sheet:nowSheet,rowData:d},function(r){if(r.success){toast('추가!','ok');closeModal('addModal');delete allSheetsData[nowSheet];buildFlat();loadSheetPage(nowSheet);}else toast('실패','fail');});}
 function delRow(sheet,row){if(!confirm('삭제?'))return;apiPost({action:'deleteRow',sheet:sheet,row:row},function(r){if(r.success){toast('삭제!','ok');delete allSheetsData[nowSheet];buildFlat();loadSheetPage(nowSheet);}else toast('실패','fail');});}
 
-window.onload=init;
+
 
   function openDetailFromRow(pageKey,btn){
   var tr=btn.closest('tr');
@@ -2381,5 +2416,6 @@ function generateContract(source, idx) {
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.6/dist/pizzip.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.37.12/build/docxtemplater.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+</div><!-- dashboardWrap 끝 -->
 </body>
 </html>
