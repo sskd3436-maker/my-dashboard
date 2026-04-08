@@ -56,9 +56,57 @@
     .top-bar h1 { font-size: 18px; color: #333; }
     .refresh-btn { background: #1a73e8; border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
     .content { padding: 24px; max-width: 1200px; }
-    @media (max-width: 768px) {
-  .content { padding: 12px; max-width: 100%; }
+   @media (max-width: 768px) {
+  .content { padding: 8px; max-width: 100%; }
+  
+  /* 검색바 */
+  .search-bar { 
+    flex-direction: column; 
+    gap: 6px; 
+    padding: 8px; 
+  }
+  .search-input { 
+    width: 100%; 
+    font-size: 14px; 
+    padding: 10px 12px; 
+    box-sizing: border-box; 
+  }
+  
+  /* 필터 숨기기 */
+  .filter-select { display: none; }
+  
+  /* 지도 */
+  #actMapBox { 
+    flex-direction: column !important; 
+  }
+  #actMapBox > div:first-child { 
+    flex: none !important; 
+    width: 100% !important; 
+  }
+  #actMap { 
+    height: 300px !important; 
+    width: 100% !important; 
+  }
+  #actMapStats { 
+    display: none !important; 
+  }
+  
+  /* 테이블 */
+  .table-wrap { 
+    font-size: 12px; 
+  }
+  .table-wrap table th,
+  .table-wrap table td { 
+    padding: 6px 4px; 
+    font-size: 11px; 
+  }
+  
+  /* 새로고침 버튼 */
+  .top-bar { 
+    padding: 8px 12px; 
+  }
 }
+
     .page { display: none; }
     .page.active { display: block; }
 
@@ -292,6 +340,7 @@
 <div class="mobile-header">
   <button class="hamburger" onclick="toggleSidebar()">☰</button>
   <span style="font-size:16px;font-weight:600;">📊 업무수행 대시보드</span>
+  <button onclick="location.reload()" style="margin-left:auto;background:#1a73e8;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;">🔄 새로고침</button>
 </div>
 <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
@@ -812,7 +861,7 @@ function mkTablePage(pageKey){
   var q=window['_q_'+pageKey]||'';
   var contractSites=window['_cs_'+pageKey]||{};
   var page=window['_pg_'+pageKey]||0;
-  var perPage=50;
+  var perPage=(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent))?10:50;
   var start=page*perPage;
   var end=Math.min(start+perPage,list.length);
   var totalPages=Math.ceil(list.length/perPage)||1;
@@ -931,7 +980,7 @@ function mkTablePageFiltered(pageKey){
   var q=window['_q_'+pageKey]||'';
   var contractSites=window['_cs_'+pageKey]||{};
   var page=window['_pg_'+pageKey]||0;
-  var perPage=50;
+  var perPage=(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent))?10:50;
   var start=page*perPage;
   var end=Math.min(start+perPage,list.length);
   var totalPages=Math.ceil(list.length/perPage)||1;
