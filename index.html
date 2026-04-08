@@ -610,6 +610,7 @@ function doLogin(){
   var id=document.getElementById('loginId').value.trim();
   var pw=document.getElementById('loginPw').value;
   if(users[id]&&users[id].pw===pw){
+    sessionStorage.setItem('loginUser',users[id].name);
     document.getElementById('loginPage').style.display='none';
     document.getElementById('dashboardWrap').style.display='';
     window._loginUser=users[id].name;
@@ -618,6 +619,15 @@ function doLogin(){
     document.getElementById('loginMsg').textContent='아이디 또는 비밀번호가 올바르지 않습니다.';
   }
 }
+(function(){
+  var saved=sessionStorage.getItem('loginUser');
+  if(saved){
+    document.getElementById('loginPage').style.display='none';
+    document.getElementById('dashboardWrap').style.display='';
+    window._loginUser=saved;
+    init();
+  }
+})();
 
 
 function toast(m,t){var b=document.getElementById('toasts'),e=document.createElement('div');e.className='toast '+(t||'info');e.textContent=m;b.appendChild(e);setTimeout(function(){e.remove();},3000);}
