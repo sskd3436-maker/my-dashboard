@@ -619,7 +619,6 @@ function doLogin(){
   }
 }
 
-function toast(m,t){...}
 
 function toast(m,t){var b=document.getElementById('toasts'),e=document.createElement('div');e.className='toast '+(t||'info');e.textContent=m;b.appendChild(e);setTimeout(function(){e.remove();},3000);}
 function apiGet(p,cb){var url=API+'?'+Object.keys(p).map(function(k){return k+'='+encodeURIComponent(p[k])}).join('&');fetch(url,{redirect:'follow',mode:'cors'}).then(function(r){return r.text();}).then(function(t){try{cb(JSON.parse(t));}catch(e){console.log('응답:',t.substring(0,100));}}).catch(function(e){console.log('fetch오류:',e);});}
