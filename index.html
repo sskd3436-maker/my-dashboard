@@ -617,29 +617,34 @@ function init(){
   '전두현':{pw:'1234',name:'전두현'},
   '관리자':{pw:'admin',name:'관리자'}
 };
+function isMobile(){
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
 function doLogin(){
   var id=document.getElementById('loginId').value.trim();
   var pw=document.getElementById('loginPw').value;
   if(users[id]&&users[id].pw===pw){
-    sessionStorage.setItem('loginUser',users[id].name);
+    sessionStorage.setItem('loginUser', users[id].name);
+    window._loginUser = users[id].name;
+    window._mobileMode = isMobile() && users[id].name!=='관리자';
+    sessionStorage.setItem('mobileMode', window._mobileMode?'1':'0');
     document.getElementById('loginPage').style.display='none';
     document.getElementById('dashboardWrap').style.display='';
-    window._loginUser=users[id].name;
     init();
   }else{
     document.getElementById('loginMsg').textContent='아이디 또는 비밀번호가 올바르지 않습니다.';
   }
 }
 (function(){
-  var saved=sessionStorage.getItem('loginUser');
+  var saved = sessionStorage.getItem('loginUser');
   if(saved){
+    window._loginUser = saved;
+    window._mobileMode = sessionStorage.getItem('mobileMode')==='1';
     document.getElementById('loginPage').style.display='none';
     document.getElementById('dashboardWrap').style.display='';
-    window._loginUser=saved;
     init();
   }
 })();
-
 
 function toast(m,t){var b=document.getElementById('toasts'),e=document.createElement('div');e.className='toast '+(t||'info');e.textContent=m;b.appendChild(e);setTimeout(function(){e.remove();},3000);}
 function apiGet(p,cb){var url=API+'?'+Object.keys(p).map(function(k){return k+'='+encodeURIComponent(p[k])}).join('&');fetch(url,{redirect:'follow',mode:'cors'}).then(function(r){return r.text();}).then(function(t){try{cb(JSON.parse(t));}catch(e){console.log('응답:',t.substring(0,100));}}).catch(function(e){console.log('fetch오류:',e);});}
@@ -1202,6 +1207,11 @@ function renderActTable(mode){
       var copy={sheet:it.sheet,date:it.dates?it.dates[mode]||it.date:it.date,site:it.site,content:it.contents?it.contents[mode]||it.content:it.content,sent:it.sents?it.sents[mode]||it.sent:it.sent,mgr:it.mgrs?it.mgrs[mode]||it.mgr:it.mgr,row:it.row,headers:it.headers,sheets:it.sheets,bizTypes:it.bizTypes,kinds:it.kinds};
       display.push(copy);
     }
+  }
+   if(window._mobileMode && window._loginUser){
+    display=display.filter(function(it){
+      return (it.mgr||'')=== window._loginUser;
+    });
   }
   // 시트 버튼 (계약서 제외, 토글 스타일)
   var sheetNames={};
