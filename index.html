@@ -55,7 +55,10 @@
     }
     .top-bar h1 { font-size: 18px; color: #333; }
     .refresh-btn { background: #1a73e8; border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
-    .content { padding: 24px; max-width: calc(100vw - 254px); box-sizing: border-box; }
+    .content { padding: 24px; max-width: 1200px; }
+    @media (max-width: 768px) {
+  .content { padding: 12px; max-width: 100%; }
+}
     .page { display: none; }
     .page.active { display: block; }
 
