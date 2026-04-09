@@ -789,6 +789,7 @@ function renderMobileMarkers(){
   window._mobileMarkers=[];
   for(var i=0;i<allFlat.length;i++){
     var it=allFlat[i];
+    if(window._mobileMode&&window._loginUser&&(it.mgr||'')!==window._loginUser)continue;
      var lat=parseFloat(fv(it.row,it.headers,'Y좌표')||0);
     var lng=parseFloat(fv(it.row,it.headers,'X좌표')||0);
     if(!lat||!lng)continue;
