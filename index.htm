@@ -511,26 +511,24 @@
         </div>
       </div>
       <!-- 오른쪽: 계약서 작성 -->
-        <!-- 오른쪽: 계약서 작성 -->
-      <div style="flex:1;min-width:300px;">
+        <div style="flex:1;min-width:300px;">
         <h4 style="margin:0 0 12px 0;color:#27ae60;border-bottom:2px solid #27ae60;padding-bottom:8px;">📋 계약서 작성</h4>
-        <div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;"><div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">사이트명</div><input type="text" id="cf_site" class="form-input" style="flex:1;"></div>
-        <div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;"><div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">입대위명</div><input type="text" id="cf_name" class="form-input" style="flex:1;"></div>
-        <div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;"><div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">주소</div><input type="text" id="cf_addr" class="form-input" style="flex:1;"></div>
-        <div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;"><div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">사업자번호</div><input type="text" id="cf_biz" class="form-input" style="flex:1;"></div>
-        <div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;"><div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">관리실번호</div><input type="text" id="cf_tel" class="form-input" style="flex:1;"></div>
-        <div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;"><div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">계약년수</div><input type="number" id="cf_year" class="form-input" style="flex:1;"></div>
-        <div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;"><div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">충전기수량</div><input type="number" id="cf_qty" class="form-input" style="flex:1;" oninput="calcContract()"></div>
-        <div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;"><div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">설치유형</div><select id="cf_type" class="form-input" style="flex:1;" onchange="calcContract()"><option value="">선택</option><option value="신규설치">신규설치</option><option value="제자리교체">제자리교체</option></select></div>
-        <div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;"><div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">충전기단가</div><input type="text" id="cf_price" class="form-input" style="flex:1;" readonly></div>
-        <div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;"><div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">설치금액</div><input type="text" id="cf_total" class="form-input" style="flex:1;" readonly></div>
-        <div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;"><div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">프로모션기간</div><input type="text" id="cf_promo" class="form-input" style="flex:1;"></div>
-        <div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;"><div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">프로모션금액</div><input type="text" id="cf_promoAmt" class="form-input" style="flex:1;"></div>
-        <div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;"><div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">진행사항</div><select id="cf_status" class="form-input" style="flex:1;"><option value="">선택</option><option value="상담">상담</option><option value="제안">제안</option><option value="입대위">입대위</option><option value="실사">실사</option><option value="계약">계약</option></select></div>
-        <div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;"><div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">비고</div><input type="text" id="cf_note" class="form-input" style="flex:1;"></div>
-        <div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;"><div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">담당자</div><input type="text" id="cf_mgr" class="form-input" style="flex:1;"></div>
+        <div class="form-group"><label>사이트명</label><input type="text" id="cf_site" class="form-input"></div>
+        <div class="form-group"><label>입대위명</label><input type="text" id="cf_name" class="form-input"></div>
+        <div class="form-group"><label>주소</label><input type="text" id="cf_addr" class="form-input"></div>
+        <div class="form-group"><label>사업자번호</label><input type="text" id="cf_biz" class="form-input"></div>
+        <div class="form-group"><label>관리실번호</label><input type="text" id="cf_tel" class="form-input"></div>
+        <div class="form-group"><label>계약년수</label><input type="number" id="cf_year" class="form-input"></div>
+        <div class="form-group"><label>충전기수량</label><input type="number" id="cf_qty" class="form-input" oninput="calcContract()"></div>
+        <div class="form-group"><label>설치유형</label><select id="cf_type" class="form-input" onchange="calcContract()"><option value="">선택</option><option value="신규설치">신규설치</option><option value="제자리교체">제자리교체</option></select></div>
+        <div class="form-group"><label>충전기단가</label><input type="text" id="cf_price" class="form-input" readonly></div>
+        <div class="form-group"><label>설치금액</label><input type="text" id="cf_total" class="form-input" readonly></div>
+        <div class="form-group"><label>프로모션기간</label><input type="text" id="cf_promo" class="form-input"></div>
+        <div class="form-group"><label>프로모션금액</label><input type="text" id="cf_promoAmt" class="form-input"></div>
+        <div class="form-group"><label>진행사항</label><select id="cf_status" class="form-input"><option value="">선택</option><option value="상담">상담</option><option value="제안">제안</option><option value="입대위">입대위</option><option value="실사">실사</option><option value="계약">계약</option></select></div>
+        <div class="form-group"><label>비고</label><textarea id="cf_note" class="form-input" rows="3"></textarea></div>
+        <div class="form-group"><label>담당자</label><input type="text" id="cf_mgr" class="form-input"></div>
       </div>
-
     
     <!-- ========== 통계관리 ========== -->
     <div class="page" id="page-stats">
