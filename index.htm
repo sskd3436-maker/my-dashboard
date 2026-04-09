@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=0.7">
   <title>현장 업무수행 대시보드</title>
 
   <style>
@@ -47,7 +47,7 @@
     .overlay.show { display: block; }
 
     /* 메인 */
-    .main { margin-left: 230px; width: calc(100% - 230px); min-height: 100vh; }
+    .main { margin-left: 230px; flex: 1; min-height: 100vh; }
     .top-bar {
       background: white; padding: 16px 24px;
       display: flex; justify-content: space-between; align-items: center;
@@ -55,7 +55,7 @@
     }
     .top-bar h1 { font-size: 18px; color: #333; }
     .refresh-btn { background: #1a73e8; border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
-    .content { padding: 24px; max-width: 1600px; width: 100%; box-sizing: border-box; }
+    .content { padding: 24px; max-width: 1200px; }
    @media (max-width: 768px) {
   .content { padding: 8px; max-width: 100%; }
   
@@ -266,6 +266,7 @@
       .sub-tabs { flex-wrap: wrap; }
     }
     .table-wrap{overflow-x:auto;}
+    .content{max-width:100%!important;width:100%!important;}
     .form-group{margin-bottom:12px;}
 .form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:4px;color:#333;}
 .form-input{width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;box-sizing:border-box;}
@@ -326,7 +327,7 @@
  <!-- 로그인 화면 -->
 <div id="loginPage" style="display:flex;justify-content:center;align-items:center;height:100vh;background:#f0f2f5;position:fixed;top:0;left:0;width:100%;z-index:9999;">
   <div style="background:#fff;padding:40px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);width:360px;text-align:center;">
-    <div style="margin-bottom:12px;"><img src="icon-192.png" style="width:80px;height:80px;border-radius:16px;"></div>
+    <div style="font-size:40px;margin-bottom:12px;">📊</div>
     <h2 style="margin:0 0 8px;color:#1a73e8;">업무수행 대시보드</h2>
     <p style="color:#888;font-size:13px;margin-bottom:24px;">로그인 후 이용해주세요</p>
     <input type="text" id="loginId" placeholder="아이디" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:10px;box-sizing:border-box;">
@@ -375,7 +376,7 @@
     <!-- ========== 영업활동 조회 ========== -->
     <div class="page active" id="page-activity">
       <!-- 모바일 전용 네비 스타일 -->
-     <div id="mobileNavView" style="display:none;position:relative;height:calc(100vh - 52px);overflow:hidden;width:100vw;margin-left:-24px;">
+      <div id="mobileNavView" style="display:none;position:relative;height:calc(100vh - 52px);overflow:hidden;">
         <div id="mobileMapArea" style="height:60%;width:100%;">
           <div id="mobileMap" style="height:100%;width:100%;"></div>
         </div>
@@ -413,7 +414,30 @@
         <div class="table-wrap"><table><thead id="actTH"></thead><tbody id="actTB"></tbody></table></div>
       </div>
       </div>
+    </div>
+
+      <div class="search-bar">
+        <input type="text" class="search-input" id="actSearch" placeholder="🔍 사이트명, 담당자, 내용 검색..." oninput="renderActivity()">
+        <select class="filter-select" id="actSent" onchange="renderActivity()">
+          <option value="">전체 감정</option><option value="긍정">긍정</option><option value="중립">중립</option><option value="부정">부정</option><option value="기타">기타(재계약)</option>
+        </select>
+        <select class="filter-select" id="actMgr" onchange="renderActivity()"><option value="">전체 담당자</option></select>
+        <select class="filter-select" id="actSheet" onchange="renderActivity()"><option value="">전체 시트</option></select>
       </div>
+      <div class="stats-grid" id="actStats" style="display:none;"></div>
+      <div class="section-box" id="actContractStats" style="margin-bottom:16px;display:none;"><h3>📋 계약 진행 현황</h3><div id="actContractArea"></div></div>
+     <div id="actMapBox" style="margin-bottom:16px;display:flex;gap:12px;">
+  <div style="flex:2;border-radius:12px;overflow:hidden;border:1px solid #e0e0e0;">
+    <div id="actMap" style="height:400px;"></div>
+  </div>
+  <div id="actMapStats" style="flex:1;border-radius:12px;border:1px solid #e0e0e0;padding:12px;overflow-y:auto;max-height:400px;">
+  </div>
+</div>
+      <div class="table-box">
+        <div id="actTitle" style="font-size:16px;font-weight:700;padding:16px 20px;"></div>
+        <div class="table-wrap"><table><thead id="actTH"></thead><tbody id="actTB"></tbody></table></div>
+      </div>
+    </div>
 
 
     <!-- ========== 시트 데이터 ========== -->
@@ -774,9 +798,7 @@ function renderMobileMarkers(){
     var color=visited?'#27ae60':'#e74c3c';
          var icon=L.divIcon({className:'',html:'<div style="width:20px;height:20px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>',iconSize:[20,20],iconAnchor:[10,10]});
     var m=L.marker([lat,lng],{icon:icon}).addTo(window._mobileMap);
-    var addr=(fv(it.row,it.headers,'주소')||'').replace(/\(.*?\)/g,'').trim();
-    var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr||it.site||'');
-    m.bindPopup('<b>'+esc(it.site||'')+'</b><br>'+(it.mgr||'')+'<br>'+(visited||'미방문')+'<br><a href="'+mapUrl+'" target="_blank" style="color:#1a73e8;font-weight:700;">네이버 지도 열기</a>');
+    m.bindPopup('<b>'+esc(it.site||'')+'</b><br>'+(it.mgr||'')+'<br>'+(visited||'미방문'));
     window._mobileMarkers.push(m);
   }
 }
@@ -2406,7 +2428,6 @@ function openContractFromSheet(pageKey,idx){
   if(!contractData){loadContract(function(){openContractFromSheet(pageKey,idx);});return;}
   var row=it.row,h=it.headers;
   // 계약서에 이미 있으면 수정 모드로
-  var isSch=(pageKey==='sch'||pageKey==='sch_temp'||pageKey==='schedit');
     editContractRow=null;
   if(!isSch&&contractData&&contractData.rows){
     var ch2=contractData.headers;
@@ -2419,7 +2440,7 @@ function openContractFromSheet(pageKey,idx){
     }
   }
 
-  
+  var isSch=(pageKey==='sch'||pageKey==='sch_temp'||pageKey==='schedit');
   document.getElementById('contractModalTitle').textContent=isSch?'시트 데이터 수정':'사이트 정보';
   document.getElementById('contractSubmitBtn').textContent='저장';
   var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
