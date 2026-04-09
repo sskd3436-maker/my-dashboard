@@ -756,7 +756,7 @@ function doLogin(){
       navigator.geolocation.getCurrentPosition(function(pos){
         var lat=pos.coords.latitude,lng=pos.coords.longitude;
         window._mobileMyLoc=[lat,lng];
-        window._mobileMap.setView([lat,lng],13);
+        window._mobileMap.setView([lat,lng],16);
         var myIcon=L.divIcon({className:'',html:'<div style="width:16px;height:16px;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>',iconSize:[16,16],iconAnchor:[8,8]});
         L.marker([lat,lng],{icon:myIcon}).addTo(window._mobileMap).bindPopup('<b>내 위치</b>');
         renderMobileList();
@@ -846,11 +846,18 @@ function mobileSearchFilter(){
   renderMobileList();
 }
 
-function mobileGoSite(lat,lng,idx){
+function mobileGoSite(lat,lng){
   if(window._mobileMap&&lat&&lng){
-    window._mobileMap.setView([lat,lng],15);
-    if(window._mobileMarkers&&window._mobileMarkers[idx]){
-      window._mobileMarkers[idx].openPopup();
+    window._mobileMap.setView([lat,lng],16);
+    if(window._mobileMarkers){
+      for(var i=0;i<window._mobileMarkers.length;i++){
+        var m=window._mobileMarkers[i];
+        var ml=m.getLatLng();
+        if(Math.abs(ml.lat-lat)<0.0001&&Math.abs(ml.lng-lng)<0.0001){
+          m.openPopup();
+          break;
+        }
+      }
     }
   }
 }
