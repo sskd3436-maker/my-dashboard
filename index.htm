@@ -1346,7 +1346,7 @@ for(var i=0;i<list.length;i++){
   var mgr=it.mgr||'';
   var marker=L.marker([lat,lng],{icon:icon}).addTo(window._actMap);
   var addr=(fv(it.row,it.headers,'주소')||'').replace(/\(.*?\)/g,'').trim();
-var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr||site);
+var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr||it.site||'');
 marker.bindPopup('<b>'+site+'</b><br>주소: '+(addr||'-')+'<br>담당자: '+mgr+'<br>'+(visited?'<span style="color:#27ae60;">방문완료</span>':'<span style="color:#e74c3c;">미방문</span>')+'<br><a href="'+mapUrl+'" target="_blank" style="color:#1a73e8;font-weight:600;">네이버 지도 열기</a>');
   window._actMarkers.push(marker);
   mapBounds.push([lat,lng]);
