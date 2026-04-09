@@ -1,0 +1,2733 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="대시보드">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=0.7">
+  <title>현장 업무수행 대시보드</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #f0f2f5; color: #1a1a2e; display: flex; min-height: 100vh; }
+
+    /* 사이드바 */
+    .sidebar {
+      width: 230px; background: #1a1a2e; color: white;
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 200;
+      display: flex; flex-direction: column; transition: transform 0.3s;
+      overflow-y: auto;
+    }
+    .sidebar-header { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 15px; font-weight: 700; }
+    .sidebar-menu { flex: 1; padding: 8px 0; }
+    .menu-group { margin-bottom: 4px; }
+    .menu-group-title {
+      padding: 10px 20px; font-size: 11px; color: rgba(255,255,255,0.35);
+      text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;
+    }
+    .menu-item {
+      padding: 11px 20px; cursor: pointer; font-size: 14px;
+      color: rgba(255,255,255,0.65); display: flex; align-items: center; gap: 10px;
+      border-left: 3px solid transparent; transition: all 0.15s;
+    }
+    .menu-item:hover { background: rgba(255,255,255,0.07); color: white; }
+    .menu-item.active { background: rgba(26,115,232,0.2); color: #5b9cf6; border-left-color: #5b9cf6; }
+    .menu-item .icon { font-size: 16px; width: 22px; text-align: center; }
+
+    .mobile-header {
+      display: none; background: #1a1a2e; color: white; padding: 14px 16px;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 150; align-items: center; gap: 12px;
+    }
+    .hamburger { font-size: 22px; cursor: pointer; background: none; border: none; color: white; }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 190; }
+    .overlay.show { display: block; }
+
+    /* 메인 */
+    .main { margin-left: 230px; flex: 1; min-height: 100vh; }
+    .top-bar {
+      background: white; padding: 16px 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; z-index: 100;
+    }
+    .top-bar h1 { font-size: 18px; color: #333; }
+    .refresh-btn { background: #1a73e8; border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+    .content { padding: 24px; max-width: 1200px; }
+   @media (max-width: 768px) {
+  .content { padding: 8px; max-width: 100%; }
+  
+  /* 검색바 */
+  .search-bar { 
+    flex-direction: column; 
+    gap: 6px; 
+    padding: 8px; 
+  }
+  .search-input { 
+    width: 100%; 
+    font-size: 14px; 
+    padding: 10px 12px; 
+    box-sizing: border-box; 
+  }
+  
+  /* 필터 숨기기 */
+  .filter-select { display: none; }
+  
+  /* 지도 */
+  #actMapBox { 
+    flex-direction: column !important; 
+  }
+  #actMapBox > div:first-child { 
+    flex: none !important; 
+    width: 100% !important; 
+  }
+    #actMap { 
+    height: 250px !important; 
+    width: 100% !important; 
+  }
+  #actMapStats { 
+    display: none !important; 
+  }
+  
+  /* 테이블 */
+  .table-wrap { 
+    font-size: 12px; 
+  }
+  .table-wrap table th,
+  .table-wrap table td { 
+    padding: 6px 4px; 
+    font-size: 11px; 
+  }
+  
+  /* 새로고침 버튼 */
+  .top-bar { 
+    padding: 8px 12px; 
+  }
+}
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* 보고서 헤더 */
+    .report-header {
+      background: white; border-radius: 12px; padding: 20px 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+    }
+    .report-header h2 { font-size: 20px; }
+    .report-nav { display: flex; gap: 8px; align-items: center; }
+    .nav-btn { padding: 8px 14px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-size: 13px; }
+    .nav-btn:hover { background: #f0f0f0; }
+    .report-date { font-size: 16px; font-weight: 600; color: #1a73e8; min-width: 160px; text-align: center; }
+
+    /* 탭 (통계관리 내부) */
+    .sub-tabs {
+      display: flex; gap: 4px; background: white; padding: 6px;
+      border-radius: 10px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .sub-tab {
+      padding: 10px 20px; border: none; background: transparent; border-radius: 8px;
+      cursor: pointer; font-size: 14px; color: #666; font-weight: 500;
+    }
+    .sub-tab:hover { background: #e8f0fe; color: #1a73e8; }
+    .sub-tab.active { background: #1a73e8; color: white; }
+    .sub-page { display: none; }
+    .sub-page.active { display: block; }
+
+    /* 통계 카드 */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .stat-card {
+      background: white; border-radius: 12px; padding: 18px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08); text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+    .stat-card.positive::before { background: #0d904f; }
+    .stat-card.neutral::before { background: #f9ab00; }
+    .stat-card.negative::before { background: #dc3545; }
+    .stat-card.etc::before { background: #6c757d; }
+    .stat-card.total::before { background: #1a73e8; }
+    .stat-number { font-size: 32px; font-weight: 700; }
+    .stat-card.positive .stat-number { color: #0d904f; }
+    .stat-card.neutral .stat-number { color: #f9ab00; }
+    .stat-card.negative .stat-number { color: #dc3545; }
+    .stat-card.etc .stat-number { color: #6c757d; }
+    .stat-card.total .stat-number { color: #1a73e8; }
+    .stat-label { font-size: 13px; color: #666; margin-bottom: 4px; }
+    .stat-percent { font-size: 12px; color: #999; }
+    .stat-bar { margin-top: 8px; height: 5px; background: #eee; border-radius: 3px; overflow: hidden; }
+    .stat-bar-fill { height: 100%; border-radius: 3px; }
+    .stat-card.positive .stat-bar-fill { background: #0d904f; }
+    .stat-card.neutral .stat-bar-fill { background: #f9ab00; }
+    .stat-card.negative .stat-bar-fill { background: #dc3545; }
+    .stat-card.etc .stat-bar-fill { background: #6c757d; }
+    .stat-card.total .stat-bar-fill { background: #1a73e8; }
+
+    .section-box { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    .section-box h3 { font-size: 16px; margin-bottom: 14px; color: #333; }
+    .mgr-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; gap: 8px; flex-wrap: wrap; }
+    .mgr-row:last-child { border-bottom: none; }
+    .mgr-name { width: 90px; font-weight: 600; font-size: 13px; }
+    .mini-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; color: white; }
+    .mini-badge.pos { background: #0d904f; }
+    .mini-badge.neu { background: #f9ab00; }
+    .mini-badge.neg { background: #dc3545; }
+    .mini-badge.etc2 { background: #6c757d; }
+
+    /* 테이블 */
+    .table-box { background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 20px; }
+    .table-box .box-header { padding: 14px 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .table-box .box-header h3 { font-size: 16px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 1200px; }
+    th { background: #f8f9fa; padding: 11px 6px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #e0e0e0; white-space: nowrap; }
+    td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+    tr:hover td { background: #f8f9ff; }
+    td.editable { cursor: pointer; }
+    td.editable:hover { background: #e8f0fe !important; }
+    td.editing { padding: 4px; }
+    td.editing input { width: 100%; padding: 7px; border: 2px solid #1a73e8; border-radius: 4px; font-size: 13px; outline: none; }
+
+    .btn { padding: 9px 18px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; }
+    .btn-blue { background: #1a73e8; color: white; }
+    .btn-red { background: #dc3545; color: white; }
+    .btn-gray { background: #f0f0f0; color: #333; }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+    .badge { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; color: white; display: inline-block; }
+    .badge-pos { background: #0d904f; }
+    .badge-neu { background: #f9ab00; color: #333; }
+    .badge-neg { background: #dc3545; }
+    .badge-etc { background: #6c757d; }
+    .check-mark { display: inline-block; width: 24px; height: 24px; line-height: 24px; text-align: center; border-radius: 50%; font-weight: bold; font-size: 13px; }
+    .check-pos { background: #d4edda; color: #0d904f; }
+    .check-neu { background: #fff3cd; color: #856404; }
+    .check-neg { background: #f8d7da; color: #dc3545; }
+    .check-etc { background: #e2e3e5; color: #6c757d; }
+    .highlight { background: #fff3cd; padding: 1px 2px; border-radius: 2px; }
+
+    .search-bar { background: white; border-radius: 12px; padding: 14px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .search-input { flex: 1; min-width: 180px; padding: 10px 14px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; outline: none; }
+    .search-input:focus { border-color: #1a73e8; }
+    .filter-select { padding: 10px 14px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; outline: none; background: white; }
+
+    /* 캘린더 */
+    .cal-mini { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 16px; }
+    .cal-hd { text-align: center; font-size: 11px; font-weight: 600; color: #999; padding: 6px 0; }
+    .cal-d { text-align: center; padding: 8px 2px; border-radius: 6px; cursor: pointer; font-size: 12px; min-height: 44px; }
+    .cal-d:hover { background: #e8f0fe; }
+    .cal-d.today { border: 2px solid #1a73e8; }
+    .cal-d.selected { background: #1a73e8; color: white; }
+    .cal-d.has-data { background: #f0f7ff; }
+    .cal-d.selected.has-data { background: #1a73e8; }
+    .cal-d .dn { font-weight: 600; }
+    .cal-d .dc { font-size: 9px; color: #1a73e8; }
+    .cal-d.selected .dc { color: white; }
+    .cal-d.other { color: #ccc; }
+
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; justify-content: center; align-items: center; }
+    .modal-bg.show { display: flex; }
+    .modal { background: white; border-radius: 16px; padding: 28px; width: 90%; max-width: 650px; max-height: 85vh; overflow-y: auto; }
+    .modal h2 { margin-bottom: 20px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; margin-bottom: 5px; font-size: 13px; color: #555; font-weight: 500; }
+    .field input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
+    .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .detail-item { padding: 12px; background: #f8f9fa; border-radius: 8px; }
+    .detail-item label { font-size: 11px; color: #999; display: block; margin-bottom: 4px; }
+    .detail-item .val { font-size: 14px; color: #333; word-break: break-all; }
+    .detail-full { grid-column: 1 / -1; }
+
+    .loading { text-align: center; padding: 40px; color: #999; }
+    .spinner { display: inline-block; width: 28px; height: 28px; border: 3px solid #ddd; border-top-color: #1a73e8; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .toast-box { position: fixed; top: 20px; right: 20px; z-index: 400; }
+    .toast { padding: 12px 20px; border-radius: 8px; color: white; font-size: 14px; margin-bottom: 8px; animation: slideIn 0.3s; }
+    .toast.ok { background: #0d904f; }
+    .toast.fail { background: #dc3545; }
+    .toast.info { background: #1a73e8; }
+    @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .empty-msg { text-align: center; padding: 30px; color: #999; }
+
+    @media (max-width: 768px) {
+       .mobile-header { display: none !important; }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .mobile-header { display: flex; }
+      .main { margin-left: 0; padding-top: 52px; }
+      .content { padding: 12px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .detail-grid { grid-template-columns: 1fr; }
+      .stat-number { font-size: 24px; }
+      .sub-tabs { flex-wrap: wrap; }
+    }
+    .table-wrap{overflow-x:auto;}
+    .content{max-width:100%!important;width:100%!important;}
+    .form-group{margin-bottom:12px;}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:4px;color:#333;}
+.form-input{width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;box-sizing:border-box;}
+.form-input:focus{border-color:#1a73e8;outline:none;}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:white;border-radius:12px;width:90%;max-height:90vh;overflow-y:auto;}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #eee;}
+.modal-header h3{margin:0;}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;}
+.modal-body{padding:20px;}
+.modal-footer{padding:16px 20px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:8px;}
+.btn-sm{padding:4px 10px;font-size:12px;}
+
+.btn-red{background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;}
+.btn-red:hover{background:#c0392b;}  
+#page-contract table{min-width:1400px !important;}
+#page-contract td:last-child{white-space:nowrap;}
+
+#ctStats .stat-card{padding:20px 24px;border-radius:12px;text-align:center;min-width:120px;}
+#ctStats .stat-card:nth-child(1){background:#f0f4ff;border:2px solid #3b82f6;}
+#ctStats .stat-card:nth-child(2){background:#eff6ff;border:2px solid #3498db;}
+#ctStats .stat-card:nth-child(3){background:#fff8ee;border:2px solid #f39c12;}
+#ctStats .stat-card:nth-child(4){background:#f5f0ff;border:2px solid #9b59b6;}
+#ctStats .stat-card:nth-child(5){background:#eefbf3;border:2px solid #27ae60;}
+#ctStats .stat-value{font-size:32px;font-weight:800;margin-bottom:6px;}
+#ctStats .stat-label{font-size:15px;font-weight:700;color:#333;}
+
+@media (max-width: 768px) {
+  .sidebar { display: none !important; }
+  .sidebar.open { display: none !important; }
+  .main { margin-left: 0 !important; padding: 8px !important; }
+  .search-bar { flex-direction: column; gap: 6px; padding: 8px !important; }
+  .search-input, .filter-select { width: 100% !important; font-size: 13px !important; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-wrap table { min-width: 600px; font-size: 11px; }
+  .table-wrap td, .table-wrap th { padding: 4px 3px !important; font-size: 10px !important; white-space: nowrap; }
+  #actMap { height: 200px !important; }
+  #actMapBox { margin-bottom: 8px !important; }
+  .modal { width: 95% !important; max-width: 95% !important; margin: 10px auto !important; max-height: 90vh; overflow-y: auto; }
+  #contractForm { flex-direction: column !important; }
+  #contractForm > div { width: 100% !important; }
+  .btn-sm { padding: 3px 6px !important; font-size: 10px !important; }
+  .hamburger { display: flex !important; }
+  .section-box { padding: 8px !important; }
+  .badge { font-size: 9px !important; padding: 1px 5px !important; }
+  #actTitle { padding: 8px 10px !important; font-size: 13px !important; }
+  #actTitle > div { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
+  #actTitle label { font-size: 10px !important; padding: 4px 8px !important; }
+  .table-box { border-radius: 8px !important; }
+}
+    
+  </style>
+</head>
+<body>
+
+ <!-- 로그인 화면 -->
+<div id="loginPage" style="display:flex;justify-content:center;align-items:center;height:100vh;background:#f0f2f5;position:fixed;top:0;left:0;width:100%;z-index:9999;">
+  <div style="background:#fff;padding:40px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);width:360px;text-align:center;">
+    <div style="font-size:40px;margin-bottom:12px;">📊</div>
+    <h2 style="margin:0 0 8px;color:#1a73e8;">업무수행 대시보드</h2>
+    <p style="color:#888;font-size:13px;margin-bottom:24px;">로그인 후 이용해주세요</p>
+    <input type="text" id="loginId" placeholder="아이디" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:10px;box-sizing:border-box;">
+    <input type="password" id="loginPw" placeholder="비밀번호" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:16px;box-sizing:border-box;" onkeypress="if(event.keyCode===13)doLogin()">
+    <button onclick="doLogin()" style="width:100%;padding:12px;background:#1a73e8;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">로그인</button>
+    <div id="loginMsg" style="color:#e74c3c;font-size:13px;margin-top:12px;"></div>
+  </div>
+</div>
+
+<div id="dashboardWrap" style="display:none;">
+<div class="mobile-header">
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  <span style="font-size:16px;font-weight:600;">📊 업무수행 대시보드</span>
+  <button onclick="location.reload()" style="margin-left:auto;background:#1a73e8;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;">🔄 새로고침</button>
+</div>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- 사이드바 -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">📊 업무수행 대시보드</div>
+  <div class="sidebar-menu">
+    <div class="menu-group">
+      <div class="menu-group-title">영업활동관리</div>
+      <div class="menu-item" onclick="goPage('activity',this)"><span class="icon">📋</span> 영업활동 조회</div>
+      <div class="menu-item" onclick="goPage('schedule',this)" style="display:none;"><span class="icon">📍</span> 영업일정 관리</div>
+    </div>
+    <div class="menu-group">
+      <div class="menu-group-title">계약관리</div>
+      <div class="menu-item" onclick="goPage('contract',this)"><span class="icon">📋</span> 계약서 관리</div>
+    </div>
+    <div class="menu-group">
+      <div class="menu-group-title">통계관리</div>
+      <div class="menu-item" onclick="goPage('stats',this)"><span class="icon">📊</span> 현황 통계</div>
+    </div>
+  </div>
+</div>
+
+<!-- 메인 -->
+<div class="main">
+  <div class="top-bar">
+    <h1 id="pageTitle">📋 영업활동 조회</h1>
+    <button class="refresh-btn" onclick="refreshPage()">🔄 새로고침</button>
+  </div>
+  <div class="content">
+
+    <!-- ========== 영업활동 조회 ========== -->
+    <div class="page active" id="page-activity">
+      <!-- 모바일 전용 네비 스타일 -->
+      <div id="mobileNavView" style="display:none;position:relative;height:calc(100vh - 52px);overflow:hidden;">
+        <div id="mobileMapArea" style="height:60%;width:100%;">
+          <div id="mobileMap" style="height:100%;width:100%;"></div>
+        </div>
+        <div style="position:absolute;top:8px;left:8px;right:8px;z-index:1000;">
+          <input type="text" id="mobileSearch" placeholder="🔍 사이트명 검색..." oninput="mobileSearchFilter()" style="width:100%;padding:10px 14px;border:none;border-radius:12px;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.2);box-sizing:border-box;">
+        </div>
+        <button onclick="mobileGoMyLoc()" style="position:absolute;right:12px;z-index:1000;background:#fff;border:none;border-radius:50%;width:40px;height:40px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:18px;cursor:pointer;bottom:42%;">📍</button>
+        <div id="mobileListArea" style="height:40%;background:#fff;border-top-left-radius:16px;border-top-right-radius:16px;box-shadow:0 -2px 10px rgba(0,0,0,0.1);overflow-y:auto;padding:12px;">
+          <div style="width:40px;height:4px;background:#ccc;border-radius:2px;margin:0 auto 12px;"></div>
+          <div id="mobileNearTitle" style="font-size:14px;font-weight:700;color:#1a73e8;margin-bottom:8px;">📍 가까운 사이트</div>
+          <div id="mobileNearList"></div>
+        </div>
+      </div>
+
+      <div id="pcActivityView">
+      <div class="search-bar">
+        <input type="text" class="search-input" id="actSearch" placeholder="🔍 사이트명, 담당자, 내용 검색..." oninput="renderActivity()">
+        <select class="filter-select" id="actSent" onchange="renderActivity()">
+          <option value="">전체 감정</option><option value="긍정">긍정</option><option value="중립">중립</option><option value="부정">부정</option><option value="기타">기타(재계약)</option>
+        </select>
+        <select class="filter-select" id="actMgr" onchange="renderActivity()"><option value="">전체 담당자</option></select>
+        <select class="filter-select" id="actSheet" onchange="renderActivity()"><option value="">전체 시트</option></select>
+      </div>
+      <div class="stats-grid" id="actStats" style="display:none;"></div>
+      <div class="section-box" id="actContractStats" style="margin-bottom:16px;display:none;"><h3>📋 계약 진행 현황</h3><div id="actContractArea"></div></div>
+     <div id="actMapBox" style="margin-bottom:16px;display:flex;gap:12px;">
+  <div style="flex:2;border-radius:12px;overflow:hidden;border:1px solid #e0e0e0;">
+    <div id="actMap" style="height:400px;"></div>
+  </div>
+  <div id="actMapStats" style="flex:1;border-radius:12px;border:1px solid #e0e0e0;padding:12px;overflow-y:auto;max-height:400px;">
+  </div>
+</div>
+      <div class="table-box">
+        <div id="actTitle" style="font-size:16px;font-weight:700;padding:16px 20px;"></div>
+        <div class="table-wrap"><table><thead id="actTH"></thead><tbody id="actTB"></tbody></table></div>
+      </div>
+      </div>
+    </div>
+
+      <div class="search-bar">
+        <input type="text" class="search-input" id="actSearch" placeholder="🔍 사이트명, 담당자, 내용 검색..." oninput="renderActivity()">
+        <select class="filter-select" id="actSent" onchange="renderActivity()">
+          <option value="">전체 감정</option><option value="긍정">긍정</option><option value="중립">중립</option><option value="부정">부정</option><option value="기타">기타(재계약)</option>
+        </select>
+        <select class="filter-select" id="actMgr" onchange="renderActivity()"><option value="">전체 담당자</option></select>
+        <select class="filter-select" id="actSheet" onchange="renderActivity()"><option value="">전체 시트</option></select>
+      </div>
+      <div class="stats-grid" id="actStats" style="display:none;"></div>
+      <div class="section-box" id="actContractStats" style="margin-bottom:16px;display:none;"><h3>📋 계약 진행 현황</h3><div id="actContractArea"></div></div>
+     <div id="actMapBox" style="margin-bottom:16px;display:flex;gap:12px;">
+  <div style="flex:2;border-radius:12px;overflow:hidden;border:1px solid #e0e0e0;">
+    <div id="actMap" style="height:400px;"></div>
+  </div>
+  <div id="actMapStats" style="flex:1;border-radius:12px;border:1px solid #e0e0e0;padding:12px;overflow-y:auto;max-height:400px;">
+  </div>
+</div>
+      <div class="table-box">
+        <div id="actTitle" style="font-size:16px;font-weight:700;padding:16px 20px;"></div>
+        <div class="table-wrap"><table><thead id="actTH"></thead><tbody id="actTB"></tbody></table></div>
+      </div>
+    </div>
+
+
+    <!-- ========== 시트 데이터 ========== -->
+    <div class="page" id="page-sheet">
+      <div class="search-bar">
+        <input type="text" class="search-input" id="sheetSearch" placeholder="🔍 검색..." oninput="filterSheet()">
+        <button class="btn btn-blue" onclick="openAddModal()">+ 행 추가</button>
+      </div>
+      <div class="table-box">
+        <div class="box-header"><h3 id="sheetDataTitle">시트</h3></div>
+        <div class="table-wrap"><table><thead id="sTH"></thead><tbody id="sTB"></tbody></table></div>
+      </div>
+    </div>
+
+<!-- ========== 계약서 관리 ========== -->
+<div class="page" id="page-contract">
+  <div class="search-bar">
+    <input type="text" class="search-input" id="ctSearch" placeholder="🔍 사이트명 검색..." oninput="renderContract()">
+    <select id="ctMgr" class="form-input" style="width:160px;display:inline-block;margin-left:8px;" onchange="renderContract()">
+      <option value="">전체 담당자</option>
+    </select>
+    <select id="ctStatus" class="form-input" style="width:140px;display:inline-block;margin-left:8px;" onchange="renderContract()">
+      <option value="">전체 진행사항</option>
+      <option value="상담">상담</option>
+      <option value="제안">제안</option>
+      <option value="입대위">입대위</option>
+      <option value="실사">실사</option>
+      <option value="계약">계약</option>
+    </select>
+    <button class="btn btn-primary" style="margin-left:8px;" onclick="openContractModal()">+ 계약서 작성</button>
+  </div>
+  <div class="stats-grid" id="ctStats"></div>
+  <div class="table-box">
+    <div class="box-header"><h3 id="ctTitle">계약서 목록</h3></div>
+    <div class="table-wrap"><table><thead id="ctTH"></thead><tbody id="ctTB"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ========== 영업일정 관리 ========== -->
+<div class="page" id="page-schedule" style="display:none;">
+  <div class="search-bar">
+    <input type="text" class="search-input" id="schSearch" placeholder="🔍 사이트명, 담당자, 내용 검색..." oninput="renderSchedule()">
+    <select class="filter-select" id="schSent" onchange="renderSchedule()">
+      <option value="">전체 감정</option><option value="긍정">긍정</option><option value="중립">중립</option><option value="부정">부정</option><option value="기타">기타(재계약)</option>
+    </select>
+    <select class="filter-select" id="schMgr" onchange="renderSchedule()"><option value="">전체 담당자</option></select>
+    <select class="filter-select" id="schSheet" onchange="renderSchedule()"><option value="">전체 시트</option></select>
+  </div>
+  <div id="schStats" style="display:block;"></div>
+  <div class="section-box" id="schContractStats" style="margin-bottom:16px;display:none;"><h3>📋 계약 진행 현황</h3><div id="schContractArea"></div></div>
+  <div class="table-box">
+    <div id="schTitle" style="font-size:16px;font-weight:700;padding:16px 20px;"></div>
+    <div class="table-wrap"><table><thead id="schTH"></thead><tbody id="schTB"></tbody></table></div>
+  </div>
+</div>
+    
+    
+<!-- 계약서 작성/수정 모달 -->
+<div class="modal-overlay" id="contractModal">
+  <div class="modal" style="max-width:1200px;width:95%;">
+    <div class="modal-header">
+      <h3 id="contractModalTitle">계약서 작성</h3>
+      <button class="modal-close" onclick="closeContractModal()">✕</button>
+    </div>
+    <div class="modal-body" id="contractForm" style="display:flex;gap:24px;flex-wrap:wrap;">
+      <!-- 왼쪽: 시트 원본 데이터 -->
+      <div style="flex:1;min-width:300px;">
+        <h4 style="margin:0 0 12px 0;color:#1a73e8;border-bottom:2px solid #1a73e8;padding-bottom:8px;">📄 시트 데이터</h4>
+        <div id="cf_sheetData" style="font-size:13px;">
+          <div class="empty-msg">시트 데이터 없음</div>
+        </div>
+      </div>
+      <!-- 오른쪽: 계약서 작성 -->
+      <div style="flex:1;min-width:300px;">
+        <h4 style="margin:0 0 12px 0;color:#27ae60;border-bottom:2px solid #27ae60;padding-bottom:8px;">📋 계약서 작성</h4>
+        <div class="form-group"><label>사이트명</label><input type="text" id="cf_site" class="form-input"></div>
+        <div class="form-group"><label>입대위명</label><input type="text" id="cf_name" class="form-input"></div>
+        <div class="form-group"><label>주소</label><input type="text" id="cf_addr" class="form-input"></div>
+        <div class="form-group"><label>사업자번호</label><input type="text" id="cf_biz" class="form-input"></div>
+        <div class="form-group"><label>관리실번호</label><input type="text" id="cf_tel" class="form-input"></div>
+        <div class="form-group"><label>계약년수</label><input type="number" id="cf_year" class="form-input"></div>
+        <div class="form-group"><label>충전기수량</label><input type="number" id="cf_qty" class="form-input" oninput="calcContract()"></div>
+        <div class="form-group"><label>설치유형</label><select id="cf_type" class="form-input" onchange="calcContract()"><option value="">선택</option><option value="신규설치">신규설치</option><option value="제자리교체">제자리교체</option></select></div>
+        <div class="form-group"><label>충전기단가</label><input type="text" id="cf_price" class="form-input" readonly></div>
+        <div class="form-group"><label>설치금액</label><input type="text" id="cf_total" class="form-input" readonly></div>
+        <div class="form-group"><label>프로모션기간</label><input type="text" id="cf_promo" class="form-input"></div>
+        <div class="form-group"><label>프로모션금액</label><input type="text" id="cf_promoAmt" class="form-input"></div>
+        <div class="form-group"><label>진행사항</label><select id="cf_status" class="form-input"><option value="">선택</option><option value="상담">상담</option><option value="제안">제안</option><option value="입대위">입대위</option><option value="실사">실사</option><option value="계약">계약</option></select></div>
+        <div class="form-group"><label>비고</label><textarea id="cf_note" class="form-input" rows="3"></textarea></div>
+        <div class="form-group"><label>담당자</label><input type="text" id="cf_mgr" class="form-input"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="closeContractModal()">취소</button>
+      <button class="btn btn-primary" id="contractSubmitBtn" onclick="submitContract()">저장</button>
+    </div>
+  </div>
+</div>
+
+    
+    <!-- ========== 통계관리 ========== -->
+    <div class="page" id="page-stats">
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="goSubTab('all',this)">전체 현황</button>
+        <button class="sub-tab" onclick="goSubTab('daily',this)">일일 보고</button>
+        <button class="sub-tab" onclick="goSubTab('weekly',this)">주간 보고</button>
+        <button class="sub-tab" onclick="goSubTab('monthly',this)">월간 보고</button>
+        <button class="sub-tab" onclick="goSubTab('manager',this)">담당자별</button>
+      </div>
+
+      <!-- 전체 현황 -->
+      <div class="sub-page active" id="sub-all">
+        <div class="section-box"><h3>📋 계약 진행 현황
+          <select id="allContractSheet" class="form-input" style="width:160px;display:inline-block;margin-left:12px;font-size:13px;" onchange="renderAllStats()">
+            <option value="">전체 시트</option>
+          </select>
+        </h3><div id="allContract"></div></div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <div class="section-box" style="flex:1;min-width:300px;"><h3>👤 담당자별 계약 현황</h3><div id="allContractMgr"></div></div>
+          <div class="section-box" style="flex:1;min-width:300px;"><h3>📄 시트별 현황
+            <select id="allSheetSelect" class="form-input" style="width:140px;display:inline-block;margin-left:12px;font-size:13px;" onchange="renderAllStats()">
+              <option value="">전체 시트</option>
+            </select>
+          </h3><div id="allSheet"></div></div>
+        </div>
+        <div class="section-box"><h3>👤 담당자별 영업 현황</h3><div id="allMgr"></div></div>
+      </div>
+
+      <!-- 일일 보고 -->
+      <div class="sub-page" id="sub-daily">
+        <div class="report-header">
+          <h2>일일 보고서</h2>
+          <div class="report-nav">
+            <button class="nav-btn" onclick="moveDaily(-1)">◀ 전날</button>
+            <div class="report-date" id="dailyDate"></div>
+            <button class="nav-btn" onclick="moveDaily(1)">다음날 ▶</button>
+            <button class="nav-btn" onclick="moveDaily(0)" style="margin-left:8px;">오늘</button>
+          </div>
+        </div>
+        <div class="stats-grid" id="dailyStats"></div>
+        <div class="section-box"><h3>📋 계약 진행 현황</h3><div id="dailyContract"></div></div>
+        <div class="section-box"><h3>👤 담당자별</h3><div id="dailyMgr"></div></div>
+        <div class="table-box">
+          <div class="box-header"><h3 id="dailyTT">방문 목록</h3></div>
+          <div class="table-wrap"><table><thead id="dailyTH"></thead><tbody id="dailyTB"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- 주간 보고 -->
+      <div class="sub-page" id="sub-weekly">
+        <div class="report-header">
+          <h2>주간 보고서</h2>
+          <div class="report-nav">
+            <button class="nav-btn" onclick="moveWeekly(-1)">◀ 전주</button>
+            <div class="report-date" id="weeklyDate"></div>
+            <button class="nav-btn" onclick="moveWeekly(1)">다음주 ▶</button>
+            <button class="nav-btn" onclick="moveWeekly(0)" style="margin-left:8px;">이번주</button>
+          </div>
+        </div>
+        <div class="stats-grid" id="weeklyStats"></div>
+        <div class="section-box"><h3>📋 계약 진행 현황</h3><div id="weeklyContract"></div></div>
+        <div class="section-box"><h3>👤 담당자별</h3><div id="weeklyMgr"></div></div>
+        <div class="section-box"><h3>📊 일별 현황</h3><div id="weeklyDaily"></div></div>
+        <div class="table-box">
+          <div class="box-header"><h3 id="weeklyTT">방문 목록</h3></div>
+          <div class="table-wrap"><table><thead id="weeklyTH"></thead><tbody id="weeklyTB"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- 월간 보고 -->
+      <div class="sub-page" id="sub-monthly">
+        <div class="report-header">
+          <h2>월간 보고서</h2>
+          <div class="report-nav">
+            <button class="nav-btn" onclick="moveMonthly(-1)">◀ 전월</button>
+            <div class="report-date" id="monthlyDate"></div>
+            <button class="nav-btn" onclick="moveMonthly(1)">다음월 ▶</button>
+            <button class="nav-btn" onclick="moveMonthly(0)" style="margin-left:8px;">이번달</button>
+          </div>
+        </div>
+        <div class="stats-grid" id="monthlyStats"></div>
+        <div class="section-box"><h3>👤 담당자별</h3><div id="monthlyMgr"></div></div>
+        <div class="section-box"><h3>📋 계약 진행 현황</h3><div id="monthlyContract"></div></div>
+        <div class="section-box"><h3>📅 캘린더</h3><div class="cal-mini" id="monthlyCal"></div></div>
+        <div class="section-box"><h3>📊 주별 현황</h3><div id="monthlyWeekly"></div></div>
+        <div class="table-box">
+          <div class="box-header"><h3 id="monthlyTT">방문 목록</h3></div>
+          <div class="table-wrap"><table><thead id="monthlyTH"></thead><tbody id="monthlyTB"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- 담당자별 -->
+      <div class="sub-page" id="sub-manager">
+        <div class="stats-grid" id="mgrAllStats"></div>
+        <div class="section-box"><h3>📋 계약 진행 현황</h3><div id="mgrContract"></div></div>
+        <div id="mgrDetailArea"></div>
+      </div>
+
+    </div><!-- /page-stats -->
+
+  </div>
+</div>
+
+<div class="toast-box" id="toasts"></div>
+<div class="modal-bg" id="addModal"><div class="modal"><h2>새 행 추가</h2><div id="addFields"></div><div class="modal-btns"><button class="btn btn-gray" onclick="closeModal('addModal')">취소</button><button class="btn btn-blue" onclick="submitAdd()">추가</button></div></div></div>
+<div class="modal-bg" id="detailModal"><div class="modal"><h2 id="detailTitle">상세</h2><div class="detail-grid" id="detailGrid"></div><div class="modal-btns"><button class="btn btn-gray" onclick="closeModal('detailModal')">닫기</button></div></div></div>
+
+<script>
+var API = 'https://script.google.com/macros/s/AKfycby2WoB-F2gw2WuRBH1bhlD5dE3wNGbRX2DQ2ZCWhOxU2yY0eYsmUoGY0yg0PYkkA7hQ0A/exec';
+
+var allSheetsData={},allFlat=[],dataLoaded=false;
+var nowSheet=null,sheetHeaders=[],sheetRows=[],sheetFiltered=[],sheetStartCol=2;
+var dailyDt,weekStart,mYear,mMon;
+var curPage='activity',curSubTab='all';
+
+function init(){
+  dataLoaded=false;allSheetsData={};allFlat=[];
+  var n=new Date();n.setHours(0,0,0,0);
+  dailyDt=new Date(n);setWeekStart(n);mYear=n.getFullYear();mMon=n.getMonth();
+  curPage='activity';
+
+  var cached=localStorage.getItem('dashCache');
+  if(cached){
+    try{
+      allSheetsData=JSON.parse(cached);
+      dataLoaded=true;
+      buildFlat();
+      buildFilters();
+      renderActivity();
+      goPage('activity');
+      toast('캐시 로드 완료','ok');
+    }catch(e){}
+  }else{
+    document.getElementById('actStats').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+    document.getElementById('actTB').innerHTML='<tr><td colspan="8"><div class="loading"><div class="spinner"></div> 데이터 불러오는 중...</div></td></tr>';
+  }
+
+  apiGet({action:'getSheets'},function(data){
+    var sheets=data.sheets||[],loaded=0;
+    var sm=document.getElementById('sheetMenus');if(sm)sm.innerHTML='';
+    var actSheet=document.getElementById('actSheet');actSheet.innerHTML='<option value="">전체 시트</option>';
+    for(var i=0;i<sheets.length;i++){
+      if(sm)sm.innerHTML+='<div class="menu-item" onclick="goSheet(\''+sheets[i]+'\')"><span class="icon">📄</span> '+sheets[i]+'</div>';
+      actSheet.innerHTML+='<option value="'+sheets[i]+'">'+sheets[i]+'</option>';
+    }
+    if(!sheets.length){
+      document.getElementById('actStats').innerHTML='<div class="empty-msg">시트가 없습니다</div>';
+      document.getElementById('actTB').innerHTML='<tr><td colspan="8"><div class="empty-msg">데이터 없음</div></td></tr>';
+      return;
+    }
+    var newData={};
+    for(var i=0;i<sheets.length;i++){
+    (function(nm){apiGet({action:'getData',sheet:nm},function(d){
+      newData[nm]=d;loaded++;
+      if(loaded>=sheets.length){
+        console.log('모든시트로드완료');
+        allSheetsData=newData;
+        dataLoaded=true;
+        localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
+        buildFlat();
+        buildFilters();
+        renderActivity();
+        goPage('activity');
+        toast('최신 데이터 로드 완료','ok');
+      }
+    });})(sheets[i]);
+    }
+  });
+}
+
+  var users={
+  '김준우':{pw:'1234',name:'김준우'},
+  '신준명':{pw:'1234',name:'신준명'},
+  '정재규':{pw:'1234',name:'정재규'},
+  '전두현':{pw:'1234',name:'전두현'},
+  '관리자':{pw:'admin',name:'관리자'}
+};
+function isMobile(){
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
+function doLogin(){
+  var id=document.getElementById('loginId').value.trim();
+  var pw=document.getElementById('loginPw').value;
+  if(users[id]&&users[id].pw===pw){
+    sessionStorage.setItem('loginUser', users[id].name);
+    window._loginUser = users[id].name;
+    window._mobileMode = isMobile() && users[id].name!=='관리자';
+    sessionStorage.setItem('mobileMode', window._mobileMode?'1':'0');
+    document.getElementById('loginPage').style.display='none';
+    document.getElementById('dashboardWrap').style.display='';
+    init();
+  }else{
+    document.getElementById('loginMsg').textContent='아이디 또는 비밀번호가 올바르지 않습니다.';
+  }
+}
+(function(){
+  var saved = sessionStorage.getItem('loginUser');
+  if(saved){
+    window._loginUser = saved;
+    window._mobileMode = sessionStorage.getItem('mobileMode')==='1';
+    document.getElementById('loginPage').style.display='none';
+    document.getElementById('dashboardWrap').style.display='';
+    init();
+  }
+})();
+
+ function initMobileNav(){
+  if(!(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)))return;
+  document.getElementById('mobileNavView').style.display='block';
+  document.getElementById('pcActivityView').style.display='none';
+  
+  if(!window._mobileMap){
+    window._mobileMap=L.map('mobileMap',{zoomControl:false}).setView([36.5,127.5],7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(window._mobileMap);
+    L.control.zoom({position:'bottomleft'}).addTo(window._mobileMap);
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(function(pos){
+        var lat=pos.coords.latitude,lng=pos.coords.longitude;
+        window._mobileMyLoc=[lat,lng];
+        window._mobileMap.setView([lat,lng],16);
+        var myIcon=L.divIcon({className:'',html:'<div style="width:24px;height:24px;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>',iconSize:[24,24],iconAnchor:[12,12]});
+        L.marker([lat,lng],{icon:myIcon}).addTo(window._mobileMap).bindPopup('<b>내 위치</b>');
+        renderMobileList();
+      });
+    }
+  }
+  renderMobileMarkers();
+  renderMobileList();
+}
+
+function mobileGoMyLoc(){
+  if(window._mobileMyLoc&&window._mobileMap){
+    window._mobileMap.setView(window._mobileMyLoc,13);
+  }
+}
+
+function getDistance(lat1,lng1,lat2,lng2){
+  var R=6371;
+  var dLat=(lat2-lat1)*Math.PI/180;
+  var dLng=(lng2-lng1)*Math.PI/180;
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function renderMobileMarkers(){
+  if(!window._mobileMap)return;
+  if(window._mobileMarkers){
+    for(var i=0;i<window._mobileMarkers.length;i++)window._mobileMap.removeLayer(window._mobileMarkers[i]);
+  }
+  window._mobileMarkers=[];
+  for(var i=0;i<allFlat.length;i++){
+    var it=allFlat[i];
+    if(window._mobileMode&&window._loginUser&&(it.mgr||'')!==window._loginUser)continue;
+     var lat=parseFloat(fv(it.row,it.headers,'Y좌표')||0);
+    var lng=parseFloat(fv(it.row,it.headers,'X좌표')||0);
+    if(!lat||!lng)continue;
+    var visited=it.date||fv(it.row,it.headers,'방문일자')||'';
+    var color=visited?'#27ae60':'#e74c3c';
+         var icon=L.divIcon({className:'',html:'<div style="width:20px;height:20px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>',iconSize:[20,20],iconAnchor:[10,10]});
+    var m=L.marker([lat,lng],{icon:icon}).addTo(window._mobileMap);
+    var addr=(fv(it.row,it.headers,'주소')||'').replace(/\(.*?\)/g,'').trim();
+    var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr||it.site||'');
+    m.bindPopup('<b>'+esc(it.site||'')+'</b><br>'+(it.mgr||'')+'<br>'+(visited||'미방문')+'<br><a href="'+mapUrl+'" target="_blank" style="color:#1a73e8;font-weight:700;">네이버 지도 열기</a>');
+    window._mobileMarkers.push(m);
+  }
+}
+
+function renderMobileList(){
+  var myLoc=window._mobileMyLoc;
+  var q=(document.getElementById('mobileSearch').value||'').toLowerCase().trim();
+  var list=[];
+  for(var i=0;i<allFlat.length;i++){
+    var it=allFlat[i];
+    if(window._mobileMode&&window._loginUser&&(it.mgr||'')!==window._loginUser)continue;
+    if(q&&(it.site||'').toLowerCase().indexOf(q)<0)continue;
+      var lat=parseFloat(fv(it.row,it.headers,'Y좌표')||0);
+    var lng=parseFloat(fv(it.row,it.headers,'X좌표')||0);
+    if(!lat||!lng)continue;
+    var dist=0;
+    if(myLoc)dist=getDistance(myLoc[0],myLoc[1],lat,lng);
+    list.push({it:it,lat:lat,lng:lng,dist:dist});
+  }
+  if(myLoc)list.sort(function(a,b){return a.dist-b.dist;});
+  var max=20;
+  var html='';
+  for(var i=0;i<Math.min(list.length,max);i++){
+    var d=list[i],it=d.it;
+    var visited=it.date||fv(it.row,it.headers,'방문일자')||'';
+    var distTxt=d.dist>0?(d.dist<1?Math.round(d.dist*1000)+'m':d.dist.toFixed(1)+'km'):'';
+    var sentColor={'positive':'#27ae60','neutral':'#f39c12','negative':'#e74c3c','etc':'#9b59b6'};
+    var dotColor=sentColor[it.sent]||'#ccc';
+    html+='<div onclick="mobileGoSite('+d.lat+','+d.lng+','+i+')" style="display:flex;align-items:center;padding:10px;border-bottom:1px solid #f0f0f0;cursor:pointer;">';
+    html+='<div style="width:8px;height:8px;border-radius:50%;background:'+dotColor+';margin-right:10px;flex-shrink:0;"></div>';
+    html+='<div style="flex:1;min-width:0;">';
+    html+='<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(it.site||'')+'</div>';
+    html+='<div style="font-size:11px;color:#888;margin-top:2px;">'+(it.mgr||'')+(visited?' · '+visited:' · 미방문')+'</div>';
+    html+='</div>';
+    html+='<div style="text-align:right;flex-shrink:0;margin-left:8px;">';
+    if(distTxt)html+='<div style="font-size:12px;font-weight:700;color:#1a73e8;">'+distTxt+'</div>';
+    html+='<div style="font-size:10px;color:#999;margin-top:2px;">'+(visited?'방문':'미방문')+'</div>';
+    html+='</div></div>';
+  }
+  if(!list.length)html='<div style="text-align:center;color:#999;padding:20px;">검색 결과 없음</div>';
+  document.getElementById('mobileNearList').innerHTML=html;
+  document.getElementById('mobileNearTitle').textContent=myLoc?'📍 가까운 사이트 ('+Math.min(list.length,max)+'건)':'📋 사이트 목록 ('+Math.min(list.length,max)+'건)';
+}
+
+function mobileSearchFilter(){
+  renderMobileList();
+}
+
+function mobileGoSite(lat,lng){
+  if(window._mobileMap&&lat&&lng){
+    window._mobileMap.setView([lat,lng],16);
+    if(window._mobileMarkers){
+      for(var i=0;i<window._mobileMarkers.length;i++){
+        var m=window._mobileMarkers[i];
+        var ml=m.getLatLng();
+        if(Math.abs(ml.lat-lat)<0.0001&&Math.abs(ml.lng-lng)<0.0001){
+          m.openPopup();
+          break;
+        }
+      }
+    }
+  }
+}
+ 
+function toast(m,t){var b=document.getElementById('toasts'),e=document.createElement('div');e.className='toast '+(t||'info');e.textContent=m;b.appendChild(e);setTimeout(function(){e.remove();},3000);}
+function apiGet(p,cb){var url=API+'?'+Object.keys(p).map(function(k){return k+'='+encodeURIComponent(p[k])}).join('&');fetch(url,{redirect:'follow',mode:'cors'}).then(function(r){return r.text();}).then(function(t){try{cb(JSON.parse(t));}catch(e){console.log('응답:',t.substring(0,100));}}).catch(function(e){console.log('fetch오류:',e);});}
+function apiPost(d,cb){fetch(API,{method:'POST',redirect:'follow',body:JSON.stringify(d)}).then(function(r){return r.text();}).then(function(t){try{var res=JSON.parse(t);res.ok=res.ok||res.success;cb(res);}catch(e){cb({ok:true});}}).catch(function(e){console.log('POST오류:',e);cb({ok:false});});}
+
+function isChecked(v){var s=String(v||'').trim();return s==='1'||s==='O'||s==='o'||s==='TRUE'||s==='true'||s==='○'||s==='ㅇ'||s==='V'||s==='v'||s==='Y'||s==='y';}
+function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+function isChecked(v){var s=String(v||'').trim();return s==='1'||s==='O'||s==='o'||s==='TRUE'||s==='true'||s==='○'||s==='ㅇ'||s==='V'||s==='v'||s==='Y'||s==='y';}
+function getRowSent(row,h){var c=[{col:'긍정',t:'positive'},{col:'중립',t:'neutral'},{col:'중림',t:'neutral'},{col:'부정',t:'negative'},{col:'재계약',t:'etc'}];for(var i=0;i<c.length;i++)for(var j=0;j<h.length;j++)if(h[j]===c[i].col&&isChecked(row[h[j]]))return c[i].t;return null;}
+function sentBadge(t){if(!t)return'';var l={positive:'긍정',neutral:'중립',negative:'부정',etc:'기타'},c={positive:'badge-pos',neutral:'badge-neu',negative:'badge-neg',etc:'badge-etc'};return'<span class="badge '+c[t]+'">'+l[t]+'</span>';}
+function renderCell(h,v){var s=String(v||'').trim(),sc=(h==='긍정'||h==='중립'||h==='중림'||h==='부정'||h==='재계약');if(sc){if(isChecked(s)){if(h==='긍정')return'<span class="check-mark check-pos">O</span>';if(h==='중립'||h==='중림')return'<span class="check-mark check-neu">O</span>';if(h==='부정')return'<span class="check-mark check-neg">O</span>';if(h==='재계약')return'<span class="check-mark check-etc">O</span>';}return'';}return esc(v!==undefined&&v!==null?String(v):'');}
+function parseDate(v){if(!v)return null;if(v instanceof Date){var d=new Date(v);d.setHours(0,0,0,0);return d;}var s=String(v).trim(),m=s.match(/(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);if(m)return new Date(parseInt(m[1]),parseInt(m[2])-1,parseInt(m[3]));var d=new Date(s);if(!isNaN(d.getTime())){d.setHours(0,0,0,0);return d;}return null;}
+function fmt(d){if(!d)return'';return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fv(row,h,n){if(row[n]!==undefined)return String(row[n]||'');for(var i=0;i<h.length;i++)if(h[i].indexOf(n)>=0)return String(row[h[i]]||'');return'';}
+function setWeekStart(d){var day=d.getDay();weekStart=new Date(d);weekStart.setDate(d.getDate()-(day===0?6:day-1));weekStart.setHours(0,0,0,0);}
+function filterByDate(from,to){var r=[];for(var i=0;i<allFlat.length;i++){var d=allFlat[i].date;if(d&&d>=from&&d<=to)r.push(allFlat[i]);}return r;}
+function hl(h,q){if(!q)return h;var r=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');return h.replace(r,'<span class="highlight">$1</span>');}
+
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}
+
+function goPage(page,el){
+  curPage=page;
+  var pages=document.querySelectorAll('.page');for(var i=0;i<pages.length;i++)pages[i].classList.remove('active');
+  document.getElementById('page-'+page).classList.add('active');
+  var items=document.querySelectorAll('.menu-item');for(var i=0;i<items.length;i++)items[i].classList.remove('active');
+  if(el)el.classList.add('active');
+  var titles={activity:'📋 영업활동 조회',search:'🔍 검색',stats:'📊 현황 통계',sheet:'📄 시트 데이터',contract:'📋 계약서 관리',schedule:'📍 영업일정 관리'};
+  document.getElementById('pageTitle').textContent=titles[page]||page;
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+  if(dataLoaded){
+    if(page==='activity')renderActivity();
+    else if(page==='contract'){loadContract(function(){renderContract();});}
+    else if(page==='stats')renderSubTab();
+    else if(page==='schedule')renderSchedule();
+  }
+}
+
+
+function goSheet(name){
+  nowSheet=name;curPage='sheet';
+  var pages=document.querySelectorAll('.page');for(var i=0;i<pages.length;i++)pages[i].classList.remove('active');
+  document.getElementById('page-sheet').classList.add('active');
+  document.getElementById('pageTitle').textContent='📄 '+name;
+  var items=document.querySelectorAll('.menu-item');for(var i=0;i<items.length;i++)items[i].classList.remove('active');
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+  loadSheetPage(name);
+}
+
+function goSubTab(tab,el){
+  curSubTab=tab;
+  var subs=document.querySelectorAll('.sub-page');for(var i=0;i<subs.length;i++)subs[i].classList.remove('active');
+  document.getElementById('sub-'+tab).classList.add('active');
+  var tabs=document.querySelectorAll('.sub-tab');for(var i=0;i<tabs.length;i++)tabs[i].classList.remove('active');
+  if(el)el.classList.add('active');
+  renderSubTab();
+}
+
+
+
+function buildFlat(){
+  allFlat=[];
+  var ns=Object.keys(allSheetsData);
+  for(var s=0;s<ns.length;s++){
+    var nm=ns[s],d=allSheetsData[nm];
+    if(!d||!d.headers||!d.rows){console.log('시트오류:',nm,d);continue;}
+    var h=d.headers,rows=d.rows;
+    for(var r=0;r<rows.length;r++){
+      try{
+        var row=rows[r];
+        allFlat.push({
+          sheet:nm,
+          row:row,
+          headers:h,
+          sent:getRowSent(row,h),
+          date:parseDate(fv(row,h,'방문일자')),
+          mgr:(function(){
+            var m=fv(row,h,'담당자')||'';
+            if(!m){
+              var area=fv(row,h,'권역별')||'';
+              var areaMgr={'수도권남동':'김준우','수도권북동':'신준명','수도권북서':'정재규','수도권남서':'전두현'};
+              if(areaMgr[area]){
+                m=areaMgr[area];
+                row['담당자']=m;
+                var mgrCol=-1;
+                for(var ci=0;ci<h.length;ci++){if(h[ci]==='담당자'){mgrCol=ci+1;break;}}
+                 if(mgrCol>0){apiPost({action:'updateCell',sheet:nm,row:r+2,col:mgrCol+1,value:m},function(){});}
+              }
+            }
+            return m;
+          }()),
+          site:fv(row,h,'사이트명'),
+          content:fv(row,h,'영업내용')
+        });
+      }catch(e){
+        console.log('행오류:',nm,r,e.message);
+      }
+    }
+  }
+  console.log('buildFlat완료:',allFlat.length);
+}
+
+function buildFilters(){var ms={};for(var i=0;i<allFlat.length;i++){var m=allFlat[i].mgr;if(m)ms[m]=1;}var ns=Object.keys(ms).sort();var sel=document.getElementById('actMgr');if(sel){sel.innerHTML='<option value="">전체 담당자</option>';for(var i=0;i<ns.length;i++)sel.innerHTML+='<option value="'+ns[i]+'">'+ns[i]+'</option>';}}
+// ===== 공용 HTML 생성 =====
+function mkStats(list){
+  var t={positive:0,neutral:0,negative:0,etc:0,all:0};
+  for(var i=0;i<list.length;i++){var s=list[i].sent;if(s){t[s]++;t.all++;}}
+  var items=[{k:'all',l:'전체',c:'total'},{k:'positive',l:'긍정',c:'positive'},{k:'neutral',l:'중립',c:'neutral'},{k:'negative',l:'부정',c:'negative'},{k:'etc',l:'기타',c:'etc'}];
+  var h='';for(var i=0;i<items.length;i++){var it=items[i],cn=t[it.k],p=t.all>0?Math.round(cn/t.all*100):0;if(it.k==='all')p=100;
+    h+='<div class="stat-card '+it.c+'"><div class="stat-label">'+it.l+'</div><div class="stat-number">'+cn+'</div><div class="stat-percent">'+p+'%</div><div class="stat-bar"><div class="stat-bar-fill" style="width:'+p+'%"></div></div></div>';}
+  return h;
+}
+function mkMgr(list){
+  var ms={};for(var i=0;i<list.length;i++){var m=list[i].mgr||'미지정';if(!ms[m])ms[m]={positive:0,neutral:0,negative:0,etc:0,total:0};ms[m].total++;var s=list[i].sent;if(s)ms[m][s]++;}
+  var ns=Object.keys(ms).sort(),h='';
+  for(var i=0;i<ns.length;i++){var n=ns[i],c=ms[n];
+    h+='<div class="mgr-row"><div class="mgr-name">'+esc(n)+'</div><span class="mini-badge pos">긍정 '+c.positive+'</span><span class="mini-badge neu">중립 '+c.neutral+'</span><span class="mini-badge neg">부정 '+c.negative+'</span><span class="mini-badge etc2">기타 '+c.etc+'</span><span style="font-size:11px;color:#999;">('+c.total+')</span></div>';}
+  return h||'<div class="empty-msg">데이터 없음</div>';
+}
+function mkTable(list,thId,tbId,pageKey,q){
+   // 필터용 목록 수집
+  var bizSet={},kindSet={},sentSet={},mgrSet={};
+  for(var fi=0;fi<list.length;fi++){
+    var fb=fv(list[fi].row,list[fi].headers,'사업구분')||'';if(fb)bizSet[fb]=fb;
+    var fk=fv(list[fi].row,list[fi].headers,'종류')||'';if(fk)kindSet[fk]=fk;
+    var fs=list[fi].sent||'';if(fs){var sentLabel={'positive':'긍정','neutral':'중립','negative':'부정','etc':'기타'};sentSet[sentLabel[fs]||fs]=fs;}
+    var fm=list[fi].mgr||'';if(fm)mgrSet[fm]=fm;
+  }
+  window['_ft_'+pageKey]={biz:'',kind:'',sent:'',mgr:'',visit:'',status:''};
+   function mkFilter(id,label,items){
+  var h='<th style="white-space:nowrap;">'+label+' <select style="font-size:11px;padding:1px 2px;border:none;cursor:pointer;background:transparent;color:#666;vertical-align:middle;appearance:none;-webkit-appearance:none;" onchange="applyTableFilter(\''+pageKey+'\',\''+id+'\',this.value)">';
+  h+='<option value="">▼</option>';
+  var keys=Object.keys(items).sort();
+  for(var i=0;i<keys.length;i++){h+='<option value="'+items[keys[i]]+'">'+keys[i]+'</option>';}
+  h+='</select></th>';
+  return h;
+}
+   var statusFlt='<select style="font-size:11px;padding:1px 2px;border:none;cursor:pointer;background:transparent;color:#666;appearance:none;-webkit-appearance:none;" onchange="applyTableFilter(\''+pageKey+'\',\'status\',this.value)"><option value="">▼</option><option value="상담">상담</option><option value="제안">제안</option><option value="입대위">입대위</option><option value="실사">실사</option><option value="계약">계약</option></select>';
+  document.getElementById(thId).innerHTML='<tr><th>#</th><th>시트 '+statusFlt+'</th><th>방문일자 <select style="font-size:11px;padding:1px 2px;border:none;cursor:pointer;background:transparent;color:#666;vertical-align:middle;appearance:none;-webkit-appearance:none;" onchange="applyTableFilter(\''+pageKey+'\',\'visit\',this.value)"><option value="">▼</option><option value="방문">방문</option><option value="미방문">미방문</option></select></th><th>사이트명</th>'+mkFilter('biz','사업구분',bizSet)+mkFilter('kind','종류',kindSet)+'<th>충전기수</th><th>계약시작</th><th>계약종료</th><th>영업내용</th>'+mkFilter('sent','감정',sentSet)+mkFilter('mgr','담당자',mgrSet)+'<th>상세</th></tr>';
+  var contractSites={};
+  if(contractData&&contractData.rows){
+    var ch=contractData.headers;
+    for(var j=0;j<contractData.rows.length;j++){
+      var sn=(fv(contractData.rows[j],ch,'사이트명')||'').trim();
+      if(sn)contractSites[sn]=fv(contractData.rows[j],ch,'진행사항')||'상담';
+    }
+  }
+  window['_d_'+pageKey]=list;
+  window['_pg_'+pageKey]=0;
+  window['_q_'+pageKey]=q;
+  window['_cs_'+pageKey]=contractSites;
+  mkTablePage(pageKey);
+}
+
+function mkTablePage(pageKey){
+  var list=window['_d_'+pageKey]||[];
+  var q=window['_q_'+pageKey]||'';
+  var contractSites=window['_cs_'+pageKey]||{};
+  var page=window['_pg_'+pageKey]||0;
+  var perPage=(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent))?10:50;
+  var start=page*perPage;
+  var end=Math.min(start+perPage,list.length);
+  var totalPages=Math.ceil(list.length/perPage)||1;
+
+  var b='';
+  for(var i=start;i<end;i++){
+    var it=list[i],dt=it.date?fmt(it.date):fv(it.row,it.headers,'방문일자');
+    var siteName=(it.site||'').trim();
+    var isContract=contractSites[siteName]?true:false;
+    var sheetDisplay=it.sheet||'';
+    if(it.sheets){
+      var filtered=it.sheets.filter(function(s){return s!=='계약서';});
+      sheetDisplay=filtered.join('<br>');
+    }else if(sheetDisplay==='계약서'){sheetDisplay='';}
+    b+='<tr>';
+    b+='<td style="color:#999;font-size:11px;">'+(i+1)+'</td>';
+    var sheetColors={'26년만료현장':'#1a73e8','27년만료현장':'#5b9cf6'};
+   b+='<td style="white-space:nowrap;"><div style="display:inline-block;vertical-align:middle;">'+sheetDisplay.split('<br>').map(function(s){var sc=sheetColors[s.trim()]||'#1a73e8';return '<span style="background:'+sc+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:block;margin:1px 0;">'+esc(s)+'</span>';}).join('')+'</div>';
+if(isContract){var ctSt=contractSites[siteName]||'상담';var ctColors={'상담':'#3498db','제안':'#e67e22','입대위':'#f39c12','실사':'#9b59b6','계약':'#27ae60'};var ctLabel={'상담':'상담','제안':'제안','입대위':'입대','실사':'실사','계약':'계약'};b+=' <span style="display:inline-block;vertical-align:middle;background:'+(ctColors[ctSt]||'#999')+';color:white;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;">'+(ctLabel[ctSt]||ctSt)+'</span>';}
+b+='</td>';
+    var bizType=it.bizTypes?Object.values(it.bizTypes).filter(function(v){return v;}).join(', '):fv(it.row,it.headers,'사업구분')||'';
+    var kind=it.kinds?Object.values(it.kinds).filter(function(v){return v;}).join(', '):fv(it.row,it.headers,'종류')||'';
+    var charger=fv(it.row,it.headers,'충전기수량')||'';
+    var ctStart=fv(it.row,it.headers,'계약시작')||'';
+    var ctEnd=fv(it.row,it.headers,'계약종료')||'';
+    if(ctStart&&ctStart.indexOf('T')>0)ctStart=ctStart.split('T')[0];
+    if(ctEnd&&ctEnd.indexOf('T')>0)ctEnd=ctEnd.split('T')[0];
+            var bizColors={'(투자20)':'#e74c3c','(투자21)':'#e67e22','(투자22)':'#f1c40f','(투자23)':'#2ecc71','(투자24)':'#1abc9c','(투자25)':'#3498db','(투자26)':'#9b59b6','(투자27)':'#00bcd4'};
+    var kindColors={'구형대':'#6c757d','알박구형':'#e74c3c','알박신형':'#27ae60','신형소':'#3498db','신형대':'#2980b9','10kW':'#f39c12','이카플러그':'#8e44ad','스필_7kW':'#d35400'};
+    var bizBadge=bizType?'<span style="background:'+(bizColors[bizType]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;">'+esc(bizType)+'</span>':'';
+    var kindBadge=kind?kind.split(', ').map(function(k){return '<span style="background:'+(kindColors[k.trim()]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:inline-block;margin:1px 0;">'+esc(k)+'</span>';}).join(' '):'';
+   b+='<td>'+hl(esc(dt),q)+'</td><td><a href="#" style="color:#1a73e8;text-decoration:underline;cursor:pointer;" onclick="moveToSite(\''+esc(siteName).replace(/'/g,"\\'")+'\');return false;">'+hl(esc(it.site),q)+'</a></td><td style="padding-right:2px;">'+bizBadge+'</td><td style="padding-left:2px;">'+kindBadge+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td><td style="max-width:200px;">'+hl(esc(it.content),q)+'</td>';
+
+        b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
+    if(pageKey==='sch'){
+      var addr2=fv(it.row,it.headers,'주소')||it.site||'';
+      var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
+       b+='<td style="white-space:nowrap;"><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a> <button class="btn btn-gray btn-sm" onclick="openSchEdit('+i+')">수정</button></td></tr>';
+    }else{
+      var addr2=fv(it.row,it.headers,'주소')||it.site||'';
+var mapUrl2='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
+b+='<td><a href="'+mapUrl2+'" target="_blank" class="btn btn-blue btn-sm">지도</a> <button class="btn btn-gray btn-sm" onclick="openDetailFromRow(\''+pageKey+'\',this)">보기</button></td></tr>';
+    }
+  }
+  if(!list.length)b='<tr><td colspan="13"><div class="empty-msg">데이터 없음</div></td></tr>';
+
+  // 페이지네이션
+  var pgHtml='<tr><td colspan="13"><div style="display:flex;justify-content:center;align-items:center;gap:4px;padding:12px 0;">';
+  pgHtml+='<button class="btn btn-sm btn-gray" onclick="goTablePage(\''+pageKey+'\',0)" '+(page===0?'disabled':'')+' style="padding:4px 10px;">◀◀</button>';
+  pgHtml+='<button class="btn btn-sm btn-gray" onclick="goTablePage(\''+pageKey+'\','+(page-1)+')" '+(page===0?'disabled':'')+' style="padding:4px 10px;">◀</button>';
+  var startPg=Math.max(0,page-2);
+  var endPg=Math.min(totalPages-1,page+2);
+  for(var p=startPg;p<=endPg;p++){
+    pgHtml+='<button class="btn btn-sm '+(p===page?'btn-primary':'btn-gray')+'" onclick="goTablePage(\''+pageKey+'\','+p+')" style="padding:4px 12px;">'+(p+1)+'</button>';
+  }
+  pgHtml+='<button class="btn btn-sm btn-gray" onclick="goTablePage(\''+pageKey+'\','+(page+1)+')" '+(page>=totalPages-1?'disabled':'')+' style="padding:4px 10px;">▶</button>';
+  pgHtml+='<button class="btn btn-sm btn-gray" onclick="goTablePage(\''+pageKey+'\','+(totalPages-1)+')" '+(page>=totalPages-1?'disabled':'')+' style="padding:4px 10px;">▶▶</button>';
+  pgHtml+='<span style="margin-left:8px;font-size:12px;color:#888;">'+(page+1)+' / '+totalPages+'</span>';
+  pgHtml+='</div></td></tr>';
+
+  var tbId=pageKey==='act'?'actTB':pageKey==='src'?'srcTB':pageKey==='sch'?'schTB':pageKey==='daily'?'dailyTB':pageKey==='weekly'?'weeklyTB':pageKey==='monthly'?'monthlyTB':'actTB';
+  document.getElementById(tbId).innerHTML=b+pgHtml;
+}
+
+function goTablePage(pageKey,pg){
+  var list=window['_d_'+pageKey]||[];
+  var totalPages=Math.ceil(list.length/50)||1;
+  if(pg<0)pg=0;
+  if(pg>=totalPages)pg=totalPages-1;
+  window['_pg_'+pageKey]=pg;
+  mkTablePage(pageKey);
+}
+
+  function applyTableFilter(pageKey,filterType,value){
+  var ft=window['_ft_'+pageKey]||{biz:'',kind:'',sent:'',mgr:'',visit:'',status:''};
+  ft[filterType]=value;
+  window['_ft_'+pageKey]=ft;
+  var origList=window['_d_'+pageKey]||[];
+  var filtered=[];
+  for(var i=0;i<origList.length;i++){
+    var it=origList[i];
+    if(ft.biz){var b=it.bizTypes?Object.values(it.bizTypes).join(','):fv(it.row,it.headers,'사업구분')||'';if(b.indexOf(ft.biz)<0)continue;}
+    if(ft.kind){var k=it.kinds?Object.values(it.kinds).join(','):fv(it.row,it.headers,'종류')||'';if(k.indexOf(ft.kind)<0)continue;}
+    if(ft.sent&&it.sent!==ft.sent)continue;
+    if(ft.mgr&&it.mgr!==ft.mgr)continue;
+    if(ft.visit){var dt=it.date?fmt(it.date):fv(it.row,it.headers,'방문일자')||'';if(ft.visit==='방문'&&!dt)continue;if(ft.visit==='미방문'&&dt)continue;}
+    if(ft.status){var sn3=(it.site||'').trim();var cs=window['_cs_'+pageKey]||{};var st3=cs[sn3]||'';if(st3!==ft.status)continue;}
+    filtered.push(it);
+  }
+  window['_df_'+pageKey]=filtered;
+  window['_pg_'+pageKey]=0;
+  mkTablePageFiltered(pageKey);
+  // 필터 결과 표시
+  var summary='';
+  if(ft.biz)summary+='사업구분:'+ft.biz+' ';
+  if(ft.kind)summary+='종류:'+ft.kind+' ';
+  if(ft.sent)summary+='감정:'+ft.sent+' ';
+  if(ft.mgr)summary+='담당자:'+ft.mgr+' ';
+  var titleEl=document.getElementById('actTitle');
+  if(titleEl){
+    var existing=titleEl.innerHTML;
+    var filterTag=document.getElementById('filterSummary');
+    if(filterTag)filterTag.remove();
+    if(summary){
+      var span=document.createElement('span');
+      span.id='filterSummary';
+      span.style.cssText='font-size:12px;color:#1a73e8;font-weight:600;margin-left:12px;';
+      span.textContent='[필터: '+summary.trim()+' / '+filtered.length+'건]';
+      titleEl.appendChild(span);
+    }
+  }
+}
+
+function mkTablePageFiltered(pageKey){
+  var list=window['_df_'+pageKey]||window['_d_'+pageKey]||[];
+  var q=window['_q_'+pageKey]||'';
+  var contractSites=window['_cs_'+pageKey]||{};
+  var page=window['_pg_'+pageKey]||0;
+  var perPage=(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent))?10:50;
+  var start=page*perPage;
+  var end=Math.min(start+perPage,list.length);
+  var totalPages=Math.ceil(list.length/perPage)||1;
+
+  var b='';
+  for(var i=start;i<end;i++){
+    var it=list[i],dt=it.date?fmt(it.date):fv(it.row,it.headers,'방문일자');
+    var siteName=(it.site||'').trim();
+    var isContract=contractSites[siteName]?true:false;
+    var sheetDisplay=it.sheet||'';
+    if(it.sheets){
+      var filtered=it.sheets.filter(function(s){return s!=='계약서';});
+      sheetDisplay=filtered.join('<br>');
+    }else if(sheetDisplay==='계약서'){sheetDisplay='';}
+    var sheetColors={'26년만료현장':'#1a73e8','27년만료현장':'#5b9cf6'};
+    b+='<tr>';
+    b+='<td style="color:#999;font-size:11px;">'+(i+1)+'</td>';
+   b+='<td style="white-space:nowrap;"><div style="display:inline-block;vertical-align:middle;">'+sheetDisplay.split('<br>').map(function(s){var sc=sheetColors[s.trim()]||'#1a73e8';return '<span style="background:'+sc+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:block;margin:1px 0;">'+esc(s)+'</span>';}).join('')+'</div>';
+if(isContract){var ctSt=contractSites[siteName]||'상담';var ctColors={'상담':'#3498db','제안':'#e67e22','입대위':'#f39c12','실사':'#9b59b6','계약':'#27ae60'};var ctLabel={'상담':'상담','제안':'제안','입대위':'입대','실사':'실사','계약':'계약'};b+=' <span style="display:inline-block;vertical-align:middle;background:'+(ctColors[ctSt]||'#999')+';color:white;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;">'+(ctLabel[ctSt]||ctSt)+'</span>';}
+b+='</td>';
+    var bizType=it.bizTypes?Object.values(it.bizTypes).filter(function(v){return v;}).join(', '):fv(it.row,it.headers,'사업구분')||'';
+    var kind=it.kinds?Object.values(it.kinds).filter(function(v){return v;}).join(', '):fv(it.row,it.headers,'종류')||'';
+    var charger=fv(it.row,it.headers,'충전기수량')||'';
+    var ctStart=fv(it.row,it.headers,'계약시작')||'';
+    var ctEnd=fv(it.row,it.headers,'계약종료')||'';
+    if(ctStart&&ctStart.indexOf('T')>0)ctStart=ctStart.split('T')[0];
+    if(ctEnd&&ctEnd.indexOf('T')>0)ctEnd=ctEnd.split('T')[0];
+        var bizColors={'(투자20)':'#e74c3c','(투자21)':'#e67e22','(투자22)':'#f1c40f','(투자23)':'#2ecc71','(투자24)':'#1abc9c','(투자25)':'#3498db','(투자26)':'#9b59b6','(투자27)':'#00bcd4'};
+    var kindColors={'구형대':'#6c757d','알박구형':'#e74c3c','알박신형':'#27ae60','신형소':'#3498db','신형대':'#2980b9','10kW':'#f39c12','이카플러그':'#8e44ad','스필_7kW':'#d35400'};
+    var bizBadge=bizType?'<span style="background:'+(bizColors[bizType]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;">'+esc(bizType)+'</span>':'';
+    var kindBadge=kind?kind.split(', ').map(function(k){return '<span style="background:'+(kindColors[k.trim()]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:11px;display:inline-block;margin:1px 0;">'+esc(k)+'</span>';}).join(' '):'';
+    b+='<td>'+hl(esc(dt),q)+'</td><td><a href="#" style="color:#1a73e8;text-decoration:underline;cursor:pointer;" onclick="moveToSite(\''+esc(siteName).replace(/'/g,"\\'")+'\');return false;">'+hl(esc(it.site),q)+'</a></td><td style="padding-right:2px;">'+bizBadge+'</td><td style="padding-left:2px;">'+kindBadge+'</td><td>'+esc(charger)+'</td><td>'+esc(ctStart)+'</td><td>'+esc(ctEnd)+'</td><td style="max-width:200px;">'+hl(esc(it.content),q)+'</td>';
+       b+='<td>'+sentBadge(it.sent)+'</td><td>'+hl(esc(it.mgr),q)+'</td>';
+    if(pageKey==='sch'){
+      var addr2=fv(it.row,it.headers,'주소')||it.site||'';
+      var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
+       b+='<td style="white-space:nowrap;"><a href="'+mapUrl+'" target="_blank" class="btn btn-blue btn-sm">지도</a> <button class="btn btn-gray btn-sm" onclick="openSchEdit('+i+')">수정</button></td></tr>';
+    }else{
+      var addr2=fv(it.row,it.headers,'주소')||it.site||'';
+var mapUrl2='https://map.naver.com/v5/search/'+encodeURIComponent(addr2);
+b+='<td><a href="'+mapUrl2+'" target="_blank" class="btn btn-blue btn-sm">지도</a> <button class="btn btn-gray btn-sm" onclick="openDetailFromRow(\''+pageKey+'\',this)">보기</button></td></tr>';
+    }
+  }
+  if(!list.length)b='<tr><td colspan="13"><div class="empty-msg">데이터 없음</div></td></tr>';
+
+  var pgHtml='<tr><td colspan="13"><div style="display:flex;justify-content:center;align-items:center;gap:4px;padding:12px 0;">';
+  pgHtml+='<button class="btn btn-sm btn-gray" onclick="goTablePageF(\''+pageKey+'\',0)" '+(page===0?'disabled':'')+'>◀◀</button>';
+  pgHtml+='<button class="btn btn-sm btn-gray" onclick="goTablePageF(\''+pageKey+'\','+(page-1)+')" '+(page===0?'disabled':'')+'>◀</button>';
+  var startPg=Math.max(0,page-2);
+  var endPg=Math.min(totalPages-1,page+2);
+  for(var p=startPg;p<=endPg;p++){
+    pgHtml+='<button class="btn btn-sm '+(p===page?'btn-primary':'btn-gray')+'" onclick="goTablePageF(\''+pageKey+'\','+p+')">'+(p+1)+'</button>';
+  }
+  pgHtml+='<button class="btn btn-sm btn-gray" onclick="goTablePageF(\''+pageKey+'\','+(page+1)+')" '+(page>=totalPages-1?'disabled':'')+'>▶</button>';
+  pgHtml+='<button class="btn btn-sm btn-gray" onclick="goTablePageF(\''+pageKey+'\','+(totalPages-1)+')" '+(page>=totalPages-1?'disabled':'')+'>▶▶</button>';
+  pgHtml+='<span style="margin-left:8px;font-size:12px;color:#888;">'+(page+1)+' / '+totalPages+'</span>';
+  pgHtml+='</div></td></tr>';
+
+  var tbId=pageKey==='act'?'actTB':pageKey==='src'?'srcTB':pageKey==='sch'?'schTB':pageKey==='daily'?'dailyTB':pageKey==='weekly'?'weeklyTB':pageKey==='monthly'?'monthlyTB':'actTB';
+  document.getElementById(tbId).innerHTML=b+pgHtml;
+}
+
+function goTablePageF(pageKey,pg){
+  var list=window['_df_'+pageKey]||window['_d_'+pageKey]||[];
+  var totalPages=Math.ceil(list.length/50)||1;
+  if(pg<0)pg=0;
+  if(pg>=totalPages)pg=totalPages-1;
+  window['_pg_'+pageKey]=pg;
+  mkTablePageFiltered(pageKey);
+}
+
+
+  function refreshPage(){
+  var page=curPage;
+  dataLoaded=false;
+  allSheetsData={};allFlat=[];contractData=null;
+  apiGet({action:'getSheets'},function(data){
+    var sheets=data.sheets||[],loaded=0;
+    var sm=document.getElementById('sheetMenus');if(sm)sm.innerHTML='';
+    var actSheet=document.getElementById('actSheet');actSheet.innerHTML='<option value="">전체 시트</option>';
+    for(var i=0;i<sheets.length;i++){
+      if(sm)sm.innerHTML+='<div class="menu-item" onclick="goSheet(\''+sheets[i]+'\')"><span class="icon">📄</span> '+sheets[i]+'</div>';
+      actSheet.innerHTML+='<option value="'+sheets[i]+'">'+sheets[i]+'</option>';
+    }
+    for(var i=0;i<sheets.length;i++){
+      (function(nm){apiGet({action:'getData',sheet:nm},function(d){
+        allSheetsData[nm]=d;loaded++;
+        if(loaded>=sheets.length){
+          dataLoaded=true;
+          buildFlat();buildFilters();
+          goPage(page);
+          toast('새로고침 완료','ok');
+        }
+      });})(sheets[i]);
+    }
+  });
+}
+  
+  function showDet(key,idx){var list=window['_d_'+key]||[];var it=list[idx];if(!it)return;
+  var row=it.row,h=it.headers;document.getElementById('detailTitle').textContent='상세 - '+it.sheet;
+  var html='';for(var i=0;i<h.length;i++){var v=row[h[i]]!==undefined?row[h[i]]:'',lo=String(v).length>40;
+    html+='<div class="detail-item'+(lo?' detail-full':'')+'"><label>'+esc(h[i])+'</label><div class="val">'+renderCell(h[i],v)+'</div></div>';}
+  document.getElementById('detailGrid').innerHTML=html;document.getElementById('detailModal').classList.add('show');}
+
+function filterList(q,sf,mf,shf){
+  var r=[];for(var i=0;i<allFlat.length;i++){var it=allFlat[i];
+    if(shf&&it.sheet!==shf)continue;
+    if(sf){var fs=sf==='기타'?'etc':sf==='긍정'?'positive':sf==='중립'?'neutral':'negative';if(it.sent!==fs)continue;}
+    if(mf&&it.mgr!==mf)continue;
+    if(q){var f=false,h=it.headers,row=it.row;for(var j=0;j<h.length;j++)if(String(row[h[j]]||'').toLowerCase().indexOf(q)>=0){f=true;break;}if(!f)continue;}
+    r.push(it);}return r;
+}
+
+// ===== 영업활동 =====
+function renderActivity(){
+  var q=(document.getElementById('actSearch').value||'').toLowerCase().trim();
+  var sf=document.getElementById('actSent').value;
+  var mf=document.getElementById('actMgr').value;
+  var shf=document.getElementById('actSheet').value;
+  var list=filterList(q,sf,mf,shf);
+  document.getElementById('actStats').innerHTML=mkStats(list);
+
+   // 계약 진행 현황 (필터 적용)
+  if(!contractData){loadContract(function(){renderActivity();});return;}
+  var ctTotal=0,ct상담=0,ct제안=0,ct입대위=0,ct실사=0,ct계약=0;
+  if(contractData&&contractData.rows){
+    var ch2=contractData.headers;
+    for(var i=0;i<contractData.rows.length;i++){
+      var sn=(fv(contractData.rows[i],ch2,'사이트명')||'').trim();
+      var mg=fv(contractData.rows[i],ch2,'담당자')||'';
+      if(mf&&mg!==mf)continue;
+      // 시트 필터: 사이트명으로 시트 매칭
+      if(shf){
+        var matched=false;
+        for(var af=0;af<allFlat.length;af++){
+          if((allFlat[af].site||'').trim()===sn&&allFlat[af].sheet===shf){matched=true;break;}
+        }
+        if(!matched)continue;
+      }
+      var st=fv(contractData.rows[i],ch2,'진행사항')||'상담';
+      ctTotal++;
+      if(st==='상담')ct상담++;else if(st==='제안')ct제안++;else if(st==='입대위')ct입대위++;else if(st==='실사')ct실사++;else if(st==='계약')ct계약++;
+    }
+  }
+  var existSites={};
+  if(contractData&&contractData.rows){
+    var ch3=contractData.headers;
+    for(var i=0;i<contractData.rows.length;i++){var sn2=(fv(contractData.rows[i],ch3,'사이트명')||'').trim();if(sn2)existSites[sn2]=1;}
+  }
+  for(var i=0;i<allFlat.length;i++){
+    var sn=(allFlat[i].site||'').trim();
+    if(shf&&allFlat[i].sheet!==shf)continue;
+    if(mf&&allFlat[i].mgr!==mf)continue;
+    if(sn&&!existSites[sn]){existSites[sn]=1;ctTotal++;ct상담++;}
+  }
+  var ctPct상담=ctTotal>0?Math.round(ct상담/ctTotal*100):0;
+  var ctPct제안=ctTotal>0?Math.round(ct제안/ctTotal*100):0;
+  var ctPct입대위=ctTotal>0?Math.round(ct입대위/ctTotal*100):0;
+  var ctPct실사=ctTotal>0?Math.round(ct실사/ctTotal*100):0;
+  var ctPct계약=ctTotal>0?Math.round(ct계약/ctTotal*100):0;
+  var ctHtml='<div style="display:flex;gap:12px;margin-bottom:12px;">';
+  ctHtml+='<div style="flex:1;background:#eff6ff;border-radius:8px;padding:12px;text-align:center;border-top:4px solid #3498db;"><div style="font-size:12px;color:#3498db;font-weight:700;">상담</div><div style="font-size:28px;font-weight:800;color:#3498db;">'+ct상담+'</div><div style="font-size:11px;color:#888;">'+ctPct상담+'%</div></div>';
+  ctHtml+='<div style="flex:1;background:#fef5ee;border-radius:8px;padding:12px;text-align:center;border-top:4px solid #e67e22;"><div style="font-size:12px;color:#e67e22;font-weight:700;">제안</div><div style="font-size:28px;font-weight:800;color:#e67e22;">'+ct제안+'</div><div style="font-size:11px;color:#888;">'+ctPct제안+'%</div></div>';
+  ctHtml+='<div style="flex:1;background:#fff8ee;border-radius:8px;padding:12px;text-align:center;border-top:4px solid #f39c12;"><div style="font-size:12px;color:#f39c12;font-weight:700;">입대위</div><div style="font-size:28px;font-weight:800;color:#f39c12;">'+ct입대위+'</div><div style="font-size:11px;color:#888;">'+ctPct입대위+'%</div></div>';
+  ctHtml+='<div style="flex:1;background:#f5f0ff;border-radius:8px;padding:12px;text-align:center;border-top:4px solid #9b59b6;"><div style="font-size:12px;color:#9b59b6;font-weight:700;">실사</div><div style="font-size:28px;font-weight:800;color:#9b59b6;">'+ct실사+'</div><div style="font-size:11px;color:#888;">'+ctPct실사+'%</div></div>';
+  ctHtml+='<div style="flex:1;background:#eefbf3;border-radius:8px;padding:12px;text-align:center;border-top:4px solid #27ae60;"><div style="font-size:12px;color:#27ae60;font-weight:700;">계약</div><div style="font-size:28px;font-weight:800;color:#27ae60;">'+ct계약+'</div><div style="font-size:11px;color:#888;">'+ctPct계약+'%</div></div>';
+  ctHtml+='</div>';
+  ctHtml+='<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12px;color:#666;font-weight:600;">총 '+ctTotal+'건</span>';
+  ctHtml+='<div style="flex:1;height:8px;background:#eee;border-radius:4px;overflow:hidden;display:flex;">';
+  ctHtml+='<div style="width:'+ctPct상담+'%;background:#3498db;"></div>';
+  ctHtml+='<div style="width:'+ctPct제안+'%;background:#e67e22;"></div>';
+  ctHtml+='<div style="width:'+ctPct입대위+'%;background:#f39c12;"></div>';
+  ctHtml+='<div style="width:'+ctPct실사+'%;background:#9b59b6;"></div>';
+  ctHtml+='<div style="width:'+ctPct계약+'%;background:#27ae60;"></div>';
+  ctHtml+='</div></div>';
+  document.getElementById('actContractArea').innerHTML=ctHtml;
+
+ 
+  // Leaflet 지도 (시트2 기반)
+ if(!window._actMap){
+  window._actMap=L.map('actMap').setView([36.5,127.5],7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'OSM'}).addTo(window._actMap);
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var myLat=pos.coords.latitude;
+      var myLng=pos.coords.longitude;
+      window._actMyLoc=[myLat,myLng];
+window._actMap.setView([myLat,myLng],12);
+      var myIcon=L.divIcon({
+        className:'',
+        html:'<div style="width:18px;height:18px;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>',
+        iconSize:[18,18],
+        iconAnchor:[9,9]
+      });
+      L.marker([myLat,myLng],{icon:myIcon}).addTo(window._actMap).bindPopup('<b>내 위치</b>');
+       var myLocBtn=L.control({position:'topright'});
+      myLocBtn.onAdd=function(){
+        var div=L.DomUtil.create('div','');
+        div.innerHTML='<button onclick="if(window._actMyLoc){window._actMap.setView(window._actMyLoc,14);}" style="background:#fff;border:2px solid #ccc;border-radius:8px;padding:6px 10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.2);">📍 내위치</button>';
+        return div;
+      };
+      myLocBtn.addTo(window._actMap);
+    });
+  }
+}
+if(window._actMarkers){for(var mi=0;mi<window._actMarkers.length;mi++)window._actMap.removeLayer(window._actMarkers[mi]);}
+window._actMarkers=[];
+var mapBounds=[];
+for(var i=0;i<list.length;i++){
+  var it=list[i];
+  var lat=parseFloat(fv(it.row,it.headers,'Y좌표'));
+  var lng=parseFloat(fv(it.row,it.headers,'X좌표'));
+  if(!lat||!lng||isNaN(lat)||isNaN(lng))continue;
+  var visited=!!(it.date||fv(it.row,it.headers,'방문일자'));
+  var color=visited?'#27ae60':'#e74c3c';
+  var icon=L.divIcon({
+    className:'',
+    html:'<div style="width:14px;height:14px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>',
+    iconSize:[14,14],
+    iconAnchor:[7,7]
+  });
+  var site=it.site||'';
+  var mgr=it.mgr||'';
+  var marker=L.marker([lat,lng],{icon:icon}).addTo(window._actMap);
+  var addr=(fv(it.row,it.headers,'주소')||'').replace(/\(.*?\)/g,'').trim();
+var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr||site);
+marker.bindPopup('<b>'+site+'</b><br>주소: '+(addr||'-')+'<br>담당자: '+mgr+'<br>'+(visited?'<span style="color:#27ae60;">방문완료</span>':'<span style="color:#e74c3c;">미방문</span>')+'<br><a href="'+mapUrl+'" target="_blank" style="color:#1a73e8;font-weight:600;">네이버 지도 열기</a>');
+  window._actMarkers.push(marker);
+  mapBounds.push([lat,lng]);
+}
+if(window._actMyLoc){
+  window._actMap.setView(window._actMyLoc,12);
+}else if(mapBounds.length>0){
+  window._actMap.fitBounds(mapBounds,{padding:[30,30]});
+}
+
+
+   // 사이트명 기준 합치기
+  var siteMap={};
+  var merged=[];
+  for(var i=0;i<list.length;i++){
+    var sn=(list[i].site||'').trim();
+    if(list[i].sheet==='계약서')continue;
+    if(!sn){merged.push(list[i]);continue;}
+    if(!siteMap[sn]){
+      siteMap[sn]={sheet:list[i].sheet,date:list[i].date,site:list[i].site,content:list[i].content,sent:list[i].sent,mgr:list[i].mgr,row:list[i].row,headers:list[i].headers,sheets:[list[i].sheet],contents:{},dates:{},mgrs:{},sents:{},bizTypes:{},kinds:{}};
+      siteMap[sn].contents[list[i].sheet]=list[i].content||'';
+      siteMap[sn].bizTypes[list[i].sheet]=fv(list[i].row,list[i].headers,'사업구분')||'';
+      siteMap[sn].kinds[list[i].sheet]=fv(list[i].row,list[i].headers,'종류')||'';
+      siteMap[sn].dates[list[i].sheet]=list[i].date||'';
+      siteMap[sn].mgrs[list[i].sheet]=list[i].mgr||'';
+      siteMap[sn].sents[list[i].sheet]=list[i].sent||'';
+      merged.push(siteMap[sn]);
+    }else{
+      var ex=siteMap[sn];
+      if(ex.sheets.indexOf(list[i].sheet)<0)ex.sheets.push(list[i].sheet);
+      ex.sheet=ex.sheets.join(', ');
+      ex.contents[list[i].sheet]=list[i].content||'';
+      ex.bizTypes[list[i].sheet]=fv(list[i].row,list[i].headers,'사업구분')||'';
+      ex.kinds[list[i].sheet]=fv(list[i].row,list[i].headers,'종류')||'';
+      ex.dates[list[i].sheet]=list[i].date||'';
+      ex.mgrs[list[i].sheet]=list[i].mgr||'';
+      ex.sents[list[i].sheet]=list[i].sent||'';
+      if(list[i].date&&(!ex.date||list[i].date>ex.date)){ex.date=list[i].date;ex.row=list[i].row;ex.headers=list[i].headers;}
+      if(list[i].content&&!ex.content)ex.content=list[i].content;
+      if(list[i].mgr&&!ex.mgr)ex.mgr=list[i].mgr;
+      if(list[i].sent&&!ex.sent)ex.sent=list[i].sent;
+    }
+  }
+
+  window._actMerged=merged;
+  window._actQuery=q;
+  renderActTable('all');
+  window._actMerged=merged;
+  window._actQuery=q;
+  renderActTable('all');
+  initMobileNav();
+}
+
+function renderActTable(mode){
+  window._actMode=mode;
+  var merged=window._actMerged||[];
+  var q=window._actQuery||'';
+  var actVisit=window._actVisit||false;
+  var display=[];
+  for(var i=0;i<merged.length;i++){
+    var it=merged[i];
+    if(actVisit){
+      var dt=it.date||fv(it.row,it.headers,'방문일자')||'';
+      if(dt)continue;
+    }
+    if(mode==='all'){
+      display.push(it);
+    }else{
+      if(!it.sheets||it.sheets.indexOf(mode)<0)continue;
+      var copy={sheet:it.sheet,date:it.dates?it.dates[mode]||it.date:it.date,site:it.site,content:it.contents?it.contents[mode]||it.content:it.content,sent:it.sents?it.sents[mode]||it.sent:it.sent,mgr:it.mgrs?it.mgrs[mode]||it.mgr:it.mgr,row:it.row,headers:it.headers,sheets:it.sheets,bizTypes:it.bizTypes,kinds:it.kinds};
+      display.push(copy);
+    }
+  }
+   if(window._mobileMode && window._loginUser){
+    display=display.filter(function(it){
+      return (it.mgr||'')=== window._loginUser;
+    });
+  }
+  // 시트 버튼 (계약서 제외, 토글 스타일)
+  var sheetNames={};
+  for(var i=0;i<merged.length;i++){if(merged[i].sheets){for(var j=0;j<merged[i].sheets.length;j++){if(merged[i].sheets[j]!=='계약서')sheetNames[merged[i].sheets[j]]=1;}}}
+  var btnHtml='<div style="display:flex;align-items:center;gap:0;">';
+  var allActive=mode==='all';
+  btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;'+(allActive?'background:#1a73e8;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="renderActTable(\'all\')">';
+  btnHtml+='<span style="width:16px;height:16px;border-radius:50%;border:2px solid '+(allActive?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(allActive?'<span style="width:8px;height:8px;border-radius:50%;background:#fff;"></span>':'')+'</span> 전체</label>';
+  var sns=Object.keys(sheetNames).sort();
+  for(var i=0;i<sns.length;i++){
+    var active=mode===sns[i];
+    btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;margin-left:6px;'+(active?'background:#1a73e8;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="renderActTable(\''+sns[i]+'\')">';
+    btnHtml+='<span style="width:16px;height:16px;border-radius:50%;border:2px solid '+(active?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(active?'<span style="width:8px;height:8px;border-radius:50%;background:#fff;"></span>':'')+'</span> '+sns[i]+'</label>';
+  }
+   var actVisit=window._actVisit||false;
+  btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;margin-left:12px;'+(actVisit?'background:#dc3545;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="window._actVisit=!window._actVisit;renderActTable(window._actMode||\'all\')">';
+  btnHtml+='<span style="width:16px;height:16px;border-radius:4px;border:2px solid '+(actVisit?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(actVisit?'✓':'')+'</span> 미방문</label>';
+  btnHtml+='<button class="btn btn-sm btn-primary" style="margin-left:12px;border-radius:20px;padding:6px 16px;font-size:12px;font-weight:600;" onclick="openAddRow()">+ 행추가</button>';
+  btnHtml+='</div>';
+  document.getElementById('actTitle').innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;width:100%;">영업활동 목록 ('+display.length+'건)<div style="margin-left:auto;">'+btnHtml+'</div></div>';
+  var msHtml='<div style="font-size:13px;font-weight:700;margin-bottom:6px;color:#1a73e8;">📊 권역별 현황</div>';
+var areaCount={},areaVisit={};
+for(var i=0;i<display.length;i++){
+  var area=fv(display[i].row,display[i].headers,'권역별')||'미지정';
+  if(!area) continue;
+  areaCount[area]=(areaCount[area]||0)+1;
+  var vd=display[i].date||fv(display[i].row,display[i].headers,'방문일자')||'';
+  if(vd)areaVisit[area]=(areaVisit[area]||0)+1;
+}
+var areaColors={'수도권남동':'#e74c3c','수도권북동':'#3498db','수도권북서':'#2ecc71','수도권남서':'#e67e22','미지정':'#999'};
+var areaKeys=Object.keys(areaCount);
+var half=Math.ceil(areaKeys.length/2);
+msHtml+='<div style="display:flex;gap:6px;">';
+msHtml+='<div style="flex:1;">';
+for(var ai=0;ai<half;ai++){
+  var a=areaKeys[ai],total=areaCount[a],visited=areaVisit[a]||0,pct=total>0?Math.round(visited/total*100):0;
+  msHtml+='<div style="margin-bottom:4px;padding:4px 6px;background:#f8f9fa;border-radius:6px;">';
+  msHtml+='<div style="font-size:10px;font-weight:700;color:'+(areaColors[a]||'#666')+';">'+a+'</div>';
+  msHtml+='<div style="font-size:9px;color:#666;">'+total+'건/방문'+visited+' ('+pct+'%)</div>';
+  msHtml+='<div style="height:4px;background:#eee;border-radius:2px;margin-top:2px;"><div style="height:100%;width:'+pct+'%;background:'+(areaColors[a]||'#999')+';border-radius:2px;"></div></div>';
+  msHtml+='</div>';
+}
+msHtml+='</div><div style="flex:1;">';
+for(var ai=half;ai<areaKeys.length;ai++){
+  var a=areaKeys[ai],total=areaCount[a],visited=areaVisit[a]||0,pct=total>0?Math.round(visited/total*100):0;
+  msHtml+='<div style="margin-bottom:4px;padding:4px 6px;background:#f8f9fa;border-radius:6px;">';
+  msHtml+='<div style="font-size:10px;font-weight:700;color:'+(areaColors[a]||'#666')+';">'+a+'</div>';
+  msHtml+='<div style="font-size:9px;color:#666;">'+total+'건/방문'+visited+' ('+pct+'%)</div>';
+  msHtml+='<div style="height:4px;background:#eee;border-radius:2px;margin-top:2px;"><div style="height:100%;width:'+pct+'%;background:'+(areaColors[a]||'#999')+';border-radius:2px;"></div></div>';
+  msHtml+='</div>';
+}
+msHtml+='</div></div>';
+msHtml+='<div style="font-size:13px;font-weight:700;margin:8px 0 4px;color:#1a73e8;">😊 감정상태</div>';
+var sentCount={positive:0,neutral:0,negative:0,etc:0,none:0};
+for(var i=0;i<display.length;i++){
+  var s=display[i].sent;
+  if(s==='positive')sentCount.positive++;
+  else if(s==='neutral')sentCount.neutral++;
+  else if(s==='negative')sentCount.negative++;
+  else if(s==='etc')sentCount.etc++;
+  else sentCount.none++;
+}
+var sentItems=[{k:'positive',l:'긍정',c:'#27ae60'},{k:'neutral',l:'중립',c:'#f39c12'},{k:'negative',l:'부정',c:'#e74c3c'},{k:'etc',l:'기타',c:'#9b59b6'},{k:'none',l:'미분류',c:'#999'}];
+for(var si=0;si<sentItems.length;si++){
+  var s=sentItems[si],cnt=sentCount[s.k],pct=display.length>0?Math.round(cnt/display.length*100):0;
+  msHtml+='<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">';
+  msHtml+='<span style="width:6px;height:6px;border-radius:50%;background:'+s.c+';"></span>';
+  msHtml+='<span style="font-size:10px;color:#555;flex:1;">'+s.l+'</span>';
+  msHtml+='<span style="font-size:10px;font-weight:700;color:'+s.c+';">'+cnt+'('+pct+'%)</span>';
+  msHtml+='</div>';
+}
+if(document.getElementById('actMapStats'))document.getElementById('actMapStats').innerHTML=msHtml;
+
+  mkTable(display,'actTH','actTB','act',q);
+}
+  function openAddRow(){
+  editContractRow=null;
+  document.getElementById('contractModalTitle').textContent='새 행 추가';
+  document.getElementById('contractSubmitBtn').textContent='저장';
+  var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
+  for(var i=0;i<fields.length;i++){var el=document.getElementById(fields[i]);if(el)el.value='';}
+  var sheetNames=[];
+  for(var k in allSheetsData){if(k!=='계약서')sheetNames.push(k);}
+  var sdHtml='<div style="display:flex;align-items:center;padding:8px 0;border-bottom:2px solid #1a73e8;margin-bottom:8px;">';
+  sdHtml+='<div style="min-width:100px;font-weight:700;font-size:13px;color:#1a73e8;">저장할 시트</div>';
+  sdHtml+='<select id="addRowSheet" class="form-input" style="flex:1;font-size:13px;padding:4px 8px;">';
+  for(var i=0;i<sheetNames.length;i++){sdHtml+='<option value="'+sheetNames[i]+'">'+sheetNames[i]+'</option>';}
+  sdHtml+='</select></div>';
+  var firstSheet=sheetNames[0];
+  var headers=allSheetsData[firstSheet]?allSheetsData[firstSheet].headers:[];
+  var sentFields=['긍정','중립','부정'];
+  var hideFields=['재계약'];
+  var sentDone=false;
+  for(var i=0;i<headers.length;i++){
+    if(hideFields.indexOf(headers[i])>=0)continue;
+    if(sentFields.indexOf(headers[i])>=0){
+      if(!sentDone){
+        sentDone=true;
+        sdHtml+='<div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;">';
+        sdHtml+='<div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">감정상태</div>';
+        sdHtml+='<select class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" id="addRowSent">';
+        sdHtml+='<option value="">선택</option><option value="긍정">긍정</option><option value="중립">중립</option><option value="부정">부정</option><option value="기타">기타</option>';
+        sdHtml+='</select></div>';
+      }
+      continue;
+    }
+    sdHtml+='<div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;">';
+    sdHtml+='<div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">'+esc(headers[i])+'</div>';
+    sdHtml+='<input type="text" class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" id="addRow_'+i+'" data-header="'+esc(headers[i])+'" data-col="'+(i+1)+'">';
+    sdHtml+='</div>';
+  }
+  sdHtml+='<div style="text-align:right;margin-top:12px;"><button class="btn btn-primary" onclick="submitAddRow()">저장</button></div>';
+  document.getElementById('cf_sheetData').innerHTML=sdHtml;
+    document.getElementById('contractSubmitBtn').style.display='';
+    document.getElementById('contractSubmitBtn').style.display='';
+  document.getElementById('contractModal').classList.add('show');
+    document.getElementById('contractSubmitBtn').style.display='none';
+}
+
+function submitAddRow(){
+  var sheet=document.getElementById('addRowSheet').value;
+  if(!sheet){toast('시트를 선택하세요','err');return;}
+  var headers=allSheetsData[sheet]?allSheetsData[sheet].headers:[];
+  var rowData=[];
+  var sentFields=['긍정','중립','부정'];
+  var sentVal=document.getElementById('addRowSent')?document.getElementById('addRowSent').value:'';
+  var siteVal='',mgrVal='',statusVal='';
+  for(var i=0;i<headers.length;i++){
+    if(sentFields.indexOf(headers[i])>=0){
+      rowData.push(headers[i]===sentVal?'1':'');
+    }else{
+      var el=document.getElementById('addRow_'+i);
+      var v=el?el.value:'';
+      rowData.push(v);
+      if(headers[i]==='사이트명')siteVal=v;
+      if(headers[i]==='담당자')mgrVal=v;
+    }
+  }
+  // 계약서 폼에서 진행사항 가져오기
+  var statusEl=document.getElementById('cf_status');
+  statusVal=statusEl?statusEl.value:'';
+
+  apiPost({action:'addRow',sheet:sheet,rowData:rowData},function(res){
+    if(res.success||res.ok){
+      toast('시트 저장 완료','ok');
+      // 입대위/실사/계약이면 계약서에도 자동 추가
+      if(statusVal==='입대위'||statusVal==='실사'||statusVal==='계약'){
+        var exists=false;
+        if(contractData&&contractData.rows){
+          var ch=contractData.headers;
+          for(var i=0;i<contractData.rows.length;i++){
+            if((fv(contractData.rows[i],ch,'사이트명')||'').trim()===siteVal.trim()){exists=true;break;}
+          }
+        }
+        if(!exists&&siteVal){
+          var ctData=[
+            siteVal,
+            document.getElementById('cf_name')?document.getElementById('cf_name').value:'',
+            document.getElementById('cf_addr')?document.getElementById('cf_addr').value:'',
+            document.getElementById('cf_biz')?document.getElementById('cf_biz').value:'',
+            document.getElementById('cf_tel')?document.getElementById('cf_tel').value:'',
+            document.getElementById('cf_year')?document.getElementById('cf_year').value:'',
+            document.getElementById('cf_qty')?document.getElementById('cf_qty').value:'',
+            document.getElementById('cf_type')?document.getElementById('cf_type').value:'',
+            document.getElementById('cf_price')?document.getElementById('cf_price').value:'',
+            document.getElementById('cf_total')?document.getElementById('cf_total').value:'',
+            document.getElementById('cf_promo')?document.getElementById('cf_promo').value:'',
+            document.getElementById('cf_promoAmt')?document.getElementById('cf_promoAmt').value:'',
+            statusVal,
+            document.getElementById('cf_note')?document.getElementById('cf_note').value:'',
+            mgrVal
+          ];
+          apiPost({action:'addRow',sheet:'계약서',rowData:ctData},function(r2){
+            if(r2.success||r2.ok){toast('계약서에도 자동 추가됨','ok');contractData=null;}
+          });
+        }
+      }
+      document.getElementById('contractModal').classList.remove('show');
+      apiGet({action:'getData',sheet:sheet},function(d){
+        allSheetsData[sheet]=d;
+        buildFlat();buildFilters();renderActivity();
+      });
+    }else{
+      toast('저장 실패: '+(res.msg||''),'err');
+    }
+  });
+}
+
+
+
+
+
+
+// ===== 검색 =====
+function doSearch(){
+  if(!dataLoaded)return;
+  var q=(document.getElementById('searchBox').value||'').toLowerCase().trim();
+  var sf=document.getElementById('srcSent').value;
+  var mf=document.getElementById('srcMgr').value;
+  var list=filterList(q,sf,mf,'');
+  document.getElementById('srcStats').innerHTML=mkStats(list);
+  document.getElementById('srcTitle').textContent='검색 결과 ('+list.length+'건)';
+  mkTable(list,'srcTH','srcTB','src',q);
+}
+
+// ===== 통계 서브탭 =====
+function renderSubTab(){
+  if(!dataLoaded)return;
+  if(curSubTab==='all')renderAllStats();
+  else if(curSubTab==='daily')renderDaily();
+  else if(curSubTab==='weekly')renderWeekly();
+  else if(curSubTab==='monthly')renderMonthly();
+  else if(curSubTab==='manager')renderMgrTab();
+}
+
+function renderAllStats(){
+   if(!contractData){loadContract(function(){renderAllStats();});return;}
+   // 계약 진행 현황
+  // 사이트→시트 매핑
+  var siteToSheet={};
+  if(allFlat&&allFlat.length){
+    for(var i=0;i<allFlat.length;i++){
+      var sn=(allFlat[i].site||'').trim();
+      if(sn&&allFlat[i].sheet!=='계약서'){
+        if(!siteToSheet[sn])siteToSheet[sn]=[];
+        if(siteToSheet[sn].indexOf(allFlat[i].sheet)<0)siteToSheet[sn].push(allFlat[i].sheet);
+      }
+    }
+  }
+  // 시트 선택 드롭다운
+  var ctSheetSel=document.getElementById('allContractSheet');
+  var curCtSheet=ctSheetSel.value;
+  var ctSheetNames={};
+  for(var k in siteToSheet){for(var j=0;j<siteToSheet[k].length;j++)ctSheetNames[siteToSheet[k][j]]=1;}
+  ctSheetSel.innerHTML='<option value="">전체 시트</option>';
+  Object.keys(ctSheetNames).sort().forEach(function(n){ctSheetSel.innerHTML+='<option value="'+n+'"'+(n===curCtSheet?' selected':'')+'>'+n+'</option>';});
+
+  var ctTotal=0,ct상담=0,ct제안=0,ct입대위=0,ct실사=0,ct계약=0;
+  var mgrContract={};
+  if(contractData&&contractData.rows){
+    var ch2=contractData.headers;
+    for(var i=0;i<contractData.rows.length;i++){
+      var sn=(fv(contractData.rows[i],ch2,'사이트명')||'').trim();
+      var sheets=siteToSheet[sn]||[];
+      if(curCtSheet&&sheets.indexOf(curCtSheet)<0)continue;
+      var st=fv(contractData.rows[i],ch2,'진행사항')||'상담';
+      var mg=fv(contractData.rows[i],ch2,'담당자')||'미지정';
+      ctTotal++;
+      if(st==='상담')ct상담++;else if(st==='제안')ct제안++;else if(st==='입대위')ct입대위++;else if(st==='실사')ct실사++;else if(st==='계약')ct계약++;
+      if(!mgrContract[mg])mgrContract[mg]={상담:0,제안:0,입대위:0,실사:0,계약:0,total:0};
+      mgrContract[mg].total++;mgrContract[mg][st]=(mgrContract[mg][st]||0)+1;
+    }
+  }
+  if(allFlat&&allFlat.length){
+    var existSites={};
+    if(contractData&&contractData.rows){
+      var ch3=contractData.headers;
+      for(var i=0;i<contractData.rows.length;i++){var sn2=(fv(contractData.rows[i],ch3,'사이트명')||'').trim();if(sn2)existSites[sn2]=1;}
+    }
+    for(var i=0;i<allFlat.length;i++){
+      var sn=(allFlat[i].site||'').trim();
+      if(curCtSheet&&allFlat[i].sheet!==curCtSheet)continue;
+      var mg=allFlat[i].mgr||'미지정';
+      if(sn&&!existSites[sn]){existSites[sn]=1;ctTotal++;ct상담++;
+        if(!mgrContract[mg])mgrContract[mg]={상담:0,제안:0,입대위:0,실사:0,계약:0,total:0};
+        mgrContract[mg].total++;mgrContract[mg]['상담']++;
+      }
+    }
+  }
+  var ctPct상담=ctTotal>0?Math.round(ct상담/ctTotal*100):0;
+  var ctPct제안=ctTotal>0?Math.round(ct제안/ctTotal*100):0;
+  var ctPct입대위=ctTotal>0?Math.round(ct입대위/ctTotal*100):0;
+  var ctPct실사=ctTotal>0?Math.round(ct실사/ctTotal*100):0;
+  var ctPct계약=ctTotal>0?Math.round(ct계약/ctTotal*100):0;
+  var ctHtml='<div style="display:flex;gap:12px;margin-bottom:12px;">';
+  ctHtml+='<div style="flex:1;background:#eff6ff;border-radius:8px;padding:16px;text-align:center;border-top:4px solid #3498db;"><div style="font-size:13px;color:#3498db;font-weight:700;">상담</div><div style="font-size:32px;font-weight:800;color:#3498db;">'+ct상담+'</div><div style="font-size:12px;color:#888;">'+ctPct상담+'%</div></div>';
+  ctHtml+='<div style="flex:1;background:#fef5ee;border-radius:8px;padding:16px;text-align:center;border-top:4px solid #e67e22;"><div style="font-size:13px;color:#e67e22;font-weight:700;">제안</div><div style="font-size:32px;font-weight:800;color:#e67e22;">'+ct제안+'</div><div style="font-size:12px;color:#888;">'+ctPct제안+'%</div></div>';
+  ctHtml+='<div style="flex:1;background:#fff8ee;border-radius:8px;padding:16px;text-align:center;border-top:4px solid #f39c12;"><div style="font-size:13px;color:#f39c12;font-weight:700;">입대위</div><div style="font-size:32px;font-weight:800;color:#f39c12;">'+ct입대위+'</div><div style="font-size:12px;color:#888;">'+ctPct입대위+'%</div></div>';
+  ctHtml+='<div style="flex:1;background:#f5f0ff;border-radius:8px;padding:16px;text-align:center;border-top:4px solid #9b59b6;"><div style="font-size:13px;color:#9b59b6;font-weight:700;">실사</div><div style="font-size:32px;font-weight:800;color:#9b59b6;">'+ct실사+'</div><div style="font-size:12px;color:#888;">'+ctPct실사+'%</div></div>';
+  ctHtml+='<div style="flex:1;background:#eefbf3;border-radius:8px;padding:16px;text-align:center;border-top:4px solid #27ae60;"><div style="font-size:13px;color:#27ae60;font-weight:700;">계약</div><div style="font-size:32px;font-weight:800;color:#27ae60;">'+ct계약+'</div><div style="font-size:12px;color:#888;">'+ctPct계약+'%</div></div>';
+  ctHtml+='</div>';
+  ctHtml+='<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:13px;color:#666;font-weight:600;">총 '+ctTotal+'건</span>';
+  ctHtml+='<div style="flex:1;height:10px;background:#eee;border-radius:5px;overflow:hidden;display:flex;">';
+  ctHtml+='<div style="width:'+ctPct상담+'%;background:#3498db;"></div>';
+  ctHtml+='<div style="width:'+ctPct제안+'%;background:#e67e22;"></div>';
+  ctHtml+='<div style="width:'+ctPct입대위+'%;background:#f39c12;"></div>';
+  ctHtml+='<div style="width:'+ctPct실사+'%;background:#9b59b6;"></div>';
+  ctHtml+='<div style="width:'+ctPct계약+'%;background:#27ae60;"></div>';
+  ctHtml+='</div></div>';
+  document.getElementById('allContract').innerHTML=ctHtml;
+ // 담당자별 계약 현황
+  var mcKeys=Object.keys(mgrContract).sort();
+  var mcMax=0;for(var i=0;i<mcKeys.length;i++){if(mgrContract[mcKeys[i]].total>mcMax)mcMax=mgrContract[mcKeys[i]].total;}
+  var mcHtml='';
+  for(var i=0;i<mcKeys.length;i++){
+    var mn=mcKeys[i],mc=mgrContract[mn];
+    var barW=mcMax>0?Math.round(mc.total/mcMax*100):0;
+    var b상담=mc.total>0?Math.round(mc['상담']/mc.total*100):0;
+    var b제안=mc.total>0?Math.round(mc['제안']/mc.total*100):0;
+    var b입대위=mc.total>0?Math.round(mc['입대위']/mc.total*100):0;
+    var b실사=mc.total>0?Math.round(mc['실사']/mc.total*100):0;
+    var b계약=mc.total>0?Math.round(mc['계약']/mc.total*100):0;
+    mcHtml+='<div style="padding:8px 0;border-bottom:1px solid #f5f5f5;">';
+    mcHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">';
+    mcHtml+='<span style="font-weight:600;font-size:13px;">'+esc(mn)+'</span>';
+    mcHtml+='<span style="font-size:12px;color:#666;">'+mc.total+'건</span></div>';
+    mcHtml+='<div style="height:20px;background:#eee;border-radius:4px;overflow:hidden;display:flex;width:'+barW+'%;min-width:40px;">';
+    mcHtml+='<div style="width:'+b상담+'%;background:#3498db;" title="상담 '+mc['상담']+'"></div>';
+    mcHtml+='<div style="width:'+b제안+'%;background:#e67e22;" title="제안 '+mc['제안']+'"></div>';
+    mcHtml+='<div style="width:'+b입대위+'%;background:#f39c12;" title="입대위 '+mc['입대위']+'"></div>';
+    mcHtml+='<div style="width:'+b실사+'%;background:#9b59b6;" title="실사 '+mc['실사']+'"></div>';
+    mcHtml+='<div style="width:'+b계약+'%;background:#27ae60;" title="계약 '+mc['계약']+'"></div>';
+    mcHtml+='</div>';
+    mcHtml+='<div style="display:flex;gap:8px;margin-top:4px;font-size:11px;">';
+    mcHtml+='<span style="color:#3498db;">상담 '+mc['상담']+'</span>';
+    mcHtml+='<span style="color:#e67e22;">제안 '+mc['제안']+'</span>';
+    mcHtml+='<span style="color:#f39c12;">입대위 '+mc['입대위']+'</span>';
+    mcHtml+='<span style="color:#9b59b6;">실사 '+mc['실사']+'</span>';
+    mcHtml+='<span style="color:#27ae60;">계약 '+mc['계약']+'</span>';
+    mcHtml+='</div></div>';
+  }
+  document.getElementById('allContractMgr').innerHTML=mcHtml;
+
+    // 시트별 현황 (계약서 제외)
+  var sc={};for(var i=0;i<allFlat.length;i++){var s=allFlat[i].sheet;if(s==='계약서')continue;if(!sc[s])sc[s]={positive:0,neutral:0,negative:0,etc:0,total:0};sc[s].total++;var se=allFlat[i].sent;if(se)sc[s][se]++;}
+  var ns=Object.keys(sc);
+  // 시트 선택 드롭다운
+  var sel=document.getElementById('allSheetSelect');
+  var curSel=sel.value;
+  sel.innerHTML='<option value="">전체 시트</option>';
+  for(var i=0;i<ns.length;i++){sel.innerHTML+='<option value="'+ns[i]+'"'+(ns[i]===curSel?' selected':'')+'>'+ns[i]+'</option>';}
+  // 선택된 시트만 표시
+  var showSheets=curSel?[curSel]:ns;
+  var sh='';
+  for(var i=0;i<showSheets.length;i++){
+    var n=showSheets[i],c=sc[n];if(!c)continue;
+    var posP=c.total>0?Math.round(c.positive/c.total*100):0;
+    var neuP=c.total>0?Math.round(c.neutral/c.total*100):0;
+    var negP=c.total>0?Math.round(c.negative/c.total*100):0;
+    sh+='<div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:20px;margin-bottom:16px;">';
+    sh+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
+    sh+='<h4 style="margin:0;font-size:16px;">📄 '+esc(n)+'</h4>';
+    sh+='<span style="font-size:14px;color:#666;font-weight:600;">총 '+c.total+'건</span></div>';
+    sh+='<div style="display:flex;gap:12px;margin-bottom:12px;">';
+    sh+='<div style="flex:1;background:#f0f4ff;border-radius:8px;padding:12px;text-align:center;border-top:4px solid #3b82f6;"><div style="font-size:12px;color:#3b82f6;font-weight:600;">총</div><div style="font-size:24px;font-weight:800;color:#3b82f6;">'+c.total+'</div><div style="font-size:11px;color:#888;">100%</div></div>';
+    sh+='<div style="flex:1;background:#eefbf3;border-radius:8px;padding:12px;text-align:center;border-top:4px solid #27ae60;"><div style="font-size:12px;color:#27ae60;font-weight:600;">긍정</div><div style="font-size:24px;font-weight:800;color:#27ae60;">'+c.positive+'</div><div style="font-size:11px;color:#888;">'+posP+'%</div></div>';
+    sh+='<div style="flex:1;background:#fff8ee;border-radius:8px;padding:12px;text-align:center;border-top:4px solid #f39c12;"><div style="font-size:12px;color:#f39c12;font-weight:600;">중립</div><div style="font-size:24px;font-weight:800;color:#f39c12;">'+c.neutral+'</div><div style="font-size:11px;color:#888;">'+neuP+'%</div></div>';
+    sh+='<div style="flex:1;background:#fef0f0;border-radius:8px;padding:12px;text-align:center;border-top:4px solid #e74c3c;"><div style="font-size:12px;color:#e74c3c;font-weight:600;">부정</div><div style="font-size:24px;font-weight:800;color:#e74c3c;">'+c.negative+'</div><div style="font-size:11px;color:#888;">'+negP+'%</div></div>';
+    sh+='<div style="flex:1;background:#f8f8f8;border-radius:8px;padding:12px;text-align:center;border-top:4px solid #999;"><div style="font-size:12px;color:#999;font-weight:600;">기타</div><div style="font-size:24px;font-weight:800;color:#999;">'+c.etc+'</div></div>';
+    sh+='</div>';
+    sh+='<div style="height:8px;background:#eee;border-radius:4px;overflow:hidden;display:flex;">';
+    sh+='<div style="width:'+posP+'%;background:#27ae60;"></div>';
+    sh+='<div style="width:'+neuP+'%;background:#f39c12;"></div>';
+    sh+='<div style="width:'+negP+'%;background:#e74c3c;"></div>';
+    sh+='</div></div>';
+  }
+  document.getElementById('allSheet').innerHTML=sh;
+
+  // 담당자별 현황
+  var flatNoContract=allFlat.filter(function(f){return f.sheet!=='계약서';});
+  document.getElementById('allMgr').innerHTML=mkMgr(flatNoContract);
+}
+
+// 일일
+function moveDaily(dir){if(dir===0)dailyDt=new Date();else dailyDt.setDate(dailyDt.getDate()+dir);dailyDt.setHours(0,0,0,0);renderDaily();}
+function renderDaily(){
+  document.getElementById('dailyDate').textContent=fmt(dailyDt);
+  var list=filterByDate(dailyDt,dailyDt);
+  document.getElementById('dailyStats').innerHTML=mkStats(list);
+  document.getElementById('dailyContract').innerHTML=mkContractStats(list);
+  document.getElementById('dailyMgr').innerHTML=mkMgr(list);
+  document.getElementById('dailyTT').textContent='방문 목록 ('+list.length+'건)';
+  mkTable(list,'dailyTH','dailyTB','daily');
+}
+
+// 주간
+function moveWeekly(dir){if(dir===0){var n=new Date();n.setHours(0,0,0,0);setWeekStart(n);}else weekStart.setDate(weekStart.getDate()+dir*7);renderWeekly();}
+function renderWeekly(){
+  var end=new Date(weekStart);end.setDate(weekStart.getDate()+6);
+  document.getElementById('weeklyDate').textContent=fmt(weekStart)+' ~ '+fmt(end);
+  var list=filterByDate(weekStart,end);
+  document.getElementById('weeklyStats').innerHTML=mkStats(list);
+  document.getElementById('weeklyContract').innerHTML=mkContractStats(list);
+  document.getElementById('weeklyMgr').innerHTML=mkMgr(list);
+  document.getElementById('weeklyTT').textContent='방문 목록 ('+list.length+'건)';
+  var dh='',days=['월','화','수','목','금','토','일'];
+  for(var i=0;i<7;i++){var d=new Date(weekStart);d.setDate(weekStart.getDate()+i);var dl=filterByDate(d,d);
+    var tc={positive:0,neutral:0,negative:0,etc:0};for(var j=0;j<dl.length;j++){var s=dl[j].sent;if(s)tc[s]++;}
+    dh+='<div class="mgr-row"><div class="mgr-name">'+days[i]+' ('+fmt(d).slice(5)+')</div><span class="mini-badge pos">긍정 '+tc.positive+'</span><span class="mini-badge neu">중립 '+tc.neutral+'</span><span class="mini-badge neg">부정 '+tc.negative+'</span><span class="mini-badge etc2">기타 '+tc.etc+'</span><span style="font-size:11px;color:#999;">('+dl.length+')</span></div>';}
+  document.getElementById('weeklyDaily').innerHTML=dh;
+  mkTable(list,'weeklyTH','weeklyTB','weekly');
+}
+
+// 월간
+function moveMonthly(dir){if(dir===0){var n=new Date();mYear=n.getFullYear();mMon=n.getMonth();}else{mMon+=dir;if(mMon>11){mMon=0;mYear++;}if(mMon<0){mMon=11;mYear--;}}renderMonthly();}
+function renderMonthly(){
+  document.getElementById('monthlyDate').textContent=mYear+'년 '+(mMon+1)+'월';
+  var first=new Date(mYear,mMon,1),last=new Date(mYear,mMon+1,0);
+  var list=filterByDate(first,last);
+  document.getElementById('monthlyStats').innerHTML=mkStats(list);
+  document.getElementById('monthlyContract').innerHTML=mkContractStats(list);
+  document.getElementById('monthlyMgr').innerHTML=mkMgr(list);
+  document.getElementById('monthlyTT').textContent='방문 목록 ('+list.length+'건)';
+  // 캘린더
+  var dc={};for(var i=0;i<list.length;i++){if(list[i].date){var k=fmt(list[i].date);dc[k]=(dc[k]||0)+1;}}
+  var ch='',dn=['일','월','화','수','목','금','토'];
+  for(var i=0;i<7;i++)ch+='<div class="cal-hd">'+dn[i]+'</div>';
+  var sd=first.getDay(),td2=last.getDate(),today=new Date();today.setHours(0,0,0,0);
+  var pl=new Date(mYear,mMon,0).getDate();
+  for(var i=sd-1;i>=0;i--)ch+='<div class="cal-d other"><div class="dn">'+(pl-i)+'</div></div>';
+  for(var d=1;d<=td2;d++){var dt=new Date(mYear,mMon,d),k=fmt(dt),cnt=dc[k]||0;
+    var cls='cal-d';if(dt.getTime()===today.getTime())cls+=' today';if(cnt>0)cls+=' has-data';
+    ch+='<div class="'+cls+'" onclick="dailyDt=new Date('+mYear+','+mMon+','+d+');goSubTab(\'daily\',document.querySelectorAll(\'.sub-tab\')[1])"><div class="dn">'+d+'</div>';
+    if(cnt>0)ch+='<div class="dc">'+cnt+'건</div>';ch+='</div>';}
+  document.getElementById('monthlyCal').innerHTML=ch;
+  // 주별
+  var wh='',wn=1,ws=new Date(first);
+  while(ws<=last){var we=new Date(ws);we.setDate(ws.getDate()+6);if(we>last)we=new Date(last);
+    var wl=filterByDate(ws,we);var wc={positive:0,neutral:0,negative:0,etc:0};for(var j=0;j<wl.length;j++){var s=wl[j].sent;if(s)wc[s]++;}
+    wh+='<div class="mgr-row"><div class="mgr-name">'+wn+'주차</div><span style="font-size:11px;color:#666;">'+fmt(ws).slice(5)+'~'+fmt(we).slice(5)+'</span> <span class="mini-badge pos">긍정 '+wc.positive+'</span><span class="mini-badge neu">중립 '+wc.neutral+'</span><span class="mini-badge neg">부정 '+wc.negative+'</span><span class="mini-badge etc2">기타 '+wc.etc+'</span><span style="font-size:11px;color:#999;">('+wl.length+')</span></div>';
+    ws=new Date(we);ws.setDate(ws.getDate()+1);wn++;}
+  document.getElementById('monthlyWeekly').innerHTML=wh;
+  mkTable(list,'monthlyTH','monthlyTB','monthly');
+}
+
+// 담당자별
+function renderMgrTab(){
+  document.getElementById('mgrAllStats').innerHTML=mkStats(allFlat);
+  document.getElementById('mgrContract').innerHTML=mkContractStats(allFlat);
+  var ms={};for(var i=0;i<allFlat.length;i++){var m=allFlat[i].mgr||'미지정';if(!ms[m])ms[m]=[];ms[m].push(allFlat[i]);}
+  var ns=Object.keys(ms).sort(),h='';
+  for(var i=0;i<ns.length;i++){var n=ns[i],ml=ms[n];
+    h+='<div class="section-box"><h3>👤 '+esc(n)+' ('+ml.length+'건)</h3><div class="stats-grid" style="margin-bottom:12px;">'+mkStats(ml)+'</div></div>';}
+  document.getElementById('mgrDetailArea').innerHTML=h;
+}
+
+// ===== 시트 데이터 =====
+function loadSheetPage(name){var d=allSheetsData[name];if(!d){apiGet({action:'getData',sheet:name},function(dd){allSheetsData[name]=dd;setupSheet(dd,name);});return;}setupSheet(d,name);}
+function setupSheet(d,name){sheetHeaders=d.headers||[];sheetStartCol=d.startCol||2;sheetRows=d.rows||[];sheetFiltered=sheetRows.slice();document.getElementById('sheetDataTitle').textContent=name+' ('+sheetRows.length+'건)';drawSheet(sheetRows);}
+function drawSheet(list){
+  var hh='<tr><th>#</th>';for(var i=0;i<sheetHeaders.length;i++)hh+='<th>'+esc(sheetHeaders[i])+'</th>';hh+='<th>상세</th><th>삭제</th></tr>';
+  document.getElementById('sTH').innerHTML=hh;
+  var bb='';for(var i=0;i<list.length;i++){var row=list[i];bb+='<tr><td style="color:#999;font-size:11px;">'+(i+1)+'</td>';
+    for(var j=0;j<sheetHeaders.length;j++){var h=sheetHeaders[j],cn=sheetStartCol+j;
+      bb+='<td class="editable" ondblclick="editCell(this,\''+nowSheet+'\','+row._rowIndex+','+cn+',\''+esc(h)+'\')">'+ renderCell(h,row[h])+'</td>';}
+    bb+='<td><button class="btn btn-gray btn-sm" onclick="openContractFromList('+i+')">보기</button></td>';
+    bb+='<td><button class="btn btn-red btn-sm" onclick="delRow(\''+nowSheet+'\','+row._rowIndex+')">삭제</button></td></tr>';}
+  if(!list.length)bb='<tr><td colspan="'+(sheetHeaders.length+3)+'"><div class="empty-msg">데이터 없음</div></td></tr>';
+  document.getElementById('sTB').innerHTML=bb;
+}
+function filterSheet(){var q=(document.getElementById('sheetSearch').value||'').toLowerCase().trim();if(!q){drawSheet(sheetRows);return;}
+  var r=[];for(var i=0;i<sheetRows.length;i++){var row=sheetRows[i],f=false;for(var j=0;j<sheetHeaders.length;j++)if(String(row[sheetHeaders[j]]||'').toLowerCase().indexOf(q)>=0){f=true;break;}if(f)r.push(row);}sheetFiltered=r;drawSheet(r);}
+function showSheetDet(idx){var list=sheetFiltered.length?sheetFiltered:sheetRows;var row=list[idx];if(!row)return;
+  document.getElementById('detailTitle').textContent='상세 #'+(idx+1);var h='';
+  for(var i=0;i<sheetHeaders.length;i++){var v=row[sheetHeaders[i]]!==undefined?row[sheetHeaders[i]]:'',lo=String(v).length>40;
+    h+='<div class="detail-item'+(lo?' detail-full':'')+'"><label>'+esc(sheetHeaders[i])+'</label><div class="val">'+renderCell(sheetHeaders[i],v)+'</div></div>';}
+  document.getElementById('detailGrid').innerHTML=h;document.getElementById('detailModal').classList.add('show');}
+function editCell(td,sheet,row,col,header){if(td.classList.contains('editing'))return;var old=td.textContent;td.classList.add('editing');td.innerHTML='<input type="text" value="'+esc(old)+'">';var inp=td.querySelector('input');inp.focus();inp.select();
+  function save(){var val=inp.value;td.classList.remove('editing');td.innerHTML=renderCell(header,val);if(val!==old)apiPost({action:'updateCell',sheet:sheet,row:row,col:col,value:val},function(r){if(r.success){toast('수정!','ok');for(var i=0;i<sheetRows.length;i++)if(sheetRows[i]._rowIndex===row){sheetRows[i][header]=val;break;}}else toast('실패','fail');});}
+  inp.onblur=save;inp.onkeydown=function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape'){td.classList.remove('editing');td.innerHTML=renderCell(header,old);}};}
+function openAddModal(){var f=document.getElementById('addFields');f.innerHTML='';for(var i=0;i<sheetHeaders.length;i++)f.innerHTML+='<div class="field"><label>'+esc(sheetHeaders[i])+'</label><input type="text" id="af_'+i+'" placeholder="'+esc(sheetHeaders[i])+'"></div>';document.getElementById('addModal').classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function submitAdd(){var d=[];for(var i=0;i<sheetHeaders.length;i++)d.push(document.getElementById('af_'+i).value);apiPost({action:'addRow',sheet:nowSheet,rowData:d},function(r){if(r.success){toast('추가!','ok');closeModal('addModal');delete allSheetsData[nowSheet];buildFlat();loadSheetPage(nowSheet);}else toast('실패','fail');});}
+function delRow(sheet,row){if(!confirm('삭제?'))return;apiPost({action:'deleteRow',sheet:sheet,row:row},function(r){if(r.success){toast('삭제!','ok');delete allSheetsData[nowSheet];buildFlat();loadSheetPage(nowSheet);}else toast('실패','fail');});}
+
+
+
+  function openDetailFromRow(pageKey,btn){
+  var tr=btn.closest('tr');
+  var siteTd=tr.getElementsByTagName('td')[3];
+  var siteName=siteTd?siteTd.textContent.trim():'';
+  if(!siteName){toast('사이트명을 찾을 수 없음','err');return;}
+  var found=null;
+  for(var i=0;i<allFlat.length;i++){
+    if(allFlat[i].sheet==='계약서')continue;
+    if((allFlat[i].site||'').trim()===siteName){
+      found=allFlat[i];
+      break;
+    }
+  }
+  if(!found){toast('데이터를 찾을 수 없음','err');return;}
+  window['_d_'+pageKey+'edit']=[found];
+  openContractFromSheet(pageKey+'edit',0);
+}
+
+function moveToSite(siteName){
+  if(!window._actMap||!window._actMarkers)return;
+  for(var i=0;i<window._actMarkers.length;i++){
+    var m=window._actMarkers[i];
+    if(m._popup&&m._popup._content&&m._popup._content.indexOf(siteName)>=0){
+      window._actMap.setView(m.getLatLng(),15);
+      m.openPopup();
+      document.getElementById('actMap').scrollIntoView({behavior:'smooth'});
+      return;
+    }
+  }
+  toast('지도에 해당 사이트가 없습니다','info');
+}
+  
+function submitSchEdit(){
+  var h=window._sheetEditHeaders;
+  var row=window._sheetEditRow;
+  var sheet=window._sheetEditSheet;
+  var rowIdx=window._sheetEditRowIdx;
+  if(!sheet||!rowIdx){toast('시트 정보 없음','err');return;}
+  var inputs=document.querySelectorAll('#cf_sheetData input[data-header]');
+  console.log('submitSchEdit호출, input개수:', inputs.length);
+  var total=0,done=0;
+  var pairs=[];
+  for(var i=0;i<inputs.length;i++){
+    var header=inputs[i].getAttribute('data-header');
+    var val=inputs[i].value;
+    var col=-1;
+    for(var j=0;j<h.length;j++){if(h[j]===header){col=j+2;break;}}
+    if(col>0){
+      pairs.push({header:header,val:val,col:col});
+      if(row)row[header]=val;
+    }
+  }
+  total=pairs.length;
+  if(total===0){toast('변경사항 없음','info');return;}
+   toast('저장 중...','info');
+  document.getElementById('contractModal').classList.remove('show');
+  for(var i=0;i<pairs.length;i++){
+    (function(p){
+      apiPost({action:'updateCell',sheet:sheet,row:rowIdx,col:p.col,value:p.val},function(res){
+        console.log('저장응답:',p.header,JSON.stringify(res));
+        done++;
+        if(done>=total){
+          console.log('모든필드저장완료, 새로고침시작');
+           toast('저장 완료','ok');
+          var sq=document.getElementById('actSearch').value;
+          var ss=document.getElementById('actSent').value;
+          var sm=document.getElementById('actMgr').value;
+          var sa=document.getElementById('actSheet').value;
+          localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
+          buildFlat();
+          buildFilters();
+          renderActivity();
+          document.getElementById('actSearch').value=sq;
+          document.getElementById('actSent').value=ss;
+          document.getElementById('actMgr').value=sm;
+          document.getElementById('actSheet').value=sa;
+          renderActTable(window._actMode||'all');
+          setTimeout(function(){
+            apiGet({action:'getSheets'},function(data){
+              var sheets=data.sheets||[],loaded=0;
+              var newData={};
+              for(var si=0;si<sheets.length;si++){
+                (function(nm){apiGet({action:'getData',sheet:nm},function(d){
+                  newData[nm]=d;loaded++;
+                  if(loaded>=sheets.length){
+                    allSheetsData=newData;
+                    localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
+                    buildFlat();
+                    buildFilters();
+                  }
+                });})(sheets[si]);
+              }
+            });
+          },3000);
+        }
+      });
+    })(pairs[i]);
+  }
+}
+
+
+  
+ function openSchEdit(idx){
+  var tbody=document.getElementById('schTB');
+  var rows=tbody.getElementsByTagName('tr');
+  var pageOffset=(window['_pg_sch']||0)*50;
+  var realIdx=pageOffset+idx;
+  
+  var btn=event.target;
+  var tr=btn.closest('tr');
+  var siteTd=tr.getElementsByTagName('td')[3];
+  var siteName=siteTd?siteTd.textContent.trim():'';
+  
+  if(!siteName){
+    var list=window['_df_sch']||window['_d_sch']||[];
+    var it=list[idx];
+    if(it)siteName=(it.site||'').trim();
+  }
+  
+  var found=null;
+  for(var i=0;i<allFlat.length;i++){
+    if(allFlat[i].sheet==='계약서')continue;
+    if((allFlat[i].site||'').trim()===siteName){
+      found=allFlat[i];
+      break;
+    }
+  }
+  if(!found){toast('데이터를 찾을 수 없음','err');return;}
+  window['_d_schedit']=[found];
+  openContractFromSheet('schedit',0);
+}
+
+// ===== 영업일정 관리 =====
+function renderSchedule(){
+  if(!dataLoaded)return;
+  var q=(document.getElementById('schSearch').value||'').toLowerCase().trim();
+  var sf=document.getElementById('schSent').value;
+  var mf=document.getElementById('schMgr').value;
+  var shf=document.getElementById('schSheet').value;
+    // 담당자 필터 옵션
+  var mgrSet={};
+  for(var i=0;i<allFlat.length;i++){var m=allFlat[i].mgr||'';if(m)mgrSet[m]=1;}
+  var mgrSel=document.getElementById('schMgr');
+  var curVal=mgrSel.value;
+  mgrSel.innerHTML='<option value="">전체 담당자</option>';
+  Object.keys(mgrSet).sort().forEach(function(m){mgrSel.innerHTML+='<option value="'+m+'">'+m+'</option>';});
+  mgrSel.value=mf;
+  
+
+  // 시트 필터 옵션
+  var shSet={};
+  for(var i=0;i<allFlat.length;i++){var s=allFlat[i].sheet||'';if(s&&s!=='계약서')shSet[s]=1;}
+  var shSel=document.getElementById('schSheet');
+  var curSh=shSel.value;
+  shSel.innerHTML='<option value="">전체 시트</option>';
+  Object.keys(shSet).sort().forEach(function(s){shSel.innerHTML+='<option value="'+s+'">'+s+'</option>';});
+  shSel.value=shf;
+
+  var list=filterList(q,sf,mf,shf);
+   
+
+  // 사이트명 기준 합치기
+  var siteMap={};
+  var merged=[];
+  for(var i=0;i<list.length;i++){
+    var sn=(list[i].site||'').trim();
+    if(!sn){merged.push(list[i]);continue;}
+    if(!siteMap[sn]){
+      siteMap[sn]={sheet:list[i].sheet,date:list[i].date,site:list[i].site,content:list[i].content,sent:list[i].sent,mgr:list[i].mgr,row:list[i].row,headers:list[i].headers,sheets:[list[i].sheet],contents:{},dates:{},mgrs:{},sents:{},bizTypes:{},kinds:{}};
+      siteMap[sn].contents[list[i].sheet]=list[i].content||'';
+      siteMap[sn].bizTypes[list[i].sheet]=fv(list[i].row,list[i].headers,'사업구분')||'';
+      siteMap[sn].kinds[list[i].sheet]=fv(list[i].row,list[i].headers,'종류')||'';
+      siteMap[sn].dates[list[i].sheet]=list[i].date||'';
+      siteMap[sn].mgrs[list[i].sheet]=list[i].mgr||'';
+      siteMap[sn].sents[list[i].sheet]=list[i].sent||'';
+      merged.push(siteMap[sn]);
+    }else{
+      var ex=siteMap[sn];
+      if(ex.sheets.indexOf(list[i].sheet)<0)ex.sheets.push(list[i].sheet);
+      ex.sheet=ex.sheets.join(', ');
+      ex.contents[list[i].sheet]=list[i].content||'';
+      ex.bizTypes[list[i].sheet]=fv(list[i].row,list[i].headers,'사업구분')||'';
+      ex.kinds[list[i].sheet]=fv(list[i].row,list[i].headers,'종류')||'';
+      ex.dates[list[i].sheet]=list[i].date||'';
+      ex.mgrs[list[i].sheet]=list[i].mgr||'';
+      ex.sents[list[i].sheet]=list[i].sent||'';
+      if(list[i].date&&(!ex.date||list[i].date>ex.date)){ex.date=list[i].date;ex.row=list[i].row;ex.headers=list[i].headers;}
+      if(list[i].content&&!ex.content)ex.content=list[i].content;
+      if(list[i].mgr&&!ex.mgr)ex.mgr=list[i].mgr;
+      if(list[i].sent&&!ex.sent)ex.sent=list[i].sent;
+    }
+  }
+
+     // 시트 필터 + 미방문 필터 (복수 선택 가능)
+  var schSheet=window._schSheet||'all';
+  var schVisit=window._schVisit||false;
+  var display=[];
+  for(var i=0;i<merged.length;i++){
+    var it=merged[i];
+    // 시트 필터
+    if(schSheet!=='all'){
+      if(!it.sheets||it.sheets.indexOf(schSheet)<0)continue;
+    }
+    // 미방문 필터
+    if(schVisit){
+      var dt=it.date?fmt(it.date):fv(it.row,it.headers,'방문일자')||'';
+      if(dt)continue;
+    }
+    if(schSheet!=='all'&&schSheet!==''){
+      var copy={sheet:it.sheet,date:it.dates?it.dates[schSheet]||it.date:it.date,site:it.site,content:it.contents?it.contents[schSheet]||it.content:it.content,sent:it.sents?it.sents[schSheet]||it.sent:it.sent,mgr:it.mgrs?it.mgrs[schSheet]||it.mgr:it.mgr,row:it.row,headers:it.headers,sheets:it.sheets,bizTypes:it.bizTypes,kinds:it.kinds};
+      display.push(copy);
+    }else{
+      display.push(it);
+    }
+  }
+  var sheetNames={};
+  for(var i=0;i<merged.length;i++){if(merged[i].sheets){for(var j=0;j<merged[i].sheets.length;j++){if(merged[i].sheets[j]!=='계약서')sheetNames[merged[i].sheets[j]]=1;}}}
+  var btnHtml='<div style="display:flex;align-items:center;gap:0;">';
+  var allActive=schSheet==='all';
+  btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;'+(allActive?'background:#1a73e8;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="window._schSheet=\'all\';renderSchedule()">';
+  btnHtml+='<span style="width:16px;height:16px;border-radius:50%;border:2px solid '+(allActive?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(allActive?'<span style="width:8px;height:8px;border-radius:50%;background:#fff;"></span>':'')+'</span> 전체</label>';
+  var sns=Object.keys(sheetNames).sort();
+  for(var i=0;i<sns.length;i++){
+    var active=schSheet===sns[i];
+    btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;margin-left:6px;'+(active?'background:#1a73e8;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="window._schSheet=\''+sns[i]+'\';renderSchedule()">';
+    btnHtml+='<span style="width:16px;height:16px;border-radius:50%;border:2px solid '+(active?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(active?'<span style="width:8px;height:8px;border-radius:50%;background:#fff;"></span>':'')+'</span> '+sns[i]+'</label>';
+  }
+  btnHtml+='<label style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;margin-left:12px;'+(schVisit?'background:#dc3545;color:#fff;':'background:#f0f0f0;color:#666;')+'" onclick="window._schVisit=!window._schVisit;renderSchedule()">';
+  btnHtml+='<span style="width:16px;height:16px;border-radius:4px;border:2px solid '+(schVisit?'#fff':'#ccc')+';display:flex;align-items:center;justify-content:center;">'+(schVisit?'✓':'')+'</span> 미방문</label>';
+  btnHtml+='</div>';
+  document.getElementById('schTitle').innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;width:100%;">영업일정 목록 ('+display.length+'건)<div style="margin-left:auto;">'+btnHtml+'</div></div>';
+
+   // 통계 (display 기준)
+  var areas2={'수도권':0,'충청':0,'경상':0,'전라':0,'강원':0};
+  var areasVisit2={'수도권':0,'충청':0,'경상':0,'전라':0,'강원':0};
+  for(var vi=0;vi<display.length;vi++){
+    var area2=fv(display[vi].row,display[vi].headers,'권역별')||'';
+    var areaKey2='';
+    if(area2.indexOf('수도권')>=0)areaKey2='수도권';
+    else if(area2.indexOf('충청')>=0)areaKey2='충청';
+    else if(area2.indexOf('경상')>=0)areaKey2='경상';
+    else if(area2.indexOf('전라')>=0)areaKey2='전라';
+    else if(area2.indexOf('강원')>=0)areaKey2='강원';
+    if(areaKey2){
+      areas2[areaKey2]++;
+      var dt2=display[vi].date?fmt(display[vi].date):fv(display[vi].row,display[vi].headers,'방문일자')||'';
+      if(dt2)areasVisit2[areaKey2]++;
+    }
+  }
+  var areaColors2={'수도권':'#1a73e8','충청':'#e67e22','경상':'#9b59b6','전라':'#27ae60','강원':'#3498db'};
+  var areaKeys2=Object.keys(areas2);
+  var totalAll2=0,totalVisit2=0;
+  for(var vi=0;vi<areaKeys2.length;vi++){totalAll2+=areas2[areaKeys2[vi]];totalVisit2+=areasVisit2[areaKeys2[vi]];}
+  var totalPct2=totalAll2>0?Math.round(totalVisit2/totalAll2*100):0;
+  var vHtml='';
+  for(var vi=0;vi<areaKeys2.length;vi++){
+    var ak2=areaKeys2[vi],c2=areaColors2[ak2]||'#999';
+    var pct2=areas2[ak2]>0?Math.round(areasVisit2[ak2]/areas2[ak2]*100):0;
+     vHtml+='<div style="flex:1;background:white;border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08);text-align:center;border-top:3px solid '+c2+';"><div style="font-size:13px;color:'+c2+';font-weight:700;">'+ak2+'</div><div style="font-size:28px;font-weight:800;color:'+c2+';">'+pct2+'%</div><div style="font-size:12px;color:#888;">'+areasVisit2[ak2]+'/'+areas2[ak2]+'</div></div>';
+  }
+    document.getElementById('schStats').innerHTML=
+    '<div style="margin-bottom:8px;"><h3 style="font-size:13px;margin-bottom:6px;">📍 방문달성 현황</h3><div style="display:flex;gap:8px;">'+vHtml+'</div></div>'+
+    '<div style="margin-bottom:8px;"><h3 style="font-size:13px;margin-bottom:6px;">💬 감정 현황</h3><div id="schSentWrap" style="display:flex;gap:8px;">'+mkStats(display)+'</div></div>';
+  var sentCards=document.querySelectorAll('#schSentWrap .stat-card');
+  for(var sc=0;sc<sentCards.length;sc++){
+    sentCards[sc].style.flex='1';
+    sentCards[sc].style.padding='16px';
+    sentCards[sc].style.borderRadius='10px';
+    sentCards[sc].style.minWidth='0';
+  }
+  var sentNums=document.querySelectorAll('#schSentWrap .stat-number');
+  for(var sc=0;sc<sentNums.length;sc++){sentNums[sc].style.fontSize='28px';}
+  var sentLabels=document.querySelectorAll('#schSentWrap .stat-label');
+  for(var sc=0;sc<sentLabels.length;sc++){sentLabels[sc].style.fontSize='13px';}
+  var sentPcts=document.querySelectorAll('#schSentWrap .stat-percent');
+  for(var sc=0;sc<sentPcts.length;sc++){sentPcts[sc].style.fontSize='12px';}
+   // 담당자별 건수 표시
+  var mgrCount={};
+  for(var i=0;i<display.length;i++){
+    var mg=display[i].mgr||'미지정';
+    if(!mgrCount[mg])mgrCount[mg]=0;
+    mgrCount[mg]++;
+  }
+  var mgrInfoHtml='<div style="padding:4px 20px 8px;font-size:13px;color:#1a73e8;font-weight:600;">';
+  var mgrNames=Object.keys(mgrCount).sort();
+  var mgrParts=[];
+  for(var i=0;i<mgrNames.length;i++){
+    mgrParts.push(mgrNames[i]+':'+mgrCount[mgrNames[i]]+'건');
+  }
+  mgrInfoHtml+='[담당자: '+mgrParts.join(' · ')+']</div>';
+  document.getElementById('schTitle').innerHTML+=mgrInfoHtml;
+  mkTable(display,'schTH','schTB','sch',q);
+}
+
+  
+
+// ===== 계약서 관리 =====
+var contractData=null;
+var editContractRow=null;
+
+function loadContract(cb){
+  apiGet({action:'getData',sheet:'계약서'},function(d){
+    contractData=d;
+    if(cb)cb();
+  });
+}
+
+function renderContract(){
+  if(!contractData||!contractData.rows)return;
+  var h=contractData.headers, rows=contractData.rows;
+  var keyword=(document.getElementById('ctSearch').value||'').toLowerCase();
+  var selMgr=document.getElementById('ctMgr').value;
+  var selStatus=document.getElementById('ctStatus').value;
+
+  // 담당자 목록 구축
+  var mgrs={};
+  for(var m=0;m<rows.length;m++){
+    var mg=fv(rows[m],h,'담당자')||'';
+    if(mg)mgrs[mg]=1;
+  }
+  var mgrSel=document.getElementById('ctMgr');
+  var curMgr=mgrSel.value;
+  mgrSel.innerHTML='<option value="">전체 담당자</option>';
+  Object.keys(mgrs).sort().forEach(function(n){
+    mgrSel.innerHTML+='<option value="'+n+'"'+(n===curMgr?' selected':'')+'>'+n+'</option>';
+  });
+
+  // Sheet1 데이터를 상담 단계로 추가
+  var existSites={};
+  for(var i=0;i<rows.length;i++){
+    var sn=(fv(rows[i],h,'사이트명')||'').trim();
+    if(sn)existSites[sn]=1;
+  }
+  var sheetOnlyRows=[];
+  if(allFlat&&allFlat.length){
+    for(var af=0;af<allFlat.length;af++){
+      var f=allFlat[af];
+      var sn=(f.site||'').trim();
+      if(!sn||existSites[sn])continue;
+      existSites[sn]=1;
+      sheetOnlyRows.push({'사이트명':sn,'담당자':f.mgr||'','진행사항':'상담','비고':f.content||'','_rowIndex':null});
+    }
+  }
+  
+  // 필터링  
+  var filtered=[];
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i];
+    var siteName=(fv(r,h,'사이트명')||'').toLowerCase();
+    var mgr=fv(r,h,'담당자')||'';
+    var status=fv(r,h,'진행사항')||'';
+    if(keyword&&siteName.indexOf(keyword)<0)continue;
+    if(selMgr&&mgr!==selMgr)continue;
+    if(selStatus&&status!==selStatus)continue;
+    if(status==='상담'||status==='제안'||status==='')continue;
+    r._rowIndex=i+4;
+    filtered.push(r);
+  }
+
+ // 통계
+  var total=filtered.length, cnt상담=0, cnt제안=0, cnt입대위=0, cnt실사=0, cnt계약=0;
+  for(var j=0;j<filtered.length;j++){
+    var st=fv(filtered[j],h,'진행사항')||'';
+    if(st==='상담')cnt상담++;
+    else if(st==='제안')cnt제안++;
+    else if(st==='입대위')cnt입대위++;
+    else if(st==='실사')cnt실사++;
+    else if(st==='계약')cnt계약++;
+  }
+  var stItems=[
+    {label:'총 건수',count:total,color:'#3b82f6',pct:100},
+    {label:'상담',count:cnt상담,color:'#3498db',pct:total>0?Math.round(cnt상담/total*100):0},
+    {label:'제안',count:cnt제안,color:'#e67e22',pct:total>0?Math.round(cnt제안/total*100):0},
+    {label:'입대위',count:cnt입대위,color:'#f39c12',pct:total>0?Math.round(cnt입대위/total*100):0},
+    {label:'실사',count:cnt실사,color:'#9b59b6',pct:total>0?Math.round(cnt실사/total*100):0},
+    {label:'계약',count:cnt계약,color:'#27ae60',pct:total>0?Math.round(cnt계약/total*100):0}
+  ];
+  var statsHtml='';
+  for(var s=0;s<stItems.length;s++){
+    var si=stItems[s];
+    statsHtml+='<div style="background:white;border-radius:12px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,0.08);text-align:center;border-top:4px solid '+si.color+';"><div class="stat-label">'+si.label+'</div><div style="font-size:36px;font-weight:800;color:'+si.color+';">'+si.count+'</div><div style="font-size:12px;color:#888;margin-top:2px;">'+si.pct+'%</div><div style="height:4px;background:#eee;border-radius:2px;margin-top:6px;"><div style="height:4px;background:'+si.color+';border-radius:2px;width:'+si.pct+'%;"></div></div></div>';
+  }
+  document.getElementById('ctStats').innerHTML=statsHtml;
+
+  document.getElementById('ctTitle').textContent='계약서 목록 ('+total+'건)';
+
+  // 테이블
+  document.getElementById('ctTH').innerHTML='<tr><th>#</th><th>사이트명</th><th>입대위명</th><th>주소</th><th>충전기수량</th><th>설치유형</th><th>진행사항</th><th>담당자</th><th>관리</th></tr>';
+
+  
+ 
+  var tb='';
+  for(var i=0;i<filtered.length;i++){
+    var r=filtered[i];
+    var statusBadge='';
+    var st=String(r['진행사항']||'').trim();
+    var stColors={상담:'#6c757d',입대위:'#f0ad4e',실사:'#1a73e8',계약:'#0d904f'};
+    if(st)statusBadge='<span style="background:'+( stColors[st]||'#999')+';color:white;padding:2px 8px;border-radius:4px;font-size:12px;">'+st+'</span>';
+    tb+='<tr>';
+    tb+='<td>'+(i+1)+'</td>';
+    tb+='<td>'+esc(r['사이트명']||'')+'</td>';
+    tb+='<td>'+esc(r['입대위명']||'')+'</td>';
+    tb+='<td>'+esc(r['주소']||'')+'</td>';
+    tb+='<td>'+esc(r['충전기수량']||'')+'</td>';
+    tb+='<td>'+esc(r['설치유형']||'')+'</td>';
+    tb+='<td>'+esc(r['설치금액']||'')+'</td>';
+    tb+='<td>'+statusBadge+'</td>';
+        tb+='<td><button class="btn btn-sm btn-primary" onclick="editContract('+r._rowIndex+')">수정</button> <button class="btn btn-sm btn-blue" onclick="generateContract(\'contract\','+(r._rowIndex-4)+')">계약서</button> <button class="btn btn-sm btn-red" onclick="delContract('+r._rowIndex+')">삭제</button></td>';
+    tb+='</tr>';
+  }
+  if(filtered.length===0)tb='<tr><td colspan="9"><div class="empty-msg">데이터가 없습니다</div></td></tr>';
+  document.getElementById('ctTB').innerHTML=tb;
+  }
+
+function calcContract(){
+  var type=document.getElementById('cf_type').value;
+  var qty=parseInt(document.getElementById('cf_qty').value)||0;
+  var price=0;
+  if(type==='신규설치')price=3500000;
+  else if(type==='제자리교체')price=2500000;
+  document.getElementById('cf_price').value=price?price.toLocaleString()+'원':'';
+  document.getElementById('cf_total').value=(price*qty)?( price*qty).toLocaleString()+'원':'';
+}
+
+function openContractModal(rowIdx){
+  editContractRow=rowIdx||null;
+  document.getElementById('contractModalTitle').textContent=rowIdx?'계약서 수정':'계약서 작성';
+  document.getElementById('contractSubmitBtn').textContent=rowIdx?'수정':'저장';
+  var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
+  for(var i=0;i<fields.length;i++){var el=document.getElementById(fields[i]);if(el)el.value='';}
+  if(rowIdx&&contractData&&contractData.rows){
+    for(var i=0;i<contractData.rows.length;i++){
+      var r=contractData.rows[i];
+      if(r._rowIndex===rowIdx){
+        document.getElementById('cf_site').value=r['사이트명']||'';
+        document.getElementById('cf_name').value=r['입대위명']||'';
+        document.getElementById('cf_addr').value=r['주소']||'';
+        document.getElementById('cf_biz').value=r['사업자번호']||'';
+        document.getElementById('cf_tel').value=r['관리실번호']||'';
+        document.getElementById('cf_year').value=r['계약년수']||'';
+        document.getElementById('cf_qty').value=r['충전기수량']||'';
+        document.getElementById('cf_type').value=r['설치유형']||'';
+        calcContract();
+        document.getElementById('cf_promo').value=r['프로모션기간']||'';
+        document.getElementById('cf_promoAmt').value=r['프로모션금액']||'';
+        document.getElementById('cf_status').value=r['진행사항']||'';
+        document.getElementById('cf_note').value=r['비고']||'';
+        document.getElementById('cf_mgr').value=r['담당자']||'';
+        break;
+      }
+    }
+  }
+  document.getElementById('contractModal').classList.add('show');
+}
+
+function closeContractModal(){
+  document.getElementById('contractModal').classList.remove('show');
+  editContractRow=null;
+}
+
+function submitContract(){
+  var type=document.getElementById('cf_type').value;
+  var qty=parseInt(document.getElementById('cf_qty').value)||0;
+  var price=0;
+  if(type==='신규설치')price=3500000;
+  else if(type==='제자리교체')price=2500000;
+
+  var rowData=[
+    document.getElementById('cf_site').value,
+    document.getElementById('cf_name').value,
+    document.getElementById('cf_addr').value,
+    document.getElementById('cf_biz').value,
+    document.getElementById('cf_tel').value,
+    document.getElementById('cf_year').value,
+    String(qty),
+    type,
+    price?price.toLocaleString()+'원':'',
+    (price*qty)?(price*qty).toLocaleString()+'원':'',
+    document.getElementById('cf_promo').value,
+    document.getElementById('cf_promoAmt').value,
+    document.getElementById('cf_status').value,
+    document.getElementById('cf_note').value,
+    document.getElementById('cf_mgr').value
+  ];
+
+  if(editContractRow){
+    for(var i=0;i<rowData.length;i++){
+      apiPost({action:'updateCell',sheet:'계약서',row:editContractRow,col:i+2,value:rowData[i]},function(){});
+    }
+    toast('수정 완료','ok');
+    closeContractModal();
+    setTimeout(function(){contractData=null;renderContract();},1000);
+  }else{
+    apiPost({action:'addRow',sheet:'계약서',rowData:rowData},function(r){
+      if(r.success){toast('저장 완료','ok');closeContractModal();contractData=null;renderContract();}
+      else toast('저장 실패','fail');
+    });
+  }
+}
+
+function editContract(rowIdx){openContractModal(rowIdx);}
+
+function delContract(rowIdx){
+  if(!confirm('삭제하시겠습니까?'))return;
+  apiPost({action:'deleteRow',sheet:'계약서',row:rowIdx},function(r){
+    if(r.success){toast('삭제 완료','ok');contractData=null;renderContract();}
+    else toast('삭제 실패','fail');
+  });
+}
+
+function openContractFromSheet(pageKey,idx){
+  var list=window['_d_'+pageKey]||[];
+  var it=list[idx];if(!it)return;
+  if(!contractData){loadContract(function(){openContractFromSheet(pageKey,idx);});return;}
+  var row=it.row,h=it.headers;
+  // 계약서에 이미 있으면 수정 모드로
+    editContractRow=null;
+  if(!isSch&&contractData&&contractData.rows){
+    var ch2=contractData.headers;
+    var siteName=(fv(row,h,'사이트명')||'').trim();
+    for(var ci=0;ci<contractData.rows.length;ci++){
+      if((fv(contractData.rows[ci],ch2,'사이트명')||'').trim()===siteName){
+        editContractRow=contractData.rows[ci]._rowIndex||ci+4;
+        break;
+      }
+    }
+  }
+
+  var isSch=(pageKey==='sch'||pageKey==='sch_temp'||pageKey==='schedit');
+  document.getElementById('contractModalTitle').textContent=isSch?'시트 데이터 수정':'사이트 정보';
+  document.getElementById('contractSubmitBtn').textContent='저장';
+  var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
+  for(var i=0;i<fields.length;i++){var el=document.getElementById(fields[i]);if(el)el.value='';}
+  var site=fv(row,h,'사이트명')||'';
+  var mgr=it.mgr||fv(row,h,'담당자')||'';
+  document.getElementById('cf_site').value=site;
+  document.getElementById('cf_mgr').value=mgr;
+  // 계약서에서 진행사항 가져오기
+  if(contractData&&contractData.rows){
+    var ch3=contractData.headers;
+    var siteCheck=(fv(row,h,'사이트명')||'').trim();
+    for(var ci=0;ci<contractData.rows.length;ci++){
+      if((fv(contractData.rows[ci],ch3,'사이트명')||'').trim()===siteCheck){
+        document.getElementById('cf_status').value=fv(contractData.rows[ci],ch3,'진행사항')||'상담';
+        break;
+      }
+    }
+  }
+  if(!document.getElementById('cf_status').value)document.getElementById('cf_status').value='상담';
+
+  // 왼쪽 시트 데이터 표시 (수정 가능)
+  var sdHtml='';
+  var sheetNames=[];
+  for(var k in allSheetsData){if(k!=='계약서')sheetNames.push(k);}
+  sdHtml+='<div style="display:flex;align-items:center;padding:8px 0;border-bottom:2px solid #1a73e8;margin-bottom:8px;">';
+  sdHtml+='<div style="min-width:100px;font-weight:700;font-size:13px;color:#1a73e8;">시트</div>';
+  sdHtml+='<select id="editRowSheet" class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" onchange="copyToSheet(this.value)">';
+  for(var si=0;si<sheetNames.length;si++){sdHtml+='<option value="'+sheetNames[si]+'"'+(sheetNames[si]===it.sheet?' selected':'')+'>'+sheetNames[si]+'</option>';}
+  sdHtml+='</select></div>';
+  window._sheetEditRow=row;
+  window._sheetEditHeaders=h;
+  window._sheetEditSheet=it.sheet;
+  window._sheetEditRowIdx=row._rowIndex||(allFlat.indexOf(it)+4);
+  console.log('행번호:', window._sheetEditRowIdx, 'rowIndex:', row._rowIndex, 'indexOf:', allFlat.indexOf(it));
+  var sentFields=['긍정','중립','부정'];
+  var hideFields=['재계약'];
+  var sentDone=false;
+  for(var i=0;i<h.length;i++){
+    var val=row[h[i]]!==undefined?row[h[i]]:'';
+    if(String(val).indexOf('T')>0&&String(val).indexOf('Z')>0)val=String(val).split('T')[0];
+    if(hideFields.indexOf(h[i])>=0)continue;
+    if(sentFields.indexOf(h[i])>=0){
+      if(!sentDone){
+        sentDone=true;
+        var curSent='';
+        if(String(row['긍정'])==='1')curSent='긍정';
+        else if(String(row['중립'])==='1')curSent='중립';
+        else if(String(row['부정'])==='1')curSent='부정';
+        else if(String(row['기타'])==='1')curSent='기타';
+        sdHtml+='<div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;">';
+        sdHtml+='<div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">감정상태</div>';
+        sdHtml+='<select class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" data-header="감정상태" onchange="updateSentCell(this)">';
+        sdHtml+='<option value="">선택</option>';
+        sdHtml+='<option value="긍정"'+(curSent==='긍정'?' selected':'')+'>긍정</option>';
+        sdHtml+='<option value="중립"'+(curSent==='중립'?' selected':'')+'>중립</option>';
+        sdHtml+='<option value="부정"'+(curSent==='부정'?' selected':'')+'>부정</option>';
+        sdHtml+='<option value="기타"'+(curSent==='기타'?' selected':'')+'>기타</option>';
+        sdHtml+='</select></div>';
+      }
+      continue;
+    }
+    sdHtml+='<div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;">';
+    sdHtml+='<div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">'+esc(h[i])+'</div>';
+    sdHtml+='<input type="text" class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" value="'+esc(String(val))+'" data-col="'+(i+1)+'" data-header="'+esc(h[i])+'" onchange="updateSheetCell(this)">';
+    sdHtml+='</div>';
+  }
+
+  document.getElementById('cf_sheetData').innerHTML=sdHtml;
+
+  // sch일 때: 계약서 부분 숨기고 모달 크기 축소
+  var contractFormRight=document.querySelector('#contractForm > div:nth-child(2)');
+  var modalBox=document.querySelector('#contractModal .modal');
+    if(isSch){
+    if(contractFormRight)contractFormRight.style.display='none';
+    if(modalBox)modalBox.style.maxWidth='600px';
+    document.getElementById('contractSubmitBtn').style.display='';
+    document.getElementById('contractSubmitBtn').setAttribute('onclick','submitSchEdit()');
+  }else{
+    if(contractFormRight)contractFormRight.style.display='';
+    if(modalBox)modalBox.style.maxWidth='1200px';
+    document.getElementById('contractSubmitBtn').style.display='';
+     document.getElementById('contractSubmitBtn').setAttribute('onclick','submitSchEdit()');
+  }
+
+  document.getElementById('contractModal').classList.add('show');
+}
+
+
+  function updateSheetCell(el){
+  var header=el.getAttribute('data-header');
+  var newVal=el.value;
+  var sheet=window._sheetEditSheet;
+  var rowIdx=window._sheetEditRowIdx;
+  var h=window._sheetEditHeaders;
+  if(!sheet||!rowIdx){toast('시트 정보 없음','err');return;}
+  var col=-1;
+  for(var i=0;i<h.length;i++){
+    if(h[i]===header){col=i+2;break;}
+  }
+   console.log('저장:', header, '열번호:', col, '행번호:', rowIdx, '값:', newVal); 
+  if(col<0){toast('열을 찾을 수 없음','err');return;}
+  apiPost({action:'updateCell',sheet:sheet,row:rowIdx,col:col,value:newVal},function(res){
+    if(res.ok){
+      toast(header+' 저장 완료','ok');
+      if(window._sheetEditRow&&window._sheetEditHeaders){
+        window._sheetEditRow[header]=newVal;
+      }
+    }else{
+      toast('저장 실패: '+(res.msg||''),'err');
+    }
+  });
+}
+
+ function updateSentCell(el){
+  var picked=el.value;
+  var sheet=window._sheetEditSheet;
+  var rowIdx=window._sheetEditRowIdx;
+  var h=window._sheetEditHeaders;
+  if(!sheet||!rowIdx){toast('시트 정보 없음','err');return;}
+  var cols={'긍정':0,'중립':0,'부정':0,'기타':0};
+  for(var i=0;i<h.length;i++){
+    if(h[i]==='긍정'||h[i]==='중립'||h[i]==='부정')cols[h[i]]=i+2;
+  }
+  var items=['긍정','중립','부정','기타'];
+  for(var j=0;j<items.length;j++){
+    var v=(items[j]===picked)?'1':'';
+    apiPost({action:'updateCell',sheet:sheet,row:rowIdx,col:cols[items[j]],value:v},function(){});
+    if(window._sheetEditRow)window._sheetEditRow[items[j]]=v;
+  }
+  toast('감정상태 → '+picked+' 저장','ok');
+}
+
+  function copyToSheet(newSheet){
+  var origSheet=window._sheetEditSheet;
+  if(newSheet===origSheet){return;}
+  if(!confirm(origSheet+' → '+newSheet+'로 복사하시겠습니까?'))
+  {document.getElementById('editRowSheet').value=origSheet;return;}
+  var h=window._sheetEditHeaders;
+  var row=window._sheetEditRow;
+  var rowData=[];
+  var areaIdx=-1,mgrIdx=-1;
+  var areaMgr={'수도권남동':'김준우','수도권북동':'신준명','수도권북서':'정재규','수도권남서':'전두현'};
+  for(var i=0;i<h.length;i++){
+    var val=row[h[i]]!==undefined?row[h[i]]:'';
+    if(h[i]==='권역별')areaIdx=i;
+    if(h[i]==='담당자')mgrIdx=i;
+    rowData.push(String(val));
+  }
+  if(areaIdx>=0&&mgrIdx>=0){
+    var area=rowData[areaIdx]||'';
+    if(areaMgr[area]){
+      rowData[mgrIdx]=areaMgr[area];
+    }
+  }
+  apiPost({action:'addRow',sheet:newSheet,rowData:rowData},function(res){
+    if(res.success||res.ok){
+      toast(newSheet+'에 복사 완료','ok');
+      apiGet({action:'getData',sheet:newSheet},function(d){
+        allSheetsData[newSheet]=d;
+        buildFlat();buildFilters();renderActivity();
+      });
+    }else{
+      toast('복사 실패','err');
+      document.getElementById('editRowSheet').value=origSheet;
+    }
+  });
+}
+
+  
+  function mkContractStats(siteList){
+  if(!contractData){return '<div style="color:#999;font-size:13px;">계약 데이터 로딩중...</div>';}
+  var ch=contractData.headers,rows=contractData.rows;
+  var sites={};
+  for(var i=0;i<siteList.length;i++){var sn=(siteList[i].site||'').trim();if(sn)sites[sn]=1;}
+  var ct={상담:0,제안:0,입대위:0,실사:0,계약:0,total:0};
+  for(var i=0;i<rows.length;i++){
+    var sn=(fv(rows[i],ch,'사이트명')||'').trim();
+    if(!sites[sn])continue;
+    var st=fv(rows[i],ch,'진행사항')||'상담';
+    ct.total++;ct[st]=(ct[st]||0)+1;
+  }
+  var matched={};
+  for(var i=0;i<rows.length;i++){var sn=(fv(rows[i],ch,'사이트명')||'').trim();if(sn)matched[sn]=1;}
+  for(var sn in sites){if(!matched[sn]){ct.total++;ct['상담']++;}}
+  if(ct.total===0)return '<div style="color:#999;font-size:13px;">해당 기간 계약 데이터 없음</div>';
+  var colors={상담:'#3498db',제안:'#e67e22',입대위:'#f39c12',실사:'#9b59b6',계약:'#27ae60'};
+  var steps=['상담','제안','입대위','실사','계약'];
+  var html='<div style="display:flex;gap:10px;margin-bottom:10px;">';
+  for(var i=0;i<steps.length;i++){
+    var s=steps[i],c=ct[s]||0,p=ct.total>0?Math.round(c/ct.total*100):0;
+    html+='<div style="flex:1;background:#fff;border-radius:8px;padding:10px;text-align:center;border-top:3px solid '+colors[s]+';">';
+    html+='<div style="font-size:11px;color:'+colors[s]+';font-weight:700;">'+s+'</div>';
+    html+='<div style="font-size:24px;font-weight:800;color:'+colors[s]+';">'+c+'</div>';
+    html+='<div style="font-size:10px;color:#888;">'+p+'%</div></div>';
+  }
+  html+='</div>';
+  html+='<div style="display:flex;align-items:center;gap:6px;">';
+  html+='<span style="font-size:11px;color:#666;">총 '+ct.total+'건</span>';
+  html+='<div style="flex:1;height:6px;background:#eee;border-radius:3px;overflow:hidden;display:flex;">';
+  for(var i=0;i<steps.length;i++){var s=steps[i],p=ct.total>0?Math.round((ct[s]||0)/ct.total*100):0;html+='<div style="width:'+p+'%;background:'+colors[s]+';"></div>';}
+  html+='</div></div>';
+  return html;
+}
+  
+function openContractFromList(idx){
+  var list=sheetFiltered.length?sheetFiltered:sheetRows;
+  var row=list[idx];if(!row)return;
+  editContractRow=null;
+  document.getElementById('contractModalTitle').textContent='계약서 작성';
+  document.getElementById('contractSubmitBtn').textContent='저장';
+  var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note'];
+  for(var i=0;i<fields.length;i++)document.getElementById(fields[i]).value='';
+  var site=row['사이트명']||'';
+  document.getElementById('cf_site').value=site;
+  var qty=row['충전기수량']||'';
+  document.getElementById('cf_qty').value=qty;
+  document.getElementById('contractModal').classList.add('show');
+}
+
+function generateContract(source, idx) {
+  var site='',name='',addr='',biz='',year='',qty='',type='',price='',total='',promo='',promoAmt='';
+
+  if(source==='contract'){
+    var d=contractData;
+    if(!d||!d.rows||!d.rows[idx])return;
+    var row=d.rows[idx],h=d.headers;
+    site=fv(row,h,'사이트명')||'';name=fv(row,h,'입대위명')||'';addr=fv(row,h,'주소')||'';
+    biz=fv(row,h,'사업자번호')||'';year=fv(row,h,'계약년수')||'';
+    qty=fv(row,h,'충전기수량')||'';type=fv(row,h,'설치유형')||'';price=fv(row,h,'충전기단가')||'';
+    total=fv(row,h,'설치금액')||'';promo=fv(row,h,'프로모션기간')||'';promoAmt=fv(row,h,'프로모션금액')||'';
+  } else if(source==='form'){
+    site=document.getElementById('cf_site').value;name=document.getElementById('cf_name').value;
+    addr=document.getElementById('cf_addr').value;biz=document.getElementById('cf_biz').value;
+    year=document.getElementById('cf_year').value;qty=document.getElementById('cf_qty').value;
+    type=document.getElementById('cf_type').value;price=document.getElementById('cf_price').value;
+    total=document.getElementById('cf_total').value;promo=document.getElementById('cf_promo').value;
+    promoAmt=document.getElementById('cf_promoAmt').value;
+  }
+
+  var templateUrl='https://sskd3436-maker.github.io/my-dashboard/%EA%B3%84%EC%95%BD%EC%84%9C%20%EC%96%91%EC%8B%9D%20(%EC%9E%90%EB%8F%99%20%EB%B3%B5%EA%B5%AC%EB%90%A8).docx';
+
+  var xhr=new XMLHttpRequest();
+  xhr.open('GET',templateUrl,true);
+  xhr.responseType='arraybuffer';
+  xhr.onload=function(){
+    if(xhr.status===200){
+      try{
+        var zip=new window.PizZip(xhr.response);
+        var doc=new window.docxtemplater(zip,{paragraphLoop:true,linebreaks:true,delimiters:{start:'{',end:'}'}});
+        doc.render({
+          '입대위명':name,
+          '사업자번호':biz,
+          '주소':addr,
+          '설치수량':qty,
+          '총금액':total,
+          '기당금액':price,
+          '사이트명':site,
+          '계약년수':year,
+          '프로모션금액':promoAmt,
+          '프로모션기간':promo
+        });
+        var out=doc.getZip().generate({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+        window.saveAs(out, site+'_계약서.docx');
+        toast('계약서 다운로드 완료','ok');
+      }catch(e){
+        console.log('계약서 생성 오류:',e);
+        toast('계약서 생성 실패','fail');
+      }
+    }else{
+      toast('템플릿 로드 실패','fail');
+    }
+  };
+  xhr.onerror=function(){toast('네트워크 오류','fail');};
+  xhr.send();
+}
+
+  
+</script>
+<script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.6/dist/pizzip.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.37.12/build/docxtemplater.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+</div><!-- dashboardWrap 끝 -->
+  <script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}
+</script>
+</body>
+</html>
