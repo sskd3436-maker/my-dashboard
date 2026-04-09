@@ -812,8 +812,9 @@ function renderMobileList(){
     if(q&&(it.site||'').toLowerCase().indexOf(q)<0)continue;
       var lat=parseFloat(fv(it.row,it.headers,'Y좌표')||0);
     var lng=parseFloat(fv(it.row,it.headers,'X좌표')||0);
+    if(!lat||!lng)continue;
     var dist=0;
-    if(myLoc&&lat&&lng)dist=getDistance(myLoc[0],myLoc[1],lat,lng);
+    if(myLoc)dist=getDistance(myLoc[0],myLoc[1],lat,lng);
     list.push({it:it,lat:lat,lng:lng,dist:dist});
   }
   if(myLoc)list.sort(function(a,b){return a.dist-b.dist;});
