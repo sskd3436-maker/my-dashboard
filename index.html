@@ -796,7 +796,7 @@ function renderMobileMarkers(){
     if(!lat||!lng)continue;
     var visited=it.date||fv(it.row,it.headers,'방문일자')||'';
     var color=visited?'#27ae60':'#e74c3c';
-       var icon=L.divIcon({className:'',html:'<div style="width:14px;height:14px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>',iconSize:[14,14],iconAnchor:[7,7]});
+         var icon=L.divIcon({className:'',html:'<div style="width:20px;height:20px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>',iconSize:[20,20],iconAnchor:[10,10]});
     var m=L.marker([lat,lng],{icon:icon}).addTo(window._mobileMap);
     m.bindPopup('<b>'+esc(it.site||'')+'</b><br>'+(it.mgr||'')+'<br>'+(visited||'미방문'));
     window._mobileMarkers.push(m);
