@@ -416,29 +416,6 @@
       </div>
     </div>
 
-      <div class="search-bar">
-        <input type="text" class="search-input" id="actSearch" placeholder="🔍 사이트명, 담당자, 내용 검색..." oninput="renderActivity()">
-        <select class="filter-select" id="actSent" onchange="renderActivity()">
-          <option value="">전체 감정</option><option value="긍정">긍정</option><option value="중립">중립</option><option value="부정">부정</option><option value="기타">기타(재계약)</option>
-        </select>
-        <select class="filter-select" id="actMgr" onchange="renderActivity()"><option value="">전체 담당자</option></select>
-        <select class="filter-select" id="actSheet" onchange="renderActivity()"><option value="">전체 시트</option></select>
-      </div>
-      <div class="stats-grid" id="actStats" style="display:none;"></div>
-      <div class="section-box" id="actContractStats" style="margin-bottom:16px;display:none;"><h3>📋 계약 진행 현황</h3><div id="actContractArea"></div></div>
-     <div id="actMapBox" style="margin-bottom:16px;display:flex;gap:12px;">
-  <div style="flex:2;border-radius:12px;overflow:hidden;border:1px solid #e0e0e0;">
-    <div id="actMap" style="height:400px;"></div>
-  </div>
-  <div id="actMapStats" style="flex:1;border-radius:12px;border:1px solid #e0e0e0;padding:12px;overflow-y:auto;max-height:400px;">
-  </div>
-</div>
-      <div class="table-box">
-        <div id="actTitle" style="font-size:16px;font-weight:700;padding:16px 20px;"></div>
-        <div class="table-wrap"><table><thead id="actTH"></thead><tbody id="actTB"></tbody></table></div>
-      </div>
-    </div>
-
 
     <!-- ========== 시트 데이터 ========== -->
     <div class="page" id="page-sheet">
