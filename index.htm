@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=0.7">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>현장 업무수행 대시보드</title>
 
   <style>
@@ -266,7 +266,6 @@
       .sub-tabs { flex-wrap: wrap; }
     }
     .table-wrap{overflow-x:auto;}
-    .content{max-width:100%!important;width:100%!important;}
     .form-group{margin-bottom:12px;}
 .form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:4px;color:#333;}
 .form-input{width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;box-sizing:border-box;}
@@ -2408,6 +2407,7 @@ function openContractFromSheet(pageKey,idx){
   if(!contractData){loadContract(function(){openContractFromSheet(pageKey,idx);});return;}
   var row=it.row,h=it.headers;
   // 계약서에 이미 있으면 수정 모드로
+  var isSch=(pageKey==='sch'||pageKey==='sch_temp'||pageKey==='schedit');
     editContractRow=null;
   if(!isSch&&contractData&&contractData.rows){
     var ch2=contractData.headers;
@@ -2420,7 +2420,7 @@ function openContractFromSheet(pageKey,idx){
     }
   }
 
-  var isSch=(pageKey==='sch'||pageKey==='sch_temp'||pageKey==='schedit');
+  
   document.getElementById('contractModalTitle').textContent=isSch?'시트 데이터 수정':'사이트 정보';
   document.getElementById('contractSubmitBtn').textContent='저장';
   var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
