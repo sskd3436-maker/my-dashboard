@@ -2572,12 +2572,11 @@ function openContractFromSheet(pageKey,idx){
     sdHtml+='<div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;">';
     sdHtml+='<div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">'+esc(h[i])+'</div>';
     var inputType='text';
-if(h[i]==='방문일자'){
-  inputType='date';
-  if(!val||val==='')val=new Date().toISOString().split('T')[0];
-  else if(val.indexOf('T')>0)val=val.split('T')[0];
-}
-sdHtml+='<input type="'+inputType+'" class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" value="'+esc(String(val))+'" data-col="'+(i+1)+'" data-header="'+esc(h[i])+'" onchange="updateSheetCell(this)">';
+    if(h[i]==='방문일자'){
+      inputType='date';
+      if(val&&val.indexOf('T')>0)val=val.split('T')[0];
+    }
+    sdHtml+='<input type="'+inputType+'" class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" value="'+esc(String(val))+'" data-col="'+(i+1)+'" data-header="'+esc(h[i])+'" onchange="updateSheetCell(this)">';
     sdHtml+='</div>';
   }
 
