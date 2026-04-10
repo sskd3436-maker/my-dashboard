@@ -1966,7 +1966,7 @@ function submitSchEdit(){
   }
   total=pairs.length;
   if(total===0){toast('변경사항 없음','info');return;}
-   toast('저장 중...','info');
+  toast('저장 중...','info');
   document.getElementById('contractModal').classList.remove('show');
   for(var i=0;i<pairs.length;i++){
     (function(p){
@@ -1975,19 +1975,67 @@ function submitSchEdit(){
         done++;
         if(done>=total){
           console.log('모든필드저장완료, 새로고침시작');
-           toast('저장 완료','ok');
-          var sq=document.getElementById('actSearch').value;
-          var ss=document.getElementById('actSent').value;
-          var sm=document.getElementById('actMgr').value;
-          var sa=document.getElementById('actSheet').value;
+          toast('저장 완료','ok');
+
+          // 계약서 자동 추가/업데이트
+          var statusEl=document.getElementById('cf_status');
+          var statusVal=statusEl?statusEl.value:'';
+          var siteVal='';
+          for(var pi=0;pi<pairs.length;pi++){if(pairs[pi].header==='사이트명')siteVal=pairs[pi].val;}
+          if(!siteVal)siteVal=fv(row,h,'사이트명')||'';
+
+          if(statusVal==='입대위'||statusVal==='실사'||statusVal==='계약'){
+            var exists=false;
+            var existRow=null;
+            if(contractData&&contractData.rows){
+              var ch=contractData.headers;
+              for(var ci=0;ci<contractData.rows.length;ci++){
+                if((fv(contractData.rows[ci],ch,'사이트명')||'').trim()===siteVal.trim()){
+                  exists=true;
+                  existRow=contractData.rows[ci]._rowIndex||ci+4;
+                  break;
+                }
+              }
+            }
+            if(exists&&existRow){
+              var stCol=-1;
+              if(contractData&&contractData.headers){
+                for(var ci=0;ci<contractData.headers.length;ci++){
+                  if(contractData.headers[ci]==='진행사항'){stCol=ci+2;break;}
+                }
+              }
+              if(stCol>0){
+                apiPost({action:'updateCell',sheet:'계약서',row:existRow,col:stCol,value:statusVal},function(r2){
+                  if(r2.ok||r2.success){toast('계약서 진행사항 업데이트','ok');contractData=null;}
+                });
+              }
+            }else{
+              var mgrVal='';
+              for(var pi=0;pi<pairs.length;pi++){if(pairs[pi].header==='담당자')mgrVal=pairs[pi].val;}
+              if(!mgrVal)mgrVal=fv(row,h,'담당자')||'';
+              var addrVal=fv(row,h,'주소')||'';
+              var ctData=[
+                siteVal,'',addrVal,'','','','','','','','','',
+                statusVal,'',mgrVal
+              ];
+              apiPost({action:'addRow',sheet:'계약서',rowData:ctData},function(r2){
+                if(r2.success||r2.ok){toast('계약서에 자동 추가됨','ok');contractData=null;}
+              });
+            }
+          }
+
+          var sq=document.getElementById('actSearch')?document.getElementById('actSearch').value:'';
+          var ss=document.getElementById('actSent')?document.getElementById('actSent').value:'';
+          var sm=document.getElementById('actMgr')?document.getElementById('actMgr').value:'';
+          var sa=document.getElementById('actSheet')?document.getElementById('actSheet').value:'';
           localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
           buildFlat();
           buildFilters();
           renderActivity();
-          document.getElementById('actSearch').value=sq;
-          document.getElementById('actSent').value=ss;
-          document.getElementById('actMgr').value=sm;
-          document.getElementById('actSheet').value=sa;
+          if(document.getElementById('actSearch'))document.getElementById('actSearch').value=sq;
+          if(document.getElementById('actSent'))document.getElementById('actSent').value=ss;
+          if(document.getElementById('actMgr'))document.getElementById('actMgr').value=sm;
+          if(document.getElementById('actSheet'))document.getElementById('actSheet').value=sa;
           renderActTable(window._actMode||'all');
           setTimeout(function(){
             apiGet({action:'getSheets'},function(data){
@@ -2011,6 +2059,7 @@ function submitSchEdit(){
     })(pairs[i]);
   }
 }
+
 
 
   
