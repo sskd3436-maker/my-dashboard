@@ -779,7 +779,8 @@ function renderMobileMarkers(){
         var icon=L.divIcon({className:'',html:'<div style="width:20px;height:20px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>',iconSize:[20,20],iconAnchor:[10,10]});
     var m=L.marker([lat,lng],{icon:icon}).addTo(window._mobileMap);
     var addr=(fv(it.row,it.headers,'주소')||'').replace(/\(.*?\)/g,'').trim();
-    var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr||it.site||'');
+    var webUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr||it.site||'');
+var mapUrl='nmap://search?query='+encodeURIComponent(addr||it.site||'')+'&appname=com.mydashboard';
     var visitedTxt=visited?('<span style="color:#27ae60;font-weight:600;">✅ 방문완료</span>'):'<span style="color:#e74c3c;font-weight:600;">❌ 미방문</span>';
     window._mobileData.push(it);
     var dataIdx=window._mobileData.length-1;
@@ -789,7 +790,7 @@ function renderMobileMarkers(){
       '<br><span style="color:#666;">담당자: '+(it.mgr||'-')+'</span>'+
       '<br>'+visitedTxt+
       '<br><div style="margin-top:6px;display:flex;gap:6px;">'+
-      '<a href="'+mapUrl+'" target="_blank" style="display:inline-block;background:#2db400;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">📍 네이버지도</a>'+
+     '<a href="'+mapUrl+'" onclick="var w=\''+webUrl+'\';setTimeout(function(){window.open(w,\'_blank\');},1500);return true;" style="display:inline-block;background:#2db400;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">📍 네이버지도</a>'+
       '<button onclick="openMobileEdit('+dataIdx+')" style="background:#1a73e8;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✏️ 수정</button>'+
       '</div></div>'
     );
