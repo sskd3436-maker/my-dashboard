@@ -763,11 +763,12 @@ function getDistance(lat1,lng1,lat2,lng2){
 
 function renderMobileMarkers(){
   if(!window._mobileMap)return;
+  window._mobileData=[];
   if(window._mobileMarkers){
     for(var i=0;i<window._mobileMarkers.length;i++)window._mobileMap.removeLayer(window._mobileMarkers[i]);
   }
   window._mobileMarkers=[];
-  for(var i=0;i<allFlat.length;i++){
+ for(var i=0;i<allFlat.length;i++){
     var it=allFlat[i];
     if(window._mobileMode&&window._loginUser&&(it.mgr||'')!==window._loginUser)continue;
      var lat=parseFloat(fv(it.row,it.headers,'Y좌표')||0);
@@ -780,12 +781,17 @@ function renderMobileMarkers(){
     var addr=(fv(it.row,it.headers,'주소')||'').replace(/\(.*?\)/g,'').trim();
     var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr||it.site||'');
     var visitedTxt=visited?('<span style="color:#27ae60;font-weight:600;">✅ 방문완료</span>'):'<span style="color:#e74c3c;font-weight:600;">❌ 미방문</span>';
+    window._mobileData.push(it);
+    var dataIdx=window._mobileData.length-1;
     m.bindPopup(
-      '<b style="font-size:14px;">'+esc(it.site||'')+'</b>'+
+      '<div style="min-width:180px;"><b style="font-size:14px;">'+esc(it.site||'')+'</b>'+
       '<br><span style="color:#666;">주소: '+(addr||'-')+'</span>'+
       '<br><span style="color:#666;">담당자: '+(it.mgr||'-')+'</span>'+
       '<br>'+visitedTxt+
-      '<br><a href="'+mapUrl+'" target="_blank" style="color:#1a73e8;font-weight:700;display:inline-block;margin-top:4px;">📍 네이버 지도 열기</a>'
+      '<br><div style="margin-top:6px;display:flex;gap:6px;">'+
+      '<a href="'+mapUrl+'" target="_blank" style="display:inline-block;background:#2db400;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">📍 네이버지도</a>'+
+      '<button onclick="openMobileEdit('+dataIdx+')" style="background:#1a73e8;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✏️ 수정</button>'+
+      '</div></div>'
     );
     window._mobileMarkers.push(m);
   }
@@ -849,6 +855,12 @@ function mobileGoSite(lat,lng){
       }
     }
   }
+}
+  function openMobileEdit(idx){
+  var it=window._mobileData[idx];
+  if(!it)return;
+  window['_d_mobileedit']=[it];
+  openContractFromSheet('mobileedit',0);
 }
  
 function toast(m,t){var b=document.getElementById('toasts'),e=document.createElement('div');e.className='toast '+(t||'info');e.textContent=m;b.appendChild(e);setTimeout(function(){e.remove();},3000);}
