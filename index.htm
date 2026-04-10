@@ -777,7 +777,7 @@ function renderMobileMarkers(){
     var color=visited?'#27ae60':'#e74c3c';
          var icon=L.divIcon({className:'',html:'<div style="width:20px;height:20px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>',iconSize:[20,20],iconAnchor:[10,10]});
     var m=L.marker([lat,lng],{icon:icon}).addTo(window._mobileMap);
-   m.bindPopup('<b>'+esc(it.site||'')+'</b><br>'+(it.mgr||'')+'<br>'+(visited||'미방문'));
+  m.bindPopup('<b>'+esc(it.site||'')+'</b><br>주소: '+(addr||'-')+'<br>담당자: '+(it.mgr||'')+'<br>'+(visited?'<span style="color:#27ae60;">방문완료</span>':'<span style="color:#e74c3c;">미방문</span>')+'<br><a href="'+mapUrl+'" target="_blank" style="color:#1a73e8;font-weight:600;">네이버 지도 열기</a>');
     window._mobileMarkers.push(m);
   }
 }
