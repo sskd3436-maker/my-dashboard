@@ -927,7 +927,7 @@ tr:hover td {
  <!-- 로그인 화면 -->
 <div id="loginPage" style="display:flex;justify-content:center;align-items:center;height:100vh;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);position:fixed;top:0;left:0;width:100%;z-index:9999;">
   <div style="background:#fff;padding:48px 44px;border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,0.3);width:400px;text-align:center;">
-    <div style="font-size:56px;margin-bottom:16px;animation:bounce 2s infinite;">📊</div>
+    <div style="margin-bottom:16px;animation:bounce 2s infinite;"><img src="icon-192.png" alt="대시보드 아이콘" style="width:80px;height:80px;border-radius:20px;box-shadow:0 4px 16px rgba(102,126,234,0.4);"></div>
     <h2 style="margin:0 0 10px;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:26px;font-weight:800;">업무수행 대시보드</h2>
     <p style="color:#a0aec0;font-size:14px;margin-bottom:32px;font-weight:500;">로그인하여 시작하세요</p>
     <input type="text" id="loginId" placeholder="아이디" style="width:100%;padding:14px 18px;border:2px solid #e2e8f0;border-radius:12px;font-size:15px;margin-bottom:14px;box-sizing:border-box;transition:all 0.3s;font-weight:500;" onfocus="this.style.borderColor='#667eea';this.style.boxShadow='0 0 0 3px rgba(102,126,234,0.1)'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
@@ -1406,7 +1406,14 @@ function renderMobileMarkers(){
     var m=L.marker([lat,lng],{icon:icon}).addTo(window._mobileMap);
     var addr=(fv(it.row,it.headers,'주소')||'').replace(/\(.*?\)/g,'').trim();
     var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr||it.site||'');
-    m.bindPopup('<b>'+esc(it.site||'')+'</b><br>'+(it.mgr||'')+'<br>'+(visited||'미방문')+'<br><a href="'+mapUrl+'" target="_blank" style="color:#1a73e8;font-weight:700;">네이버 지도 열기</a>');
+    var visitedTxt=visited?('<span style="color:#27ae60;font-weight:600;">✅ 방문완료</span>'):'<span style="color:#e74c3c;font-weight:600;">❌ 미방문</span>';
+    m.bindPopup(
+      '<b style="font-size:14px;">'+esc(it.site||'')+'</b>'+
+      '<br><span style="color:#666;">주소: '+(addr||'-')+'</span>'+
+      '<br><span style="color:#666;">담당자: '+(it.mgr||'-')+'</span>'+
+      '<br>'+visitedTxt+
+      '<br><a href="'+mapUrl+'" target="_blank" style="color:#1a73e8;font-weight:700;display:inline-block;margin-top:4px;">📍 네이버 지도 열기</a>'
+    );
     window._mobileMarkers.push(m);
   }
 }
@@ -3035,8 +3042,10 @@ function openContractFromSheet(pageKey,idx){
   var it=list[idx];if(!it)return;
   if(!contractData){loadContract(function(){openContractFromSheet(pageKey,idx);});return;}
   var row=it.row,h=it.headers;
+  // isSch 먼저 결정
+  var isSch=(pageKey==='sch'||pageKey==='sch_temp'||pageKey==='schedit');
   // 계약서에 이미 있으면 수정 모드로
-    editContractRow=null;
+  editContractRow=null;
   if(!isSch&&contractData&&contractData.rows){
     var ch2=contractData.headers;
     var siteName=(fv(row,h,'사이트명')||'').trim();
@@ -3047,8 +3056,6 @@ function openContractFromSheet(pageKey,idx){
       }
     }
   }
-
-  var isSch=(pageKey==='sch'||pageKey==='sch_temp'||pageKey==='schedit');
   document.getElementById('contractModalTitle').textContent=isSch?'시트 데이터 수정':'사이트 정보';
   document.getElementById('contractSubmitBtn').textContent='저장';
   var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
@@ -3057,13 +3064,29 @@ function openContractFromSheet(pageKey,idx){
   var mgr=it.mgr||fv(row,h,'담당자')||'';
   document.getElementById('cf_site').value=site;
   document.getElementById('cf_mgr').value=mgr;
-  // 계약서에서 진행사항 가져오기
+  // 계약서 시트에서 모든 필드 가져오기 (수정 모드일 때 전체 동기화)
   if(contractData&&contractData.rows){
     var ch3=contractData.headers;
     var siteCheck=(fv(row,h,'사이트명')||'').trim();
     for(var ci=0;ci<contractData.rows.length;ci++){
-      if((fv(contractData.rows[ci],ch3,'사이트명')||'').trim()===siteCheck){
-        document.getElementById('cf_status').value=fv(contractData.rows[ci],ch3,'진행사항')||'상담';
+      var cr3=contractData.rows[ci];
+      if((fv(cr3,ch3,'사이트명')||'').trim()===siteCheck){
+        // 계약서 전체 필드 채우기
+        document.getElementById('cf_name').value=fv(cr3,ch3,'입대위명')||'';
+        document.getElementById('cf_addr').value=fv(cr3,ch3,'주소')||'';
+        document.getElementById('cf_biz').value=fv(cr3,ch3,'사업자번호')||'';
+        document.getElementById('cf_tel').value=fv(cr3,ch3,'관리실번호')||'';
+        document.getElementById('cf_year').value=fv(cr3,ch3,'계약년수')||'';
+        document.getElementById('cf_qty').value=fv(cr3,ch3,'충전기수량')||fv(row,h,'충전기수량')||'';
+        document.getElementById('cf_type').value=fv(cr3,ch3,'설치유형')||'';
+        document.getElementById('cf_price').value=fv(cr3,ch3,'충전기단가')||'';
+        document.getElementById('cf_total').value=fv(cr3,ch3,'설치금액')||'';
+        document.getElementById('cf_promo').value=fv(cr3,ch3,'프로모션기간')||'';
+        document.getElementById('cf_promoAmt').value=fv(cr3,ch3,'프로모션금액')||'';
+        document.getElementById('cf_status').value=fv(cr3,ch3,'진행사항')||'상담';
+        document.getElementById('cf_note').value=fv(cr3,ch3,'비고')||'';
+        document.getElementById('cf_mgr').value=fv(cr3,ch3,'담당자')||mgr;
+        if(editContractRow)document.getElementById('contractSubmitBtn').textContent='수정';
         break;
       }
     }
@@ -3131,7 +3154,8 @@ function openContractFromSheet(pageKey,idx){
     if(contractFormRight)contractFormRight.style.display='';
     if(modalBox)modalBox.style.maxWidth='1200px';
     document.getElementById('contractSubmitBtn').style.display='';
-     document.getElementById('contractSubmitBtn').setAttribute('onclick','submitSchEdit()');
+    // 비sch 경로: 계약서 저장/수정은 submitContract() 사용
+    document.getElementById('contractSubmitBtn').setAttribute('onclick','submitContract()');
   }
 
   document.getElementById('contractModal').classList.add('show');
@@ -3257,16 +3281,85 @@ function openContractFromSheet(pageKey,idx){
 function openContractFromList(idx){
   var list=sheetFiltered.length?sheetFiltered:sheetRows;
   var row=list[idx];if(!row)return;
-  editContractRow=null;
-  document.getElementById('contractModalTitle').textContent='계약서 작성';
-  document.getElementById('contractSubmitBtn').textContent='저장';
-  var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note'];
-  for(var i=0;i<fields.length;i++)document.getElementById(fields[i]).value='';
-  var site=row['사이트명']||'';
-  document.getElementById('cf_site').value=site;
-  var qty=row['충전기수량']||'';
-  document.getElementById('cf_qty').value=qty;
-  document.getElementById('contractModal').classList.add('show');
+  var site=(row['사이트명']||'').trim();
+
+  function _openWithContractData(){
+    editContractRow=null;
+    document.getElementById('contractModalTitle').textContent='계약서 작성';
+    document.getElementById('contractSubmitBtn').textContent='저장';
+    document.getElementById('contractSubmitBtn').setAttribute('onclick','submitContract()');
+
+    // 모든 필드 초기화
+    var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
+    for(var i=0;i<fields.length;i++){var el=document.getElementById(fields[i]);if(el)el.value='';}
+
+    // 기본값: 시트 데이터에서
+    document.getElementById('cf_site').value=site;
+    document.getElementById('cf_qty').value=row['충전기수량']||'';
+    document.getElementById('cf_mgr').value=row['담당자']||'';
+
+    // 계약서 시트에 같은 사이트가 있으면 → 수정 모드로 연동
+    if(contractData&&contractData.rows){
+      var ch=contractData.headers;
+      for(var ci=0;ci<contractData.rows.length;ci++){
+        var cr=contractData.rows[ci];
+        if((fv(cr,ch,'사이트명')||'').trim()===site){
+          editContractRow=cr._rowIndex||ci+4;
+          document.getElementById('contractModalTitle').textContent='계약서 수정';
+          document.getElementById('contractSubmitBtn').textContent='수정';
+          // 계약서 시트 데이터로 폼 채우기
+          document.getElementById('cf_site').value=fv(cr,ch,'사이트명')||site;
+          document.getElementById('cf_name').value=fv(cr,ch,'입대위명')||'';
+          document.getElementById('cf_addr').value=fv(cr,ch,'주소')||'';
+          document.getElementById('cf_biz').value=fv(cr,ch,'사업자번호')||'';
+          document.getElementById('cf_tel').value=fv(cr,ch,'관리실번호')||'';
+          document.getElementById('cf_year').value=fv(cr,ch,'계약년수')||'';
+          document.getElementById('cf_qty').value=fv(cr,ch,'충전기수량')||row['충전기수량']||'';
+          document.getElementById('cf_type').value=fv(cr,ch,'설치유형')||'';
+          document.getElementById('cf_price').value=fv(cr,ch,'충전기단가')||'';
+          document.getElementById('cf_total').value=fv(cr,ch,'설치금액')||'';
+          document.getElementById('cf_promo').value=fv(cr,ch,'프로모션기간')||'';
+          document.getElementById('cf_promoAmt').value=fv(cr,ch,'프로모션금액')||'';
+          document.getElementById('cf_status').value=fv(cr,ch,'진행사항')||'상담';
+          document.getElementById('cf_note').value=fv(cr,ch,'비고')||'';
+          document.getElementById('cf_mgr').value=fv(cr,ch,'담당자')||row['담당자']||'';
+          break;
+        }
+      }
+    }
+    if(!document.getElementById('cf_status').value)document.getElementById('cf_status').value='상담';
+
+    // 왼쪽 시트 데이터: 현재 영업활동 행 표시
+    var sdHtml='<div style="color:#888;font-size:12px;margin-bottom:8px;">📋 영업활동 시트 데이터</div>';
+    var headers=Object.keys(row);
+    var hideFields=['재계약'];
+    for(var hi=0;hi<headers.length;hi++){
+      var hk=headers[hi];
+      if(hideFields.indexOf(hk)>=0||hk==='_rowIndex')continue;
+      var val=row[hk]!==undefined?row[hk]:'';
+      if(String(val).indexOf('T')>0&&String(val).indexOf('Z')>0)val=String(val).split('T')[0];
+      sdHtml+='<div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;">';
+      sdHtml+='<div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">'+esc(hk)+'</div>';
+      sdHtml+='<div style="flex:1;font-size:13px;color:#333;">'+esc(String(val))+'</div>';
+      sdHtml+='</div>';
+    }
+    document.getElementById('cf_sheetData').innerHTML=sdHtml;
+
+    // 모달 레이아웃: 계약서 오른쪽 영역 보이기
+    var contractFormRight=document.querySelector('#contractForm > div:nth-child(2)');
+    var modalBox=document.querySelector('#contractModal .modal');
+    if(contractFormRight)contractFormRight.style.display='';
+    if(modalBox)modalBox.style.maxWidth='1200px';
+
+    document.getElementById('contractModal').classList.add('show');
+  }
+
+  // contractData가 없으면 먼저 로드
+  if(!contractData){
+    loadContract(function(){ _openWithContractData(); });
+  } else {
+    _openWithContractData();
+  }
 }
 
 function generateContract(source, idx) {
