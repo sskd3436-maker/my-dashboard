@@ -1997,27 +1997,44 @@ function submitSchEdit(){
                 }
               }
             }
-            if(exists&&existRow){
-              var stCol=-1;
-              if(contractData&&contractData.headers){
+           if(exists&&existRow){
+              var ctFields=['사이트명','입대위명','주소','사업자번호','관리실번호','계약년수','충전기수량','설치유형','충전기단가','설치금액','프로모션기간','프로모션금액','진행사항','비고','담당자'];
+              var ctIds=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
+              for(var fi=0;fi<ctFields.length;fi++){
+                var ctCol=-1;
                 for(var ci=0;ci<contractData.headers.length;ci++){
-                  if(contractData.headers[ci]==='진행사항'){stCol=ci+2;break;}
+                  if(contractData.headers[ci]===ctFields[fi]){ctCol=ci+2;break;}
+                }
+                if(ctCol>0){
+                  var ctVal=document.getElementById(ctIds[fi])?document.getElementById(ctIds[fi]).value:'';
+                  apiPost({action:'updateCell',sheet:'계약서',row:existRow,col:ctCol,value:ctVal},function(){});
                 }
               }
-              if(stCol>0){
-                apiPost({action:'updateCell',sheet:'계약서',row:existRow,col:stCol,value:statusVal},function(r2){
-                  if(r2.ok||r2.success){toast('계약서 진행사항 업데이트','ok');contractData=null;}
-                });
-              }
+              toast('계약서 업데이트 완료','ok');
+              contractData=null;
             }else{
               var mgrVal='';
               for(var pi=0;pi<pairs.length;pi++){if(pairs[pi].header==='담당자')mgrVal=pairs[pi].val;}
               if(!mgrVal)mgrVal=fv(row,h,'담당자')||'';
               var addrVal=fv(row,h,'주소')||'';
               var ctData=[
-                siteVal,'',addrVal,'','','','','','','','','',
-                statusVal,'',mgrVal
-              ];
+  siteVal,
+  document.getElementById('cf_name')?document.getElementById('cf_name').value:'',
+  addrVal,
+  document.getElementById('cf_biz')?document.getElementById('cf_biz').value:'',
+  document.getElementById('cf_tel')?document.getElementById('cf_tel').value:'',
+  document.getElementById('cf_year')?document.getElementById('cf_year').value:'',
+  document.getElementById('cf_qty')?document.getElementById('cf_qty').value:'',
+  document.getElementById('cf_type')?document.getElementById('cf_type').value:'',
+  document.getElementById('cf_price')?document.getElementById('cf_price').value:'',
+  document.getElementById('cf_total')?document.getElementById('cf_total').value:'',
+  document.getElementById('cf_promo')?document.getElementById('cf_promo').value:'',
+  document.getElementById('cf_promoAmt')?document.getElementById('cf_promoAmt').value:'',
+  statusVal,
+  document.getElementById('cf_note')?document.getElementById('cf_note').value:'',
+  mgrVal
+];
+
               apiPost({action:'addRow',sheet:'계약서',rowData:ctData},function(r2){
                 if(r2.success||r2.ok){toast('계약서에 자동 추가됨','ok');contractData=null;}
               });
