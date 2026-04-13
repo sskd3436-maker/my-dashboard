@@ -785,15 +785,17 @@ var mapUrl='nmap://search?query='+encodeURIComponent(addr||it.site||'')+'&appnam
     window._mobileData.push(it);
     var dataIdx=window._mobileData.length-1;
     m.bindPopup(
-      '<div style="min-width:180px;"><b style="font-size:14px;">'+esc(it.site||'')+'</b>'+
-      '<br><span style="color:#666;">주소: '+(addr||'-')+'</span>'+
-      '<br><span style="color:#666;">담당자: '+(it.mgr||'-')+'</span>'+
-      '<br>'+visitedTxt+
-      '<br><div style="margin-top:6px;display:flex;gap:6px;">'+
-     '<a href="'+mapUrl+'" onclick="var w=\''+webUrl+'\';setTimeout(function(){window.open(w,\'_blank\');},1500);return true;" style="display:inline-block;background:#2db400;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">📍 네이버지도</a>'+
-      '<button onclick="openMobileEdit('+dataIdx+')" style="background:#1a73e8;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✏️ 수정</button>'+
-      '</div></div>'
-    );
+  '<div style="min-width:180px;"><b style="font-size:14px;">'+esc(it.site||'')+'</b>'+
+  '<br><span style="color:#666;">주소: '+(addr||'-')+'</span>'+
+  '<br><span style="color:#666;">사업구분: '+(fv(it.row,it.headers,'사업구분')||'-')+'</span>'+
+  '<br><span style="color:#666;">종류: '+(fv(it.row,it.headers,'종류')||'-')+'</span>'+
+  '<br><span style="color:#666;">계약: '+(fv(it.row,it.headers,'계약시작')||'-')+' ~ '+(fv(it.row,it.headers,'계약종료')||'-')+'</span>'+
+  '<br>'+visitedTxt+
+  '<br><div style="margin-top:6px;display:flex;gap:6px;">'+
+  '<a href="'+mapUrl+'" onclick="var w=\''+webUrl+'\';setTimeout(function(){window.open(w,\'_blank\');},1500);return true;" style="display:inline-block;background:#2db400;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">📍 네이버지도</a>'+
+  '<button onclick="openMobileEdit('+dataIdx+')" style="background:#1a73e8;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✏️ 수정</button>'+
+  '</div></div>'
+);
     window._mobileMarkers.push(m);
   }
 }
@@ -1369,7 +1371,16 @@ for(var i=0;i<list.length;i++){
   var marker=L.marker([lat,lng],{icon:icon}).addTo(window._actMap);
   var addr=(fv(it.row,it.headers,'주소')||'').replace(/\(.*?\)/g,'').trim();
 var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr||it.site||'');
-marker.bindPopup('<b>'+site+'</b><br>주소: '+(addr||'-')+'<br>담당자: '+mgr+'<br>'+(visited?'<span style="color:#27ae60;">방문완료</span>':'<span style="color:#e74c3c;">미방문</span>')+'<br><a href="'+mapUrl+'" target="_blank" style="color:#1a73e8;font-weight:600;">네이버 지도 열기</a>');
+var pcVisitedTxt=visited?'<span style="color:#27ae60;">방문완료</span>':'<span style="color:#e74c3c;">미방문</span>';
+marker.bindPopup(
+  '<div style="min-width:180px;"><b>'+site+'</b>'+
+  '<br>주소: '+(addr||'-')+
+  '<br>사업구분: '+(fv(it.row,it.headers,'사업구분')||'-')+
+  '<br>종류: '+(fv(it.row,it.headers,'종류')||'-')+
+  '<br>계약: '+(fv(it.row,it.headers,'계약시작')||'-')+' ~ '+(fv(it.row,it.headers,'계약종료')||'-')+
+  '<br>'+pcVisitedTxt+
+  '<br><a href="'+mapUrl+'" target="_blank" style="color:#1a73e8;font-weight:600;">네이버 지도 열기</a></div>'
+);
   window._actMarkers.push(marker);
   mapBounds.push([lat,lng]);
 }
