@@ -781,12 +781,14 @@ function renderMobileMarkers(){
     var lng=parseFloat(fv(it.row,it.headers,'X좌표')||0);
     if(!lat||!lng)continue;
     var visited=it.date||fv(it.row,it.headers,'방문일자')||'';
-    var sent=fv(it.row,it.headers,'감정')||'';
+    var posVal=fv(it.row,it.headers,'긍정')||'';
+var neuVal=fv(it.row,it.headers,'중립')||'';
+var negVal=fv(it.row,it.headers,'부정')||'';
 var color='#aaa';
 if(visited){
-  if(sent==='긍정')color='#27ae60';
-  else if(sent==='중립')color='#e67e22';
-  else if(sent==='부정')color='#e74c3c';
+  if(posVal)color='#27ae60';
+  else if(neuVal)color='#e67e22';
+  else if(negVal)color='#e74c3c';
   else color='#27ae60';
 }
         var icon=L.divIcon({className:'',html:'<div style="width:20px;height:20px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>',iconSize:[20,20],iconAnchor:[10,10]});
@@ -1379,12 +1381,14 @@ for(var i=0;i<list.length;i++){
   var lng=parseFloat(fv(it.row,it.headers,'X좌표'));
   if(!lat||!lng||isNaN(lat)||isNaN(lng))continue;
   var visited=!!(it.date||fv(it.row,it.headers,'방문일자'));
-  var sent=fv(it.row,it.headers,'감정')||'';
+ var posVal=fv(it.row,it.headers,'긍정')||'';
+var neuVal=fv(it.row,it.headers,'중립')||'';
+var negVal=fv(it.row,it.headers,'부정')||'';
 var color='#aaa';
 if(visited){
-  if(sent==='긍정')color='#27ae60';
-  else if(sent==='중립')color='#e67e22';
-  else if(sent==='부정')color='#e74c3c';
+  if(posVal)color='#27ae60';
+  else if(neuVal)color='#e67e22';
+  else if(negVal)color='#e74c3c';
   else color='#27ae60';
 }
   var icon=L.divIcon({
