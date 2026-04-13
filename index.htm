@@ -792,7 +792,8 @@ var mapUrl='nmap://search?query='+encodeURIComponent(addr||it.site||'')+'&appnam
 var kind=fv(it.row,it.headers,'종류')||'';
 var cStart=fmtDate(fv(it.row,it.headers,'계약시작')||'');
 var cEnd=fmtDate(fv(it.row,it.headers,'계약종료')||'');
-var bizColor=biz==='신규'?'#1a73e8':biz==='기존'?'#27ae60':biz==='미운영'?'#e74c3c':'#888';
+var bizColors={'(투자20)':'#e74c3c','(투자21)':'#e67e22','(투자22)':'#f1c40f','(투자23)':'#2ecc71','(투자24)':'#1abc9c','(투자25)':'#3498db','(투자26)':'#9b59b6','(투자27)':'#00bcd4'};
+var bizColor=bizColors[biz]||'#888';
 var kindColor=kind==='아파트'?'#6c5ce7':kind==='빌딩'?'#00b894':kind==='공공기관'?'#fdcb6e':'#888';
     window._mobileData.push(it);
     var dataIdx=window._mobileData.length-1;
@@ -1388,7 +1389,8 @@ var pcVisitedTxt=visited?'<span style="color:#27ae60;">방문완료</span>':'<sp
 var kind=fv(it.row,it.headers,'종류')||'';
 var cStart=fmtDate(fv(it.row,it.headers,'계약시작')||'');
 var cEnd=fmtDate(fv(it.row,it.headers,'계약종료')||'');
-var bizColor=biz==='신규'?'#1a73e8':biz==='기존'?'#27ae60':biz==='미운영'?'#e74c3c':'#888';
+var bizColors={'(투자20)':'#e74c3c','(투자21)':'#e67e22','(투자22)':'#f1c40f','(투자23)':'#2ecc71','(투자24)':'#1abc9c','(투자25)':'#3498db','(투자26)':'#9b59b6','(투자27)':'#00bcd4'};
+var bizColor=bizColors[biz]||'#888';
 var kindColor=kind==='아파트'?'#6c5ce7':kind==='빌딩'?'#00b894':kind==='공공기관'?'#fdcb6e':'#888';
 var pcVisitedTxt=visited?'<span style="color:#27ae60;">방문완료</span>':'<span style="color:#e74c3c;">미방문</span>';
 marker.bindPopup(
