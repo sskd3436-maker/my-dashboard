@@ -656,11 +656,13 @@ function getChargerInfo(lat, lng) {
     var parts = key.split(',');
     var kLat = parseFloat(parts[0]);
     var kLng = parseFloat(parts[1]);
-    if (Math.abs(kLat - lat) < 0.0005 && Math.abs(kLng - lng) < 0.0005) {
+    if (Math.abs(kLat - lat) < 0.0002 && Math.abs(kLng - lng) < 0.0002) {
       return chargerMatched[key];
     }
   }
   return null;
+}
+
 }
 
 
