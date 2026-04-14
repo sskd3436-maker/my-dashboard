@@ -652,10 +652,16 @@ function loadChargerMatched(callback) {
 
 function getChargerInfo(lat, lng) {
   if (!chargerMatched) return null;
-  var key = parseFloat(lat).toFixed(8).replace(/0+$/,'').replace(/\.$/,'')+','+parseFloat(lng).toFixed(8).replace(/0+$/,'').replace(/\.$/,'');
-  return chargerMatched[key] || null;
+  for (var key in chargerMatched) {
+    var parts = key.split(',');
+    var kLat = parseFloat(parts[0]);
+    var kLng = parseFloat(parts[1]);
+    if (Math.abs(kLat - lat) < 0.0002 && Math.abs(kLng - lng) < 0.0002) {
+      return chargerMatched[key];
+    }
+  }
+  return null;
 }
-
 
 function chargerPopupHtml(lat, lng) {
   var info = getChargerInfo(lat, lng);
