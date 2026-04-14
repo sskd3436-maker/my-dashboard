@@ -632,7 +632,57 @@ var nowSheet=null,sheetHeaders=[],sheetRows=[],sheetFiltered=[],sheetStartCol=2;
 var dailyDt,weekStart,mYear,mMon;
 var curPage='activity',curSubTab='all';
 
+  var chargerMatched = null;
+
+function loadChargerMatched(callback) {
+  if (chargerMatched) { if(callback)callback(); return; }
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'https://sskd3436-maker.github.io/my-dashboard/charger_matched.json', true);
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      chargerMatched = JSON.parse(xhr.responseText);
+      console.log('충전기 매칭 데이터 로드완료');
+      if(callback)callback();
+    }
+  };
+  xhr.send();
+}
+
+function getChargerInfo(lat, lng) {
+  if (!chargerMatched) return null;
+  var key = parseFloat(lat).toFixed(8) + ',' + parseFloat(lng).toFixed(8);
+  if (chargerMatched[key]) return chargerMatched[key];
+  // 소수점 오차 대비 근접 검색
+  for (var k in chargerMatched) {
+    var parts = k.split(',');
+    var dlat = Math.abs(parseFloat(parts[0]) - parseFloat(lat));
+    var dlng = Math.abs(parseFloat(parts[1]) - parseFloat(lng));
+    if (dlat < 0.0005 && dlng < 0.0005) return chargerMatched[k];
+  }
+  return null;
+}
+
+function chargerPopupHtml(lat, lng) {
+  var info = getChargerInfo(lat, lng);
+  if (!info) {
+    return '<br><div style="margin-top:4px;padding:4px 0;border-top:1px solid #eee;">'+
+      '<b style="font-size:11px;color:#333;">⚡ 충전사업자 현황</b>'+
+      '<br><span style="font-size:11px;color:#e74c3c;">데이터 매칭 실패</span></div>';
+  }
+  var html = '<br><div style="margin-top:4px;padding:4px 0;border-top:1px solid #eee;">';
+  html += '<b style="font-size:11px;color:#333;">⚡ 충전사업자 현황 (총 '+info.t+'대)</b>';
+  for (var org in info.o) {
+    html += '<br><span style="font-size:11px;color:#666;">'+org+': '+info.o[org]+'대</span>';
+  }
+  html += '</div>';
+  return html;
+}
+
+
 function init(){
+  function init(){
+  loadChargerMatched(function(){});
+  dataLoaded=false;allSheetsData={};allFlat=[];
   dataLoaded=false;allSheetsData={};allFlat=[];
   var n=new Date();n.setHours(0,0,0,0);
   dailyDt=new Date(n);setWeekStart(n);mYear=n.getFullYear();mMon=n.getMonth();
@@ -791,7 +841,12 @@ if(visited){
   else if(negVal)color='#e74c3c';
   else color='#27ae60';
 }
-        var icon=L.divIcon({className:'',html:'<div style="width:20px;height:20px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>',iconSize:[20,20],iconAnchor:[10,10]});
+        var cInfo=getChargerInfo(lat,lng);
+var markerHtml=cInfo?
+  '<div style="width:20px;height:20px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>':
+  '<div style="width:24px;height:24px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.5);">❓</div>';
+var icon=L.divIcon({className:'',html:markerHtml,iconSize:[24,24],iconAnchor:[12,12]});
+
     var m=L.marker([lat,lng],{icon:icon}).addTo(window._mobileMap);
     var addr=(fv(it.row,it.headers,'주소')||'').replace(/\(.*?\)/g,'').trim();
     var webUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr||it.site||'');
@@ -816,7 +871,8 @@ var kindColor=kind==='아파트'?'#6c5ce7':kind==='빌딩'?'#00b894':kind==='공
   '<br><div style="margin-top:6px;display:flex;gap:6px;">'+
   '<a href="'+mapUrl+'" onclick="var w=\''+webUrl+'\';setTimeout(function(){window.open(w,\'_blank\');},1500);return true;" style="display:inline-block;background:#2db400;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">📍 네이버지도</a>'+
   '<button onclick="openMobileEdit('+dataIdx+')" style="background:#1a73e8;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✏️ 수정</button>'+
-  '</div></div>'
+  chargerPopupHtml(lat,lng)+
+     '</div></div>'
 );
     window._mobileMarkers.push(m);
   }
@@ -1391,12 +1447,12 @@ if(visited){
   else if(negVal)color='#e74c3c';
   else color='#27ae60';
 }
-  var icon=L.divIcon({
-    className:'',
-    html:'<div style="width:14px;height:14px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>',
-    iconSize:[14,14],
-    iconAnchor:[7,7]
-  });
+  var cInfo=getChargerInfo(lat,lng);
+  var markerHtml=cInfo?
+    '<div style="width:14px;height:14px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>':
+    '<div style="width:18px;height:18px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.5);">❓</div>';
+  var icon=L.divIcon({className:'',html:markerHtml,iconSize:[18,18],iconAnchor:[9,9]});
+
   var site=it.site||'';
   var mgr=it.mgr||'';
   var marker=L.marker([lat,lng],{icon:icon}).addTo(window._actMap);
@@ -1418,7 +1474,10 @@ marker.bindPopup(
   '<span style="display:inline-block;background:'+kindColor+';color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">'+esc(kind||'-')+'</span>'+
   '<br>계약: '+cStart+' ~ '+cEnd+
   '<br>'+pcVisitedTxt+
-  '<br><a href="'+mapUrl+'" target="_blank" style="color:#1a73e8;font-weight:600;">네이버 지도 열기</a></div>'
+    '<br><a href="'+mapUrl+'" target="_blank" style="color:#1a73e8;font-weight:600;">네이버 지도 열기</a>'+
+  chargerPopupHtml(lat,lng)+
+  '</div>'
+);
 );
   window._actMarkers.push(marker);
   mapBounds.push([lat,lng]);
