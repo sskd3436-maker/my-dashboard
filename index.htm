@@ -668,11 +668,11 @@ function getChargerInfo(lat, lng) {
 function chargerPopupHtml(lat, lng) {
   var info = getChargerInfo(lat, lng);
   if (!info) {
-    return '<br><div style="margin-top:4px;padding:4px 0;border-top:1px solid #eee;">'+
+    return '<div style="clear:both;margin-top:8px;padding:4px 0;border-top:1px solid #eee;">'+
       '<b style="font-size:11px;color:#333;">⚡ 충전사업자 현황</b>'+
       '<br><span style="font-size:11px;color:#e74c3c;">데이터 매칭 실패</span></div>';
   }
-  var html = '<br><div style="margin-top:4px;padding:4px 0;border-top:1px solid #eee;">';
+  var html = '<div style="clear:both;margin-top:8px;padding:4px 0;border-top:1px solid #eee;">';
   html += '<b style="font-size:11px;color:#333;">⚡ 충전사업자 현황 (총 '+info.t+'대)</b>';
   for (var org in info.o) {
     html += '<br><span style="font-size:11px;color:#666;">'+org+': '+info.o[org]+'대</span>';
