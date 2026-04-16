@@ -2099,7 +2099,7 @@ function submitSchEdit(){
             if(contractData&&contractData.rows){
               var ch=contractData.headers;
               for(var ci=0;ci<contractData.rows.length;ci++){
-                if((fv(contractData.rows[ci],ch,'사이트명')||'').trim()===siteVal.trim()){
+                if(((contractData.rows[ci]['사이트명'])||'').trim()===siteVal.trim()){
                   exists=true;
                   existRow=contractData.rows[ci]._rowIndex||ci+4;
                   break;
