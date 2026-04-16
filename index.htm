@@ -2109,18 +2109,23 @@ function submitSchEdit(){
            if(exists&&existRow){
               var ctFields=['사이트명','입대위명','주소','사업자번호','관리실번호','계약년수','충전기수량','설치유형','충전기단가','설치금액','프로모션기간','프로모션금액','진행사항','비고','담당자'];
               var ctIds=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
-              for(var fi=0;fi<ctFields.length;fi++){
-                var ctCol=-1;
-                for(var ci=0;ci<contractData.headers.length;ci++){
-                  if(contractData.headers[ci]===ctFields[fi]){ctCol=ci+2;break;}
-                }
-                if(ctCol>0){
-                  var ctVal=document.getElementById(ctIds[fi])?document.getElementById(ctIds[fi]).value:'';
-                  apiPost({action:'updateCell',sheet:'계약서',row:existRow,col:ctCol,value:ctVal},function(){});
-                }
-              }
-              toast('계약서 업데이트 완료','ok');
-              contractData=null;
+            var ctPairs=[];
+for(var fi=0;fi<ctFields.length;fi++){
+  var ctCol=-1;
+  for(var ci=0;ci<contractData.headers.length;ci++){
+    if(contractData.headers[ci]===ctFields[fi]){ctCol=ci+2;break;}
+  }
+  if(ctCol>0){
+    var ctVal=document.getElementById(ctIds[fi])?document.getElementById(ctIds[fi]).value:'';
+    ctPairs.push({col:ctCol,val:ctVal});
+  }
+}
+(function sendNext(idx){
+  if(idx>=ctPairs.length){toast('계약서 업데이트 완료','ok');contractData=null;return;}
+  apiPost({action:'updateCell',sheet:'계약서',row:existRow,col:ctPairs[idx].col,value:ctPairs[idx].val},function(){
+    setTimeout(function(){sendNext(idx+1);},200);
+  });
+})(0);
             }else{
               var mgrVal='';
               for(var pi=0;pi<pairs.length;pi++){if(pairs[pi].header==='담당자')mgrVal=pairs[pi].val;}
