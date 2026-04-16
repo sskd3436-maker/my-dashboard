@@ -2643,8 +2643,7 @@ function openContractFromSheet(pageKey,idx){
         document.getElementById('cf_year').value=cr['계약년수']||'';
         document.getElementById('cf_qty').value=cr['충전기수량']||'';
         document.getElementById('cf_type').value=cr['설치유형']||'';
-        document.getElementById('cf_price').value=cr['충전기단가']||'';
-        document.getElementById('cf_total').value=cr['설치금액']||'';
+        calcContract();
         document.getElementById('cf_promo').value=cr['프로모션기간']||'';
         document.getElementById('cf_promoAmt').value=cr['프로모션금액']||'';
         document.getElementById('cf_status').value=cr['진행사항']||'상담';
