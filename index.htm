@@ -686,7 +686,13 @@ function chargerPopupHtml(lat, lng) {
     var it=allFlat[i];
     if(it.sheet!=='26년만료현장')continue;
     if((it.site||'').trim()!==siteName.trim())continue;
-    var date=it.date||fv(it.row,it.headers,'방문일자')||'';
+    var rawDate=it.date||fv(it.row,it.headers,'방문일자')||'';
+    var date='';
+    if(rawDate){
+      var pd=parseDate(rawDate);
+      if(pd)date=pd.getFullYear()+'.'+(pd.getMonth()+1)+'.'+pd.getDate();
+      else date=String(rawDate).substring(0,10);
+    }
     var content=fv(it.row,it.headers,'영업내용')||'';
     if(date||content)records.push({date:date,content:content});
   }
