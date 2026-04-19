@@ -876,6 +876,9 @@ var kindColor=kind==='아파트'?'#6c5ce7':kind==='빌딩'?'#00b894':kind==='공
 );
 m.on('click', function(e){
   window._mobileMap.setView(e.latlng, window._mobileMap.getZoom());
+  window._mobileSelectedLat = e.latlng.lat;
+  window._mobileSelectedLng = e.latlng.lng;
+  renderMobileList();
 });
 
     window._mobileMarkers.push(m);
@@ -901,8 +904,15 @@ function renderMobileList(){
     if(myLoc)dist=getDistance(myLoc[0],myLoc[1],lat,lng);
     list.push({it:it,lat:lat,lng:lng,dist:dist});
   }
-  if(myLoc)list.sort(function(a,b){return a.dist-b.dist;});
-  else list.sort(function(a,b){return(a.it.site||'').localeCompare(b.it.site||'');});
+    var selLat=window._mobileSelectedLat||0;
+  var selLng=window._mobileSelectedLng||0;
+  list.sort(function(a,b){
+    var aSelect=(Math.abs(a.lat-selLat)<0.0001&&Math.abs(a.lng-selLng)<0.0001)?0:1;
+    var bSelect=(Math.abs(b.lat-selLat)<0.0001&&Math.abs(b.lng-selLng)<0.0001)?0:1;
+    if(aSelect!==bSelect)return aSelect-bSelect;
+    return a.dist-b.dist;
+  });
+
   var max=20;
   var html='';
   for(var i=0;i<Math.min(list.length,max);i++){
