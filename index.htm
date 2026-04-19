@@ -874,6 +874,9 @@ var kindColor=kind==='아파트'?'#6c5ce7':kind==='빌딩'?'#00b894':kind==='공
   '<button onclick="openMobileEdit('+dataIdx+')" style="background:#1a73e8;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✏️ 수정</button>'+
   '</div></div>'
 );
+m.on('click', function(e){
+  window._mobileMap.setView(e.latlng, window._mobileMap.getZoom());
+});
 
     window._mobileMarkers.push(m);
   }
@@ -882,11 +885,8 @@ var kindColor=kind==='아파트'?'#6c5ce7':kind==='빌딩'?'#00b894':kind==='공
 
 function renderMobileList(){
   var map=window._mobileMap;
-  var mapCenter=map?map.getCenter():null;
   var mapBounds=map?map.getBounds():null;
   var myLoc=window._mobileMyLoc;
-  var centerLat=mapCenter?mapCenter.lat:(myLoc?myLoc[0]:0);
-  var centerLng=mapCenter?mapCenter.lng:(myLoc?myLoc[1]:0);
   var q=(document.getElementById('mobileSearch').value||'').toLowerCase().trim();
   var list=[];
   for(var i=0;i<allFlat.length;i++){
@@ -898,16 +898,18 @@ function renderMobileList(){
     if(!lat||!lng)continue;
     if(mapBounds&&!mapBounds.contains([lat,lng]))continue;
     var dist=0;
-    if(centerLat&&centerLng)dist=getDistance(centerLat,centerLng,lat,lng);
+    if(myLoc)dist=getDistance(myLoc[0],myLoc[1],lat,lng);
     list.push({it:it,lat:lat,lng:lng,dist:dist});
   }
-  list.sort(function(a,b){return a.dist-b.dist;});
+  if(myLoc)list.sort(function(a,b){return a.dist-b.dist;});
+  else list.sort(function(a,b){return(a.it.site||'').localeCompare(b.it.site||'');});
   var max=20;
   var html='';
   for(var i=0;i<Math.min(list.length,max);i++){
     var d=list[i],it=d.it;
     var visited=it.date||fv(it.row,it.headers,'방문일자')||'';
-    var distTxt=d.dist>0?(d.dist<1?Math.round(d.dist*1000)+'m':d.dist.toFixed(1)+'km'):'';
+    var distTxt='';
+    if(myLoc&&d.dist>0)distTxt=d.dist<1?Math.round(d.dist*1000)+'m':d.dist.toFixed(1)+'km';
     var sentColor={'positive':'#27ae60','neutral':'#f39c12','negative':'#e74c3c','etc':'#9b59b6'};
     var dotColor=sentColor[it.sent]||'#ccc';
     html+='<div onclick="mobileGoSite('+d.lat+','+d.lng+','+i+')" style="display:flex;align-items:center;padding:10px;border-bottom:1px solid #f0f0f0;cursor:pointer;">';
@@ -923,7 +925,8 @@ function renderMobileList(){
   }
   if(!list.length)html='<div style="text-align:center;color:#999;padding:20px;">현재 지도 영역에 사이트 없음</div>';
   document.getElementById('mobileNearList').innerHTML=html;
-  document.getElementById('mobileNearTitle').textContent='📍 지도 영역 사이트 ('+Math.min(list.length,max)+'건)';
+  var title=myLoc?'📍 내 주변 사이트':'📋 사이트 목록';
+  document.getElementById('mobileNearTitle').textContent=title+' ('+Math.min(list.length,max)+'건)';
 }
 
 
