@@ -679,6 +679,29 @@ function chargerPopupHtml(lat, lng) {
   return html;
 }
 
+  function prevVisitHtml(siteName){
+  if(!siteName)return '';
+  var records=[];
+  for(var i=0;i<allFlat.length;i++){
+    var it=allFlat[i];
+    if(it.sheet!=='26년만료현장')continue;
+    if((it.site||'').trim()!==siteName.trim())continue;
+    var date=it.date||fv(it.row,it.headers,'방문일자')||'';
+    var content=fv(it.row,it.headers,'영업내용')||'';
+    if(date||content)records.push({date:date,content:content});
+  }
+  if(records.length===0)return '';
+  var html='<div style="margin-top:4px;padding:4px 0;border-top:1px solid #eee;">';
+  html+='<b style="font-size:11px;color:#333;">📋 이전 방문기록 (26년)</b>';
+  for(var i=0;i<records.length;i++){
+    html+='<br><span style="font-size:11px;color:#666;">';
+    if(records[i].date)html+=records[i].date+' - ';
+    html+=(records[i].content||'내용없음')+'</span>';
+  }
+  html+='</div>';
+  return html;
+}
+
 
 
 function init(){
@@ -869,6 +892,7 @@ var kindColor=kind==='아파트'?'#6c5ce7':kind==='빌딩'?'#00b894':kind==='공
   '<br><span style="color:#666;">계약: '+cStart+' ~ '+cEnd+'</span>'+
   '<br>'+visitedTxt+
   chargerPopupHtml(lat,lng)+
+  prevVisitHtml(it.site)+
   '<div style="margin-top:6px;display:flex;gap:6px;">'+
   '<a href="'+mapUrl+'" onclick="var w=\''+webUrl+'\';setTimeout(function(){window.open(w,\'_blank\');},1500);return true;" style="display:inline-block;background:#2db400;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">📍 네이버지도</a>'+
   '<button onclick="openMobileEdit('+dataIdx+')" style="background:#1a73e8;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✏️ 수정</button>'+
