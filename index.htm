@@ -864,18 +864,37 @@ function renderMobileMarkers(){
     var posVal=fv(it.row,it.headers,'긍정')||'';
 var neuVal=fv(it.row,it.headers,'중립')||'';
 var negVal=fv(it.row,it.headers,'부정')||'';
-var color='#777';
+var color27='#777';
 if(visited){
-  if(posVal)color='#27ae60';
-  else if(neuVal)color='#f1c40f';
-  else if(negVal)color='#e74c3c';
-  else color='#27ae60';
+  if(posVal)color27='#27ae60';
+  else if(neuVal)color27='#f1c40f';
+  else if(negVal)color27='#e74c3c';
+  else color27='#27ae60';
 }
+var color26='#ddd';
+for(var pi=0;pi<allFlat.length;pi++){
+  var pit=allFlat[pi];
+  if(pit.sheet!=='26년만료현장')continue;
+  if((pit.site||'').trim()!==(it.site||'').trim())continue;
+  var p26=fv(pit.row,pit.headers,'긍정')||'';
+  var n26=fv(pit.row,pit.headers,'중립')||'';
+  var ng26=fv(pit.row,pit.headers,'부정')||'';
+  var v26=pit.date||fv(pit.row,pit.headers,'방문일자')||'';
+  if(v26){
+    if(p26)color26='#27ae60';
+    else if(n26)color26='#f1c40f';
+    else if(ng26)color26='#e74c3c';
+    else color26='#27ae60';
+  }
+  break;
+}
+
           var addr=(fv(it.row,it.headers,'주소')||'').replace(/\(.*?\)/g,'').trim();
-    var matched=getChargerInfo(lat,lng)!=null;
-    var markerHtml=matched?
-      '<div style="width:20px;height:20px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>':
-      '<div style="width:20px;height:20px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;">❓</div>';
+   var matched=getChargerInfo(lat,lng)!=null;
+    var halfMarker='<div style="width:20px;height:20px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.3);overflow:hidden;display:flex;">'
+      +'<div style="width:50%;background:'+color26+';"></div>'
+      +'<div style="width:50%;background:'+color27+';display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;">'+(matched?'':'❓')+'</div></div>';
+    var markerHtml=halfMarker;
     var icon=L.divIcon({className:'',html:markerHtml,iconSize:[20,20],iconAnchor:[10,10]});
     var m=L.marker([lat,lng],{icon:icon}).addTo(window._mobileMap);
     var webUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr||it.site||'');
