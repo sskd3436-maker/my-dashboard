@@ -2654,13 +2654,18 @@ function submitContract(){
     document.getElementById('cf_mgr').value
   ];
 
-  if(editContractRow){
-    for(var i=0;i<rowData.length;i++){
-      apiPost({action:'updateCell',sheet:'계약서',row:editContractRow,col:i+2,value:rowData[i]},function(){});
-    }
-    toast('수정 완료','ok');
-    closeContractModal();
-    setTimeout(function(){contractData=null;renderContract();},1000);
+    if(editContractRow){
+    (function sendNext(idx){
+      if(idx>=rowData.length){
+        toast('수정 완료','ok');
+        closeContractModal();
+        setTimeout(function(){contractData=null;renderContract();},1000);
+        return;
+      }
+      apiPost({action:'updateCell',sheet:'계약서',row:editContractRow,col:idx+2,value:rowData[idx]},function(){
+        setTimeout(function(){sendNext(idx+1);},200);
+      });
+    })(0);
   }else{
     apiPost({action:'addRow',sheet:'계약서',rowData:rowData},function(r){
       if(r.success){toast('저장 완료','ok');closeContractModal();contractData=null;renderContract();}
@@ -2668,6 +2673,7 @@ function submitContract(){
     });
   }
 }
+
 
 function editContract(rowIdx){openContractModal(rowIdx);}
 
