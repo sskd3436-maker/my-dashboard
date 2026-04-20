@@ -921,7 +921,8 @@ var kindColor=kind==='아파트'?'#6c5ce7':kind==='빌딩'?'#00b894':kind==='공
   '<br><span style="display:inline-block;background:'+bizColor+';color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin-top:3px;">'+esc(biz||'-')+'</span> '+
   '<span style="display:inline-block;background:'+kindColor+';color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">'+esc(kind||'-')+'</span>'+
   '<br><span style="color:#666;">계약: '+cStart+' ~ '+cEnd+'</span>'+
-  '<br>'+visitedTxt+
+   '<br>'+visitedTxt+
+  (fv(it.row,it.headers,'영업내용')?'<br><span style="font-size:11px;color:#555;">📄 '+esc(fv(it.row,it.headers,'영업내용'))+'</span>':'')+
   (fv(it.row,it.headers,'비고')?'<br><span style="font-size:11px;color:#e67e22;">📝 '+esc(fv(it.row,it.headers,'비고'))+'</span>':'')+
   chargerPopupHtml(lat,lng)+
   prevVisitHtml(it.site)+
