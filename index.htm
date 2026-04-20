@@ -905,7 +905,9 @@ for(var pi=0;pi<allFlat.length;pi++){
     var m=L.marker([lat,lng],{icon:icon}).addTo(window._mobileMap);
     var webUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr||it.site||'');
 var mapUrl='nmap://search?query='+encodeURIComponent(addr||it.site||'')+'&appname=com.mydashboard';
-    var visitedTxt=visited?('<span style="color:#27ae60;font-weight:600;">✅ 방문완료</span>'):'<span style="color:#e74c3c;font-weight:600;">❌ 미방문</span>';
+       var visitedDate='';
+    if(visited){var vd=parseDate(visited);if(vd)visitedDate=vd.getFullYear()+'.'+(vd.getMonth()+1)+'.'+vd.getDate();}
+    var visitedTxt=visited?('<span style="color:#27ae60;font-weight:600;">✅ 방문완료 '+visitedDate+'</span>'):'<span style="color:#e74c3c;font-weight:600;">❌ 미방문</span>';
    var biz=fv(it.row,it.headers,'사업구분')||'';
 var kind=fv(it.row,it.headers,'종류')||'';
 var cStart=fmtDate(fv(it.row,it.headers,'계약시작')||'');
