@@ -1930,46 +1930,81 @@ function renderAllStats(){
   chartHtml+='</div></div>';
   document.getElementById('allMonthChart').innerHTML=chartHtml;
 
-  // === 담당자별 현황 ===
-  var mgrData={};
-  for(var i=0;i<flatNoContract.length;i++){
-    var mg=flatNoContract[i].mgr||'미지정';
-    if(!mgrData[mg])mgrData[mg]={total:0,visited:0,positive:0,neutral:0,negative:0};
-    mgrData[mg].total++;
-    var v=flatNoContract[i].date||fv(flatNoContract[i].row,flatNoContract[i].headers,'방문일자')||'';
-    if(v)mgrData[mg].visited++;
-    if(flatNoContract[i].sent==='positive')mgrData[mg].positive++;
-    else if(flatNoContract[i].sent==='neutral')mgrData[mg].neutral++;
-    else if(flatNoContract[i].sent==='negative')mgrData[mg].negative++;
-  }
-  var mgrKeys=Object.keys(mgrData).sort();
-  var mgrMax=0;for(var i=0;i<mgrKeys.length;i++){if(mgrData[mgrKeys[i]].total>mgrMax)mgrMax=mgrData[mgrKeys[i]].total;}
+  // === 계약 파이프라인 상세 ===
+  var pipeStages=['상담','제안','입대위','실사','계약'];
+  var pipeColors={'상담':'#95a5a6','제안':'#3498db','입대위':'#f39c12','실사':'#e67e22','계약':'#27ae60'};
+  var pipeSites={};
+  for(var i=0;i<pipeStages.length;i++)pipeSites[pipeStages[i]]=[];
 
-    var mgrHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;">';
-  mgrHtml+='<h3 style="margin:0 0 16px 0;font-size:16px;color:#333;">👤 담당자별 현황</h3>';
-  for(var i=0;i<mgrKeys.length;i++){
-    var mn=mgrKeys[i],md=mgrData[mn];
-    var barW=mgrMax>0?Math.round(md.total/mgrMax*100):0;
-    var visitPct=md.total>0?Math.round(md.visited/md.total*100):0;
-    mgrHtml+='<div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">';
-    mgrHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
-    mgrHtml+='<span style="font-weight:700;font-size:14px;color:#333;">'+esc(mn)+'</span>';
-    mgrHtml+='<span style="font-size:12px;color:#888;">'+md.visited+'/'+md.total+' ('+visitPct+'%)</span></div>';
-    mgrHtml+='<div style="height:22px;background:#f0f0f0;border-radius:11px;overflow:hidden;display:flex;width:'+barW+'%;min-width:60px;">';
-    var pW=md.visited>0?Math.round(md.positive/md.visited*100):0;
-    var nW=md.visited>0?Math.round(md.neutral/md.visited*100):0;
-    var ngW=md.visited>0?Math.round(md.negative/md.visited*100):0;
-    mgrHtml+='<div style="width:'+pW+'%;background:#2ecc71;"></div>';
-    mgrHtml+='<div style="width:'+nW+'%;background:#f1c40f;"></div>';
-    mgrHtml+='<div style="width:'+ngW+'%;background:#e74c3c;"></div>';
-    mgrHtml+='</div>';
-    mgrHtml+='<div style="display:flex;gap:12px;margin-top:4px;font-size:11px;">';
-    mgrHtml+='<span style="color:#2ecc71;">● 긍정 '+md.positive+'</span>';
-    mgrHtml+='<span style="color:#f1c40f;">● 중립 '+md.neutral+'</span>';
-    mgrHtml+='<span style="color:#e74c3c;">● 부정 '+md.negative+'</span></div></div>';
+  if(contractData&&contractData.rows){
+    var ch=contractData.headers;
+    for(var ci=0;ci<contractData.rows.length;ci++){
+      var cr=contractData.rows[ci];
+      var status=(fv(cr,ch,'진행사항')||'').trim();
+      var site=(fv(cr,ch,'사이트명')||'').trim();
+      for(var si=0;si<pipeStages.length;si++){
+        if(status===pipeStages[si]){
+          pipeSites[pipeStages[si]].push(site);
+          break;
+        }
+      }
+    }
   }
-  mgrHtml+='</div>';
-  document.getElementById('allMgrBar').innerHTML=mgrHtml;
+
+  var totalPipe=0;
+  for(var i=0;i<pipeStages.length;i++)totalPipe+=pipeSites[pipeStages[i]].length;
+  var pipeMax=0;
+  for(var i=0;i<pipeStages.length;i++){if(pipeSites[pipeStages[i]].length>pipeMax)pipeMax=pipeSites[pipeStages[i]].length;}
+
+  if(!window._pipeOpenStage)window._pipeOpenStage='';
+
+  var pdHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;display:flex;flex-direction:column;">';
+  pdHtml+='<h3 style="margin:0 0 12px 0;font-size:16px;color:#333;">📋 계약 파이프라인 상세</h3>';
+  pdHtml+='<div style="font-size:12px;color:#888;margin-bottom:16px;">총 '+totalPipe+'건</div>';
+
+  // 그래프 영역
+  pdHtml+='<div style="display:flex;align-items:flex-end;gap:12px;height:120px;padding:0 8px;margin-bottom:16px;border-bottom:1px solid #eee;">';
+  for(var i=0;i<pipeStages.length;i++){
+    var stage=pipeStages[i];
+    var cnt=pipeSites[stage].length;
+    var barH=pipeMax>0?Math.max(Math.round(cnt/pipeMax*100),4):4;
+    var color=pipeColors[stage];
+    var isOpen=(window._pipeOpenStage===stage);
+    pdHtml+='<div onclick="togglePipeStage(\''+stage+'\')" style="flex:1;display:flex;flex-direction:column;align-items:center;cursor:pointer;">';
+    pdHtml+='<div style="font-size:14px;font-weight:700;color:'+color+';margin-bottom:4px;">'+cnt+'</div>';
+    pdHtml+='<div style="width:100%;max-width:48px;height:'+barH+'px;background:'+color+';border-radius:6px 6px 0 0;opacity:'+(isOpen?'1':'0.7')+';border:'+(isOpen?'2px solid #333':'none')+';"></div>';
+    pdHtml+='<div style="font-size:11px;color:'+(isOpen?'#333':'#888')+';font-weight:'+(isOpen?'700':'400')+';margin-top:6px;padding-bottom:8px;">'+stage+'</div>';
+    pdHtml+='</div>';
+  }
+  pdHtml+='</div>';
+
+  // 사이트 목록 영역 (스크롤)
+  var openStage=window._pipeOpenStage;
+  var openSites=openStage?pipeSites[openStage]:[];
+  var openColor=openStage?pipeColors[openStage]:'#333';
+
+  if(openStage){
+    pdHtml+='<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;">';
+    pdHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
+    pdHtml+='<span style="font-size:13px;font-weight:700;color:'+openColor+';">'+openStage+' 단계 ('+openSites.length+'건)</span>';
+    pdHtml+='<button onclick="togglePipeStage(\'\')" style="background:none;border:1px solid #ddd;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:11px;color:#888;">닫기</button>';
+    pdHtml+='</div>';
+    pdHtml+='<div style="flex:1;overflow-y:auto;max-height:200px;">';
+    for(var j=0;j<openSites.length;j++){
+      pdHtml+='<div style="padding:8px 12px;border-bottom:1px solid #f5f5f5;font-size:12px;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">';
+      pdHtml+='<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+openColor+';margin-right:8px;"></span>';
+      pdHtml+=esc(openSites[j]);
+      pdHtml+='</div>';
+    }
+    if(openSites.length===0)pdHtml+='<div style="padding:16px;text-align:center;color:#999;font-size:12px;">해당 단계 사이트 없음</div>';
+    pdHtml+='</div></div>';
+  }else{
+    pdHtml+='<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">단계를 클릭하면 사이트 목록이 표시됩니다</div>';
+  }
+
+  pdHtml+='</div>';
+  document.getElementById('allMgrBar').innerHTML=pdHtml;
+
 
    // === 캘린더 ===
   if(!window._calY)window._calY=now.getFullYear();
@@ -2106,6 +2141,10 @@ function selectCalDay(d){
   renderAllCalendar();
 }
 
+function togglePipeStage(stage){
+  window._pipeOpenStage=(window._pipeOpenStage===stage)?'':stage;
+  renderAllStats();
+}
 
  
 // 일일
