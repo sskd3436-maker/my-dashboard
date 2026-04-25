@@ -517,52 +517,26 @@
 </div>
 
     
-    <!-- ========== 통계관리 ========== -->
+<!-- ========== 통계관리 ========== -->
     <div class="page" id="page-stats">
       <div class="sub-tabs">
         <button class="sub-tab active" onclick="goSubTab('all',this)">전체 현황</button>
-        <button class="sub-tab" onclick="goSubTab('daily',this)">일일 보고</button>
         <button class="sub-tab" onclick="goSubTab('weekly',this)">주간 보고</button>
         <button class="sub-tab" onclick="goSubTab('monthly',this)">월간 보고</button>
-        <button class="sub-tab" onclick="goSubTab('manager',this)">담당자별</button>
       </div>
 
       <!-- 전체 현황 -->
       <div class="sub-page active" id="sub-all">
-        <div class="section-box"><h3>📋 계약 진행 현황
-          <select id="allContractSheet" class="form-input" style="width:160px;display:inline-block;margin-left:12px;font-size:13px;" onchange="renderAllStats()">
-            <option value="">전체 시트</option>
-          </select>
-        </h3><div id="allContract"></div></div>
-        <div style="display:flex;gap:16px;flex-wrap:wrap;">
-          <div class="section-box" style="flex:1;min-width:300px;"><h3>👤 담당자별 계약 현황</h3><div id="allContractMgr"></div></div>
-          <div class="section-box" style="flex:1;min-width:300px;"><h3>📄 시트별 현황
-            <select id="allSheetSelect" class="form-input" style="width:140px;display:inline-block;margin-left:12px;font-size:13px;" onchange="renderAllStats()">
-              <option value="">전체 시트</option>
-            </select>
-          </h3><div id="allSheet"></div></div>
+        <div id="allTopCards"></div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
+          <div style="flex:1;min-width:320px;" id="allPipeline"></div>
+          <div style="flex:1;min-width:320px;" id="allMonthChart"></div>
         </div>
-        <div class="section-box"><h3>👤 담당자별 영업 현황</h3><div id="allMgr"></div></div>
-      </div>
-
-      <!-- 일일 보고 -->
-      <div class="sub-page" id="sub-daily">
-        <div class="report-header">
-          <h2>일일 보고서</h2>
-          <div class="report-nav">
-            <button class="nav-btn" onclick="moveDaily(-1)">◀ 전날</button>
-            <div class="report-date" id="dailyDate"></div>
-            <button class="nav-btn" onclick="moveDaily(1)">다음날 ▶</button>
-            <button class="nav-btn" onclick="moveDaily(0)" style="margin-left:8px;">오늘</button>
-          </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
+          <div style="flex:1;min-width:320px;" id="allMgrBar"></div>
+          <div style="flex:1;min-width:320px;" id="allCalendar"></div>
         </div>
-        <div class="stats-grid" id="dailyStats"></div>
-        <div class="section-box"><h3>📋 계약 진행 현황</h3><div id="dailyContract"></div></div>
-        <div class="section-box"><h3>👤 담당자별</h3><div id="dailyMgr"></div></div>
-        <div class="table-box">
-          <div class="box-header"><h3 id="dailyTT">방문 목록</h3></div>
-          <div class="table-wrap"><table><thead id="dailyTH"></thead><tbody id="dailyTB"></tbody></table></div>
-        </div>
+        <div style="margin-top:16px;" id="allSheetTable"></div>
       </div>
 
       <!-- 주간 보고 -->
@@ -608,14 +582,8 @@
         </div>
       </div>
 
-      <!-- 담당자별 -->
-      <div class="sub-page" id="sub-manager">
-        <div class="stats-grid" id="mgrAllStats"></div>
-        <div class="section-box"><h3>📋 계약 진행 현황</h3><div id="mgrContract"></div></div>
-        <div id="mgrDetailArea"></div>
-      </div>
-
     </div><!-- /page-stats -->
+
 
   </div>
 </div>
