@@ -1974,8 +1974,32 @@ function renderAllStats(){
    // === 캘린더 ===
   if(!window._calY)window._calY=now.getFullYear();
   if(!window._calM&&window._calM!==0)window._calM=now.getMonth();
-  window._calFlat=flatNoContract;
+   window._calFlat=flatNoContract;
   renderAllCalendar();
+
+  // === 시트별 현황 테이블 ===
+  var sc={};for(var i=0;i<flatNoContract.length;i++){var s=flatNoContract[i].sheet;if(!sc[s])sc[s]={positive:0,neutral:0,negative:0,etc:0,total:0,visited:0};sc[s].total++;var v=flatNoContract[i].date||fv(flatNoContract[i].row,flatNoContract[i].headers,'방문일자')||'';if(v)sc[s].visited++;var se=flatNoContract[i].sent;if(se)sc[s][se]++;}
+  var ns=Object.keys(sc);
+  var tblHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);">';
+  tblHtml+='<h3 style="margin:0 0 16px 0;font-size:16px;color:#333;">📄 시트별 현황</h3>';
+  tblHtml+='<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+  tblHtml+='<thead><tr style="background:#f8f9fa;"><th style="padding:12px;text-align:left;border-bottom:2px solid #e0e0e0;">시트명</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">총</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">방문</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">긍정</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">중립</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">부정</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">방문률</th></tr></thead><tbody>';
+  for(var i=0;i<ns.length;i++){
+    var n=ns[i],c=sc[n],vp=c.total>0?Math.round(c.visited/c.total*100):0;
+    tblHtml+='<tr style="border-bottom:1px solid #f0f0f0;">';
+    tblHtml+='<td style="padding:12px;font-weight:600;">'+esc(n)+'</td>';
+    tblHtml+='<td style="padding:12px;text-align:center;font-weight:700;">'+c.total+'</td>';
+    tblHtml+='<td style="padding:12px;text-align:center;color:#2ecc71;font-weight:600;">'+c.visited+'</td>';
+    tblHtml+='<td style="padding:12px;text-align:center;color:#27ae60;">'+c.positive+'</td>';
+    tblHtml+='<td style="padding:12px;text-align:center;color:#f39c12;">'+c.neutral+'</td>';
+    tblHtml+='<td style="padding:12px;text-align:center;color:#e74c3c;">'+c.negative+'</td>';
+    tblHtml+='<td style="padding:12px;text-align:center;"><div style="display:flex;align-items:center;gap:6px;justify-content:center;"><div style="width:60px;height:6px;background:#eee;border-radius:3px;overflow:hidden;"><div style="width:'+vp+'%;height:100%;background:#667eea;border-radius:3px;"></div></div><span style="font-size:12px;font-weight:600;color:#333;">'+vp+'%</span></div></td>';
+    tblHtml+='</tr>';
+  }
+  tblHtml+='</tbody></table></div>';
+  document.getElementById('allSheetTable').innerHTML=tblHtml;
+}
+
 
   function renderAllCalendar(){
   var flatNoContract=window._calFlat||allFlat.filter(function(f){return f.sheet!=='계약서';});
@@ -2083,29 +2107,7 @@ function selectCalDay(d){
 }
 
 
-  // === 시트별 현황 테이블 ===
-  var sc={};for(var i=0;i<flatNoContract.length;i++){var s=flatNoContract[i].sheet;if(!sc[s])sc[s]={positive:0,neutral:0,negative:0,etc:0,total:0,visited:0};sc[s].total++;var v=flatNoContract[i].date||fv(flatNoContract[i].row,flatNoContract[i].headers,'방문일자')||'';if(v)sc[s].visited++;var se=flatNoContract[i].sent;if(se)sc[s][se]++;}
-  var ns=Object.keys(sc);
-  var tblHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);">';
-  tblHtml+='<h3 style="margin:0 0 16px 0;font-size:16px;color:#333;">📄 시트별 현황</h3>';
-  tblHtml+='<table style="width:100%;border-collapse:collapse;font-size:13px;">';
-  tblHtml+='<thead><tr style="background:#f8f9fa;"><th style="padding:12px;text-align:left;border-bottom:2px solid #e0e0e0;">시트명</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">총</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">방문</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">긍정</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">중립</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">부정</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">방문률</th></tr></thead><tbody>';
-  for(var i=0;i<ns.length;i++){
-    var n=ns[i],c=sc[n],vp=c.total>0?Math.round(c.visited/c.total*100):0;
-    tblHtml+='<tr style="border-bottom:1px solid #f0f0f0;">';
-    tblHtml+='<td style="padding:12px;font-weight:600;">'+esc(n)+'</td>';
-    tblHtml+='<td style="padding:12px;text-align:center;font-weight:700;">'+c.total+'</td>';
-    tblHtml+='<td style="padding:12px;text-align:center;color:#2ecc71;font-weight:600;">'+c.visited+'</td>';
-    tblHtml+='<td style="padding:12px;text-align:center;color:#27ae60;">'+c.positive+'</td>';
-    tblHtml+='<td style="padding:12px;text-align:center;color:#f39c12;">'+c.neutral+'</td>';
-    tblHtml+='<td style="padding:12px;text-align:center;color:#e74c3c;">'+c.negative+'</td>';
-    tblHtml+='<td style="padding:12px;text-align:center;"><div style="display:flex;align-items:center;gap:6px;justify-content:center;"><div style="width:60px;height:6px;background:#eee;border-radius:3px;overflow:hidden;"><div style="width:'+vp+'%;height:100%;background:#667eea;border-radius:3px;"></div></div><span style="font-size:12px;font-weight:600;color:#333;">'+vp+'%</span></div></td>';
-    tblHtml+='</tr>';
-  }
-  tblHtml+='</tbody></table></div>';
-  document.getElementById('allSheetTable').innerHTML=tblHtml;
-}
-
+ 
 // 일일
 function moveDaily(dir){if(dir===0)dailyDt=new Date();else dailyDt.setDate(dailyDt.getDate()+dir);dailyDt.setHours(0,0,0,0);renderDaily();}
 function renderDaily(){
