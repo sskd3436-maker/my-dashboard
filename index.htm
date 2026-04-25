@@ -528,13 +528,13 @@
       <!-- 전체 현황 -->
       <div class="sub-page active" id="sub-all">
         <div id="allTopCards"></div>
-        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
-          <div style="flex:1;min-width:320px;" id="allPipeline"></div>
-          <div style="flex:1;min-width:320px;" id="allMonthChart"></div>
+               <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
+          <div style="flex:1;min-width:320px;max-width:50%;" id="allPipeline"></div>
+          <div style="flex:1;min-width:320px;max-width:50%;" id="allMonthChart"></div>
         </div>
         <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
-          <div style="flex:1;min-width:320px;" id="allMgrBar"></div>
-          <div style="flex:1;min-width:320px;" id="allCalendar"></div>
+          <div style="flex:1;min-width:320px;max-width:50%;" id="allMgrBar"></div>
+          <div style="flex:1;min-width:320px;max-width:50%;" id="allCalendar"></div>
         </div>
         <div style="margin-top:16px;" id="allSheetTable"></div>
       </div>
@@ -1873,7 +1873,7 @@ function renderAllStats(){
     if(sn&&!existSites[sn]&&allFlat[i].sheet!=='계약서'){existSites[sn]=1;ctTotal++;ct상담++;}
   }
 
-  var pipHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);">';
+   var pipHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;">';
   pipHtml+='<h3 style="margin:0 0 16px 0;font-size:16px;color:#333;">📋 계약 파이프라인</h3>';
   var stages=[{n:'상담',c:ct상담,bg:'#3498db'},{n:'제안',c:ct제안,bg:'#e67e22'},{n:'입대위',c:ct입대위,bg:'#f39c12'},{n:'실사',c:ct실사,bg:'#9b59b6'},{n:'계약',c:ct계약,bg:'#27ae60'}];
   pipHtml+='<div style="display:flex;gap:8px;margin-bottom:16px;">';
@@ -1915,7 +1915,7 @@ function renderAllStats(){
   }
   var maxMonth=Math.max.apply(null,monthCounts)||1;
 
-  var chartHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);">';
+    var chartHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;">';
   chartHtml+='<h3 style="margin:0 0 16px 0;font-size:16px;color:#333;">📊 월별 방문 추이</h3>';
   chartHtml+='<div style="display:flex;align-items:flex-end;gap:12px;height:180px;padding:0 8px;">';
   for(var mi=0;mi<months.length;mi++){
@@ -1945,7 +1945,7 @@ function renderAllStats(){
   var mgrKeys=Object.keys(mgrData).sort();
   var mgrMax=0;for(var i=0;i<mgrKeys.length;i++){if(mgrData[mgrKeys[i]].total>mgrMax)mgrMax=mgrData[mgrKeys[i]].total;}
 
-  var mgrHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);">';
+    var mgrHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;">';
   mgrHtml+='<h3 style="margin:0 0 16px 0;font-size:16px;color:#333;">👤 담당자별 현황</h3>';
   for(var i=0;i<mgrKeys.length;i++){
     var mn=mgrKeys[i],md=mgrData[mn];
@@ -1975,7 +1975,7 @@ function renderAllStats(){
   var calY=now.getFullYear(),calM=now.getMonth();
   var first=new Date(calY,calM,1),last=new Date(calY,calM+1,0);
   var dc={};for(var i=0;i<flatNoContract.length;i++){if(flatNoContract[i].date){var k=fmt(flatNoContract[i].date);dc[k]=(dc[k]||0)+1;}}
-  var calHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);">';
+    var calHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;">';
   calHtml+='<h3 style="margin:0 0 16px 0;font-size:16px;color:#333;">📅 '+calY+'년 '+(calM+1)+'월</h3>';
   calHtml+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;">';
   var dn=['일','월','화','수','목','금','토'];
