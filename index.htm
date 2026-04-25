@@ -1971,121 +1971,30 @@ function renderAllStats(){
   mgrHtml+='</div>';
   document.getElementById('allMgrBar').innerHTML=mgrHtml;
 
-    // === 캘린더 ===
-  if(!window._calY)window._calY=now.getFullYear();
-  if(!window._calM&&window._calM!==0)window._calM=now.getMonth();
-  renderAllCalendar(flatNoContract);
-}
-
-function renderAllCalendar(flatNoContract){
-  if(!flatNoContract){
-    var flatNoContract=allFlat.filter(function(f){return f.sheet!=='계약서';});
-  }
-  var calY=window._calY,calM=window._calM;
+  // === 캘린더 (이번 달) ===
+  var calY=now.getFullYear(),calM=now.getMonth();
   var first=new Date(calY,calM,1),last=new Date(calY,calM+1,0);
   var dc={};for(var i=0;i<flatNoContract.length;i++){if(flatNoContract[i].date){var k=fmt(flatNoContract[i].date);dc[k]=(dc[k]||0)+1;}}
-  var today=new Date();today.setHours(0,0,0,0);
-
-  var calHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;">';
-  calHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
-  calHtml+='<button onclick="moveAllCal(-1)" style="background:none;border:1px solid #ddd;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:14px;">◀</button>';
-  calHtml+='<h3 style="margin:0;font-size:16px;color:#333;">📅 '+calY+'년 '+(calM+1)+'월</h3>';
-  calHtml+='<button onclick="moveAllCal(1)" style="background:none;border:1px solid #ddd;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:14px;">▶</button>';
-  calHtml+='</div>';
+    var calHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;">';
+  calHtml+='<h3 style="margin:0 0 16px 0;font-size:16px;color:#333;">📅 '+calY+'년 '+(calM+1)+'월</h3>';
   calHtml+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;">';
   var dn=['일','월','화','수','목','금','토'];
   for(var i=0;i<7;i++)calHtml+='<div style="font-size:11px;font-weight:700;color:'+(i===0?'#e74c3c':i===6?'#3498db':'#888')+';padding:8px 0;">'+dn[i]+'</div>';
   var sd=first.getDay();
+  var today=new Date();today.setHours(0,0,0,0);
   for(var i=0;i<sd;i++)calHtml+='<div style="padding:8px 4px;"></div>';
-  var selDay=window._calSelDay||0;
   for(var d=1;d<=last.getDate();d++){
     var dt=new Date(calY,calM,d),k=fmt(dt),cnt=dc[k]||0;
     var isToday=dt.getTime()===today.getTime();
-    var isSel=(selDay===d);
-    var bg=isSel?'#764ba2':isToday?'#667eea':cnt>0?'#eef2ff':'transparent';
-    var tc=isSel||isToday?'#fff':cnt>0?'#333':'#666';
-    calHtml+='<div onclick="selectCalDay('+d+')" style="padding:6px 4px;border-radius:8px;background:'+bg+';cursor:pointer;">';
-    calHtml+='<div style="font-size:13px;font-weight:'+(isToday||isSel||cnt>0?'700':'400')+';color:'+tc+';">'+d+'</div>';
-    if(cnt>0)calHtml+='<div style="font-size:10px;color:'+(isSel||isToday?'#fff':'#667eea')+';font-weight:600;">'+cnt+'건</div>';
+    var bg=isToday?'#667eea':cnt>0?'#eef2ff':'transparent';
+    var tc=isToday?'#fff':cnt>0?'#333':'#666';
+    calHtml+='<div style="padding:6px 4px;border-radius:8px;background:'+bg+';cursor:'+(cnt>0?'pointer':'default')+';" '+(cnt>0?'onclick="dailyDt=new Date('+calY+','+calM+','+d+');goSubTab(\'weekly\',document.querySelectorAll(\'.sub-tab\')[1])"':'')+'>';
+    calHtml+='<div style="font-size:13px;font-weight:'+(isToday||cnt>0?'700':'400')+';color:'+tc+';">'+d+'</div>';
+    if(cnt>0)calHtml+='<div style="font-size:10px;color:'+(isToday?'#fff':'#667eea')+';font-weight:600;">'+cnt+'건</div>';
     calHtml+='</div>';
-  }
- 
-
-  // 담당자별 현황
-  var mgrDay={};
-  var selDate=selDay>0?new Date(calY,calM,selDay):null;
-  for(var i=0;i<flatNoContract.length;i++){
-    var it=flatNoContract[i];
-    if(!it.date)continue;
-    var mg=it.mgr||'미지정';
-    if(selDate){
-      if(it.date.getTime()===selDate.getTime()){
-        if(!mgrDay[mg])mgrDay[mg]={total:0,positive:0,neutral:0,negative:0};
-        mgrDay[mg].total++;
-        if(it.sent==='positive')mgrDay[mg].positive++;
-        else if(it.sent==='neutral')mgrDay[mg].neutral++;
-        else if(it.sent==='negative')mgrDay[mg].negative++;
-      }
-    }else{
-      if(it.date>=first&&it.date<=last){
-        if(!mgrDay[mg])mgrDay[mg]={total:0,positive:0,neutral:0,negative:0};
-        mgrDay[mg].total++;
-        if(it.sent==='positive')mgrDay[mg].positive++;
-        else if(it.sent==='neutral')mgrDay[mg].neutral++;
-        else if(it.sent==='negative')mgrDay[mg].negative++;
-      }
-    }
-  }
-
-  var mgrKeys=Object.keys(mgrDay).sort();
-  var titleTxt=selDate?calM+1+'월 '+selDay+'일 담당자별':calY+'년 '+(calM+1)+'월 담당자별';
-  calHtml+='<div style="margin-top:16px;padding-top:12px;border-top:1px solid #eee;">';
-  calHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
-  calHtml+='<span style="font-size:13px;font-weight:700;color:#333;">👤 '+titleTxt+'</span>';
-  if(selDate)calHtml+='<button onclick="selectCalDay(0)" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
-  calHtml+='</div>';
-  if(mgrKeys.length===0){
-    calHtml+='<div style="text-align:center;color:#999;font-size:12px;padding:12px;">방문 기록 없음</div>';
-  }else{
-    var mgrMax=0;for(var i=0;i<mgrKeys.length;i++){if(mgrDay[mgrKeys[i]].total>mgrMax)mgrMax=mgrDay[mgrKeys[i]].total;}
-    for(var i=0;i<mgrKeys.length;i++){
-      var mn=mgrKeys[i],md=mgrDay[mn];
-      var barW=mgrMax>0?Math.round(md.total/mgrMax*100):0;
-      calHtml+='<div style="padding:6px 0;">';
-      calHtml+='<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;">';
-      calHtml+='<span style="font-weight:600;color:#333;">'+esc(mn)+'</span>';
-      calHtml+='<span style="color:#888;">'+md.total+'건</span></div>';
-      calHtml+='<div style="height:16px;background:#f0f0f0;border-radius:8px;overflow:hidden;display:flex;width:'+barW+'%;min-width:30px;">';
-      var pW=md.total>0?Math.round(md.positive/md.total*100):0;
-      var nW=md.total>0?Math.round(md.neutral/md.total*100):0;
-      var ngW=md.total>0?Math.round(md.negative/md.total*100):0;
-      calHtml+='<div style="width:'+pW+'%;background:#2ecc71;"></div>';
-      calHtml+='<div style="width:'+nW+'%;background:#f1c40f;"></div>';
-      calHtml+='<div style="width:'+ngW+'%;background:#e74c3c;"></div>';
-      calHtml+='</div>';
-      calHtml+='<div style="display:flex;gap:8px;margin-top:2px;font-size:10px;">';
-      calHtml+='<span style="color:#2ecc71;">긍정 '+md.positive+'</span>';
-      calHtml+='<span style="color:#f1c40f;">중립 '+md.neutral+'</span>';
-      calHtml+='<span style="color:#e74c3c;">부정 '+md.negative+'</span></div></div>';
-    }
   }
   calHtml+='</div></div>';
   document.getElementById('allCalendar').innerHTML=calHtml;
-}
-
-function moveAllCal(dir){
-  window._calM+=dir;
-  if(window._calM>11){window._calM=0;window._calY++;}
-  if(window._calM<0){window._calM=11;window._calY--;}
-  window._calSelDay=0;
-  renderAllCalendar();
-}
-
-function selectCalDay(d){
-  window._calSelDay=(window._calSelDay===d)?0:d;
-  renderAllCalendar();
-}
-
 
   // === 시트별 현황 테이블 ===
   var sc={};for(var i=0;i<flatNoContract.length;i++){var s=flatNoContract[i].sheet;if(!sc[s])sc[s]={positive:0,neutral:0,negative:0,etc:0,total:0,visited:0};sc[s].total++;var v=flatNoContract[i].date||fv(flatNoContract[i].row,flatNoContract[i].headers,'방문일자')||'';if(v)sc[s].visited++;var se=flatNoContract[i].sent;if(se)sc[s][se]++;}
@@ -3128,6 +3037,5 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}
 </script>
 </body>
 </html>
-
 
 
