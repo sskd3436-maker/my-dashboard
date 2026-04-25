@@ -1930,9 +1930,10 @@ function renderAllStats(){
   chartHtml+='</div></div>';
   document.getElementById('allMonthChart').innerHTML=chartHtml;
 
-  // === 계약 파이프라인 상세 ===
+    // === 계약 파이프라인 + 일자별 추이 ===
   var pipeStages=['상담','제안','입대위','실사','계약'];
   var pipeColors={'상담':'#95a5a6','제안':'#3498db','입대위':'#f39c12','실사':'#e67e22','계약':'#27ae60'};
+  var pipeIcons={'상담':'💬','제안':'📨','입대위':'🏢','실사':'🔍','계약':'✅'};
   var pipeSites={};
   for(var i=0;i<pipeStages.length;i++)pipeSites[pipeStages[i]]=[];
 
@@ -1942,9 +1943,10 @@ function renderAllStats(){
       var cr=contractData.rows[ci];
       var status=(fv(cr,ch,'진행사항')||'').trim();
       var site=(fv(cr,ch,'사이트명')||'').trim();
+      var mgr=(fv(cr,ch,'담당자')||'').trim();
       for(var si=0;si<pipeStages.length;si++){
         if(status===pipeStages[si]){
-          pipeSites[pipeStages[si]].push(site);
+          pipeSites[pipeStages[si]].push({site:site,mgr:mgr});
           break;
         }
       }
@@ -1953,57 +1955,89 @@ function renderAllStats(){
 
   var totalPipe=0;
   for(var i=0;i<pipeStages.length;i++)totalPipe+=pipeSites[pipeStages[i]].length;
-  var pipeMax=0;
-  for(var i=0;i<pipeStages.length;i++){if(pipeSites[pipeStages[i]].length>pipeMax)pipeMax=pipeSites[pipeStages[i]].length;}
+
+  // 최근 14일 일별 방문 집계
+  var dayData=[];
+  for(var d=13;d>=0;d--){
+    var dt=new Date(now);dt.setDate(dt.getDate()-d);dt.setHours(0,0,0,0);
+    var cnt=0;
+    for(var i=0;i<flatNoContract.length;i++){
+      if(flatNoContract[i].date&&flatNoContract[i].date.getTime()===dt.getTime())cnt++;
+    }
+    dayData.push({date:dt,cnt:cnt,label:(dt.getMonth()+1)+'/'+dt.getDate()});
+  }
+  var dayMax=0;
+  for(var i=0;i<dayData.length;i++){if(dayData[i].cnt>dayMax)dayMax=dayData[i].cnt;}
 
   if(!window._pipeOpenStage)window._pipeOpenStage='';
 
-  var pdHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;display:flex;flex-direction:column;">';
-  pdHtml+='<h3 style="margin:0 0 12px 0;font-size:16px;color:#333;">📋 계약 파이프라인 상세</h3>';
-  pdHtml+='<div style="font-size:12px;color:#888;margin-bottom:16px;">총 '+totalPipe+'건</div>';
+  var pdHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:0;">';
 
-  // 그래프 영역
-  pdHtml+='<div style="display:flex;align-items:flex-end;gap:12px;height:120px;padding:0 8px;margin-bottom:16px;border-bottom:1px solid #eee;">';
+  // 상단: 파이프라인 카드
+  pdHtml+='<div style="margin-bottom:20px;">';
+  pdHtml+='<h3 style="margin:0 0 14px 0;font-size:16px;color:#333;">📋 계약 파이프라인 <span style="font-size:12px;color:#888;font-weight:400;">총 '+totalPipe+'건</span></h3>';
+  pdHtml+='<div style="display:flex;gap:6px;flex-wrap:wrap;">';
   for(var i=0;i<pipeStages.length;i++){
     var stage=pipeStages[i];
     var cnt=pipeSites[stage].length;
-    var barH=pipeMax>0?Math.max(Math.round(cnt/pipeMax*100),4):4;
     var color=pipeColors[stage];
+    var icon=pipeIcons[stage];
     var isOpen=(window._pipeOpenStage===stage);
-    pdHtml+='<div onclick="togglePipeStage(\''+stage+'\')" style="flex:1;display:flex;flex-direction:column;align-items:center;cursor:pointer;">';
-    pdHtml+='<div style="font-size:14px;font-weight:700;color:'+color+';margin-bottom:4px;">'+cnt+'</div>';
-    pdHtml+='<div style="width:100%;max-width:48px;height:'+barH+'px;background:'+color+';border-radius:6px 6px 0 0;opacity:'+(isOpen?'1':'0.7')+';border:'+(isOpen?'2px solid #333':'none')+';"></div>';
-    pdHtml+='<div style="font-size:11px;color:'+(isOpen?'#333':'#888')+';font-weight:'+(isOpen?'700':'400')+';margin-top:6px;padding-bottom:8px;">'+stage+'</div>';
+    pdHtml+='<div onclick="togglePipeStage(\''+stage+'\')" style="flex:1;min-width:80px;padding:12px 8px;border-radius:12px;text-align:center;cursor:pointer;transition:all 0.2s;';
+    pdHtml+=isOpen?'background:'+color+';box-shadow:0 4px 12px '+color+'40;':'background:linear-gradient(135deg,'+color+'15,'+color+'08);border:1px solid '+color+'30;';
+    pdHtml+='">';
+    pdHtml+='<div style="font-size:18px;margin-bottom:4px;">'+icon+'</div>';
+    pdHtml+='<div style="font-size:20px;font-weight:800;color:'+(isOpen?'#fff':color)+';">'+cnt+'</div>';
+    pdHtml+='<div style="font-size:11px;color:'+(isOpen?'rgba(255,255,255,0.9)':'#666')+';font-weight:600;margin-top:2px;">'+stage+'</div>';
     pdHtml+='</div>';
   }
-  pdHtml+='</div>';
+  pdHtml+='</div></div>';
 
-  // 사이트 목록 영역 (스크롤)
+  // 중단: 사이트 목록 (클릭 시)
   var openStage=window._pipeOpenStage;
-  var openSites=openStage?pipeSites[openStage]:[];
-  var openColor=openStage?pipeColors[openStage]:'#333';
-
   if(openStage){
-    pdHtml+='<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;">';
+    var openSites=pipeSites[openStage];
+    var openColor=pipeColors[openStage];
+    pdHtml+='<div style="margin-bottom:16px;background:linear-gradient(135deg,'+openColor+'08,'+openColor+'03);border:1px solid '+openColor+'20;border-radius:12px;padding:12px;">';
     pdHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
-    pdHtml+='<span style="font-size:13px;font-weight:700;color:'+openColor+';">'+openStage+' 단계 ('+openSites.length+'건)</span>';
-    pdHtml+='<button onclick="togglePipeStage(\'\')" style="background:none;border:1px solid #ddd;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:11px;color:#888;">닫기</button>';
+    pdHtml+='<span style="font-size:13px;font-weight:700;color:'+openColor+';">'+pipeIcons[openStage]+' '+openStage+' ('+openSites.length+'건)</span>';
+    pdHtml+='<button onclick="togglePipeStage(\'\')" style="background:none;border:none;cursor:pointer;font-size:16px;color:#999;">✕</button>';
     pdHtml+='</div>';
-    pdHtml+='<div style="flex:1;overflow-y:auto;max-height:200px;">';
+    pdHtml+='<div style="max-height:150px;overflow-y:auto;">';
     for(var j=0;j<openSites.length;j++){
-      pdHtml+='<div style="padding:8px 12px;border-bottom:1px solid #f5f5f5;font-size:12px;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">';
-      pdHtml+='<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+openColor+';margin-right:8px;"></span>';
-      pdHtml+=esc(openSites[j]);
+      pdHtml+='<div style="display:flex;justify-content:space-between;padding:6px 8px;border-radius:6px;margin-bottom:2px;background:rgba(255,255,255,0.7);font-size:12px;">';
+      pdHtml+='<span style="color:#333;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">'+esc(openSites[j].site)+'</span>';
+      pdHtml+='<span style="color:#888;flex-shrink:0;margin-left:8px;">'+esc(openSites[j].mgr||'-')+'</span>';
       pdHtml+='</div>';
     }
-    if(openSites.length===0)pdHtml+='<div style="padding:16px;text-align:center;color:#999;font-size:12px;">해당 단계 사이트 없음</div>';
+    if(openSites.length===0)pdHtml+='<div style="text-align:center;color:#999;font-size:12px;padding:12px;">없음</div>';
     pdHtml+='</div></div>';
-  }else{
-    pdHtml+='<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">단계를 클릭하면 사이트 목록이 표시됩니다</div>';
   }
+
+  // 하단: 14일 방문 추이
+  pdHtml+='<div style="flex:1;">';
+  pdHtml+='<h3 style="margin:0 0 12px 0;font-size:14px;color:#333;">📊 최근 14일 방문 추이</h3>';
+  pdHtml+='<div style="display:flex;align-items:flex-end;gap:4px;height:80px;padding-bottom:20px;position:relative;">';
+  // 가로 기준선
+  pdHtml+='<div style="position:absolute;bottom:20px;left:0;right:0;height:1px;background:#eee;"></div>';
+  for(var i=0;i<dayData.length;i++){
+    var d=dayData[i];
+    var barH=dayMax>0?Math.max(Math.round(d.cnt/dayMax*60),2):2;
+    var isToday=(i===dayData.length-1);
+    var barColor=isToday?'#667eea':d.cnt>0?'#a5b4fc':'#e8e8e8';
+    pdHtml+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;">';
+    if(d.cnt>0)pdHtml+='<div style="font-size:9px;font-weight:700;color:'+(isToday?'#667eea':'#888')+';margin-bottom:2px;">'+d.cnt+'</div>';
+    else pdHtml+='<div style="height:11px;"></div>';
+    pdHtml+='<div style="width:100%;max-width:16px;height:'+barH+'px;background:'+barColor+';border-radius:4px 4px 0 0;"></div>';
+    if(i%2===0||isToday)pdHtml+='<div style="font-size:8px;color:'+(isToday?'#667eea':'#bbb')+';margin-top:4px;white-space:nowrap;">'+d.label+'</div>';
+    else pdHtml+='<div style="height:12px;"></div>';
+    pdHtml+='</div>';
+  }
+  pdHtml+='</div></div>';
 
   pdHtml+='</div>';
   document.getElementById('allMgrBar').innerHTML=pdHtml;
+
 
 
    // === 캘린더 ===
