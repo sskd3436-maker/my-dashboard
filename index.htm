@@ -1774,7 +1774,7 @@ function submitAddRow(){
             document.getElementById('cf_promoAmt')?document.getElementById('cf_promoAmt').value:'',
             statusVal,
             document.getElementById('cf_note')?document.getElementById('cf_note').value:'',
-            mgrVal
+            mgrVal,
             '','','','',''
           ];
           apiPost({action:'addRow',sheet:'계약서',rowData:ctData},function(r2){
