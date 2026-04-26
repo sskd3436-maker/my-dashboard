@@ -1913,6 +1913,7 @@ function renderAllStats(){
   for(var i=0;i<stages.length;i++){var pct=ctTotal>0?Math.round(stages[i].c/ctTotal*100):0;pipHtml+='<div style="width:'+pct+'%;background:'+stages[i].bg+';"></div>';}
   pipHtml+='</div>';
   pipHtml+='<div style="text-align:right;margin-top:8px;font-size:13px;color:#666;font-weight:600;">총 '+ctTotal+'건</div></div>';
+  console.log('파이프라인:', '상담:'+ct상담, '제안:'+ct제안, '입대위:'+ct입대위, '실사:'+ct실사, '계약:'+ct계약, '총:'+ctTotal);
   document.getElementById('allPipeline').innerHTML=pipHtml;
 
   // === 월별 방문 추이 (최근 6개월) ===
