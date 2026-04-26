@@ -2825,6 +2825,7 @@ function calcContract(){
 }
 
 function openContractModal(rowIdx){
+  if(!contractData){loadContract(function(){openContractModal(rowIdx);});return;}
   editContractRow=rowIdx||null;
   document.getElementById('contractModalTitle').textContent=rowIdx?'계약서 수정':'계약서 작성';
   document.getElementById('contractSubmitBtn').textContent=rowIdx?'수정':'저장';
