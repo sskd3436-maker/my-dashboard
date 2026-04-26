@@ -1875,9 +1875,23 @@ function renderAllStats(){
       if(st==='상담')ct상담++;else if(st==='제안')ct제안++;else if(st==='입대위')ct입대위++;else if(st==='실사')ct실사++;else if(st==='계약')ct계약++;
     }
   }
+ var siteBest={};
   for(var i=0;i<allFlat.length;i++){
-    var sn=(allFlat[i].site||'').trim();
-    if(sn&&!existSites[sn]&&allFlat[i].sheet!=='계약서'){existSites[sn]=1;ctTotal++;ct상담++;}
+    var it=allFlat[i];
+    var sn=(it.site||'').trim();
+    if(!sn||it.sheet==='계약서'||existSites[sn])continue;
+    var vDate=it.date||null;
+    if(!vDate)continue;
+    var pos=fv(it.row,it.headers,'긍정')||'';
+    if(!siteBest[sn]||vDate>siteBest[sn].date){
+      siteBest[sn]={date:vDate,pos:!!pos};
+    }
+  }
+  for(var sn in siteBest){
+    existSites[sn]=1;
+    ctTotal++;
+    if(siteBest[sn].pos)ct제안++;
+    else ct상담++;
   }
 
    var pipHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;">';
