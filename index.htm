@@ -1937,191 +1937,59 @@ function renderAllStats(){
   chartHtml+='</div></div>';
   document.getElementById('allMonthChart').innerHTML=chartHtml;
 
- // === 계약 파이프라인 + 타임라인 ===
-  if(!window._tlMode)window._tlMode='week';
-  var tlNow=new Date();tlNow.setHours(0,0,0,0);
-  var tlStart,tlEnd;
-  if(window._tlMode==='week'){
-    var dow=tlNow.getDay()||7;
-    tlStart=new Date(tlNow);tlStart.setDate(tlNow.getDate()-(dow-1));
-    tlEnd=new Date(tlStart);tlEnd.setDate(tlStart.getDate()+6);
-  }else{
-    tlStart=new Date(tlNow.getFullYear(),tlNow.getMonth(),1);
-    tlEnd=new Date(tlNow.getFullYear(),tlNow.getMonth()+1,0);
-  }
-
-  // 파이프라인 집계
-  var pipeStages=['상담','제안','입대위','실사','계약','탈락'];
-  var pipeColors={'상담':'#95a5a6','제안':'#3498db','입대위':'#f39c12','실사':'#e67e22','계약':'#27ae60','탈락':'#e74c3c'};
-  var pipeIcons={'상담':'💬','제안':'📨','입대위':'🏢','실사':'🔍','계약':'✅','탈락':'❌'};
-  var pipeCnt={};for(var i=0;i<pipeStages.length;i++)pipeCnt[pipeStages[i]]=0;
-  var pipeQty={};for(var i=0;i<pipeStages.length;i++)pipeQty[pipeStages[i]]=0;
-
+ // === 담당자별 계약 실적 ===
+  var ctMgr={};
+  var ctTotal=0,ctQtyTotal=0;
   if(contractData&&contractData.rows){
     var ch=contractData.headers;
     for(var ci=0;ci<contractData.rows.length;ci++){
       var cr=contractData.rows[ci];
-      var st=(fv(cr,ch,'진행사항')||'').trim();
-      var qt=parseInt(fv(cr,ch,'충전기수량')||'0')||0;
-      if(pipeCnt[st]!==undefined){pipeCnt[st]++;pipeQty[st]+=qt;}
+      var status=(fv(cr,ch,'진행사항')||'').trim();
+      if(status!=='계약')continue;
+      var mgr=(fv(cr,ch,'담당자')||'미지정').trim();
+      var qty=parseInt(fv(cr,ch,'충전기수량')||'0')||0;
+      if(!ctMgr[mgr])ctMgr[mgr]={cnt:0,qty:0};
+      ctMgr[mgr].cnt++;
+      ctMgr[mgr].qty+=qty;
+      ctTotal++;
+      ctQtyTotal+=qty;
     }
   }
-  // 방문만 있고 계약서에 없는 것 = 상담/제안
-  for(var i=0;i<flatNoContract.length;i++){
-    var it=flatNoContract[i];
-    if(!it.date)continue;
-    var site=(it.site||'').trim();
-    var inContract=false;
-    if(contractData&&contractData.rows){
-      var ch=contractData.headers;
-      for(var ci=0;ci<contractData.rows.length;ci++){
-        if(((fv(contractData.rows[ci],ch,'사이트명'))||'').trim()===site){inContract=true;break;}
-      }
-    }
-    if(!inContract){
-      var pos=fv(it.row,it.headers,'긍정')||'';
-      if(pos)pipeCnt['제안']++;
-      else pipeCnt['상담']++;
-    }
-  }
+  var ctKeys=Object.keys(ctMgr).sort(function(a,b){return ctMgr[b].qty-ctMgr[a].qty;});
+  var maxQty=0;
+  for(var i=0;i<ctKeys.length;i++){if(ctMgr[ctKeys[i]].qty>maxQty)maxQty=ctMgr[ctKeys[i]].qty;}
 
-  // 타임라인 이벤트 수집
-  var tlEvents=[];
-
-  // 1. 계약서 날짜 기반 이벤트
-  if(contractData&&contractData.rows){
-    var ch=contractData.headers;
-    var dateFields=[
-      {field:'제안일',stage:'제안',icon:'📨'},
-      {field:'입대위일',stage:'입대위',icon:'🏢'},
-      {field:'실사일',stage:'실사',icon:'🔍'},
-      {field:'계약일',stage:'계약',icon:'✅'},
-      {field:'탈락여부',stage:'탈락',icon:'❌'}
-    ];
-    for(var ci=0;ci<contractData.rows.length;ci++){
-      var cr=contractData.rows[ci];
-      var site=(fv(cr,ch,'사이트명')||'').trim();
-      var mgr=(fv(cr,ch,'담당자')||'').trim();
-      var type=(fv(cr,ch,'설치유형')||'').trim();
-      var qty=fv(cr,ch,'충전기수량')||'';
-      for(var di=0;di<dateFields.length;di++){
-        var dv=fv(cr,ch,dateFields[di].field)||'';
-        if(!dv)continue;
-        var parts=dv.split('.');
-        if(parts.length>=3){
-          var dt=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
-          dt.setHours(0,0,0,0);
-          if(dt>=tlStart&&dt<=tlEnd){
-            tlEvents.push({date:dt,site:site,mgr:mgr,stage:dateFields[di].stage,icon:dateFields[di].icon,type:type,qty:qty});
-          }
-        }
-      }
-    }
-  }
-
-  // 2. 영업활동 방문 이벤트
-  for(var i=0;i<flatNoContract.length;i++){
-    var it=flatNoContract[i];
-    if(!it.date)continue;
-    if(it.date<tlStart||it.date>tlEnd)continue;
-    var site=(it.site||'').trim();
-    var mgr=it.mgr||'';
-    var pos=fv(it.row,it.headers,'긍정')||'';
-    var neu=fv(it.row,it.headers,'중립')||'';
-    var neg=fv(it.row,it.headers,'부정')||'';
-    var content=fv(it.row,it.headers,'영업내용')||'';
-    var stage='방문';
-    var icon='📍';
-    if(pos){stage='제안';icon='📨';}
-    else if(neg){stage='부정';icon='⚠️';}
-    else if(neu){stage='중립';icon='💭';}
-    tlEvents.push({date:it.date,site:site,mgr:mgr,stage:stage,icon:icon,type:'',qty:'',content:content});
-  }
-
-  // 날짜 내림차순 정렬
-  tlEvents.sort(function(a,b){return b.date.getTime()-a.date.getTime();});
-
-  // 기간 내 요약
-  var tlSummary={방문:0,제안:0,입대위:0,실사:0,계약:0,탈락:0,중립:0,부정:0};
-  for(var i=0;i<tlEvents.length;i++){
-    var s=tlEvents[i].stage;
-    if(tlSummary[s]!==undefined)tlSummary[s]++;
-  }
-
-  // HTML 생성
   var pdHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;display:flex;flex-direction:column;">';
+  pdHtml+='<h3 style="margin:0 0 16px 0;font-size:16px;color:#333;">📋 담당자별 계약 실적</h3>';
 
-  // 헤더 + 주간/월간 토글
-  pdHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
-  pdHtml+='<h3 style="margin:0;font-size:16px;color:#333;">📋 영업 파이프라인</h3>';
-  pdHtml+='<div style="display:flex;gap:4px;">';
-  pdHtml+='<button onclick="toggleTlMode(\'week\')" style="padding:5px 12px;border-radius:8px;border:none;cursor:pointer;font-size:11px;font-weight:600;'+(window._tlMode==='week'?'background:#667eea;color:#fff;':'background:#f0f0f0;color:#888;')+'">주간</button>';
-  pdHtml+='<button onclick="toggleTlMode(\'month\')" style="padding:5px 12px;border-radius:8px;border:none;cursor:pointer;font-size:11px;font-weight:600;'+(window._tlMode==='month'?'background:#667eea;color:#fff;':'background:#f0f0f0;color:#888;')+'">월간</button>';
-  pdHtml+='</div></div>';
+  if(ctKeys.length===0){
+    pdHtml+='<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#999;font-size:13px;">계약 완료된 건이 없습니다</div>';
+  }else{
+    pdHtml+='<div style="flex:1;">';
+    for(var i=0;i<ctKeys.length;i++){
+      var mn=ctKeys[i],md=ctMgr[mn];
+      var barW=maxQty>0?Math.max(Math.round(md.qty/maxQty*100),8):8;
+      pdHtml+='<div style="padding:10px 0;'+(i<ctKeys.length-1?'border-bottom:1px solid #f0f0f0;':'')+'">';
+      pdHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
+      pdHtml+='<span style="font-weight:700;font-size:14px;color:#333;">'+esc(mn)+'</span>';
+      pdHtml+='<span style="font-size:13px;color:#333;"><b>'+md.cnt+'</b>건 / <b style="color:#27ae60;">'+md.qty+'</b>기</span>';
+      pdHtml+='</div>';
+      pdHtml+='<div style="height:20px;background:#f0f0f0;border-radius:10px;overflow:hidden;">';
+      pdHtml+='<div style="width:'+barW+'%;height:100%;background:linear-gradient(90deg,#27ae60,#2ecc71);border-radius:10px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;">';
+      if(barW>20)pdHtml+='<span style="font-size:10px;color:#fff;font-weight:700;">'+md.qty+'기</span>';
+      pdHtml+='</div></div></div>';
+    }
+    pdHtml+='</div>';
 
-  // 파이프라인 미니 카드
-  pdHtml+='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px;">';
-  for(var i=0;i<pipeStages.length;i++){
-    var st=pipeStages[i];
-    var color=pipeColors[st];
-    pdHtml+='<div style="flex:1;min-width:50px;text-align:center;padding:8px 4px;border-radius:10px;background:linear-gradient(135deg,'+color+'15,'+color+'08);border:1px solid '+color+'25;">';
-    pdHtml+='<div style="font-size:12px;">'+pipeIcons[st]+'</div>';
-    pdHtml+='<div style="font-size:16px;font-weight:800;color:'+color+';">'+pipeCnt[st]+'</div>';
-    pdHtml+='<div style="font-size:9px;color:#888;font-weight:600;">'+st+'</div>';
-    if(pipeQty[st]>0)pdHtml+='<div style="font-size:9px;color:'+color+';">'+pipeQty[st]+'기</div>';
+    // 합계
+    pdHtml+='<div style="margin-top:12px;padding-top:12px;border-top:2px solid #eee;display:flex;justify-content:space-between;align-items:center;">';
+    pdHtml+='<span style="font-size:14px;font-weight:700;color:#333;">합계</span>';
+    pdHtml+='<span style="font-size:15px;font-weight:800;color:#27ae60;">'+ctTotal+'건 / '+ctQtyTotal+'기</span>';
     pdHtml+='</div>';
   }
+
   pdHtml+='</div>';
-
-  // 기간 요약 바
-  var periodLabel=window._tlMode==='week'?'이번 주':'이번 달';
-  pdHtml+='<div style="background:#f8f9fa;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">';
-  pdHtml+='<span style="font-size:12px;font-weight:700;color:#333;">'+periodLabel+'</span>';
-  var sumKeys=['방문','제안','입대위','실사','계약','탈락'];
-  var sumColors={'방문':'#667eea','제안':'#3498db','입대위':'#f39c12','실사':'#e67e22','계약':'#27ae60','탈락':'#e74c3c'};
-  for(var i=0;i<sumKeys.length;i++){
-    if(tlSummary[sumKeys[i]]>0){
-      pdHtml+='<span style="font-size:11px;color:'+sumColors[sumKeys[i]]+';font-weight:600;">'+sumKeys[i]+' '+tlSummary[sumKeys[i]]+'</span>';
-    }
-  }
-  pdHtml+='</div>';
-
-  // 타임라인
-  pdHtml+='<div style="flex:1;overflow-y:auto;max-height:300px;">';
-  if(tlEvents.length===0){
-    pdHtml+='<div style="text-align:center;color:#999;font-size:12px;padding:24px;">기간 내 활동 내역이 없습니다</div>';
-  }else{
-    var prevDateStr='';
-    for(var i=0;i<tlEvents.length;i++){
-      var ev=tlEvents[i];
-      var dateStr=ev.date.getFullYear()+'.'+(ev.date.getMonth()+1)+'.'+ev.date.getDate();
-      var dayNames=['일','월','화','수','목','금','토'];
-      var dayName=dayNames[ev.date.getDay()];
-
-      if(dateStr!==prevDateStr){
-        if(prevDateStr)pdHtml+='<div style="height:8px;"></div>';
-        pdHtml+='<div style="font-size:12px;font-weight:700;color:#333;padding:8px 0 4px 0;border-bottom:1px solid #eee;">'+dateStr+' ('+dayName+')</div>';
-        prevDateStr=dateStr;
-      }
-
-      var stageColor=pipeColors[ev.stage]||sumColors[ev.stage]||'#888';
-      pdHtml+='<div style="display:flex;align-items:flex-start;padding:8px 0 8px 12px;border-left:2px solid '+stageColor+';margin-left:6px;">';
-      pdHtml+='<span style="font-size:14px;margin-right:8px;flex-shrink:0;">'+ev.icon+'</span>';
-      pdHtml+='<div style="flex:1;min-width:0;">';
-      pdHtml+='<div style="font-size:12px;font-weight:600;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(ev.site)+'</div>';
-      pdHtml+='<div style="font-size:11px;color:#888;margin-top:2px;">';
-      pdHtml+='<span style="color:'+stageColor+';font-weight:600;">'+ev.stage+'</span>';
-      if(ev.mgr)pdHtml+=' · '+esc(ev.mgr);
-      if(ev.type)pdHtml+=' · '+esc(ev.type);
-      if(ev.qty)pdHtml+=' · '+ev.qty+'기';
-      pdHtml+='</div>';
-      if(ev.content)pdHtml+='<div style="font-size:11px;color:#aaa;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(ev.content)+'</div>';
-      pdHtml+='</div></div>';
-    }
-  }
-  pdHtml+='</div></div>';
   document.getElementById('allMgrBar').innerHTML=pdHtml;
-
 
 
    // === 캘린더 ===
@@ -2151,7 +2019,7 @@ function renderAllStats(){
   }
   tblHtml+='</tbody></table></div>';
   document.getElementById('allSheetTable').innerHTML=tblHtml;
-}
+
 
 
   function renderAllCalendar(){
