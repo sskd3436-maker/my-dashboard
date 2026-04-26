@@ -1774,13 +1774,14 @@ function submitAddRow(){
             document.getElementById('cf_promoAmt')?document.getElementById('cf_promoAmt').value:'',
             statusVal,
             document.getElementById('cf_note')?document.getElementById('cf_note').value:'',
-            mgrVal,
-  '',
+             mgrVal,
+  (function(){var sd='';for(var fi=0;fi<allFlat.length;fi++){var ft=allFlat[fi];if((ft.site||'').trim()===siteVal.trim()&&(fv(ft.row,ft.headers,'긍정')||'')){var fd=ft.date;if(fd)sd=fd.getFullYear()+'.'+(fd.getMonth()+1)+'.'+fd.getDate();break;}}return sd;})(),
   statusVal==='입대위'?(new Date().getFullYear()+'.'+(new Date().getMonth()+1)+'.'+new Date().getDate()):'',
   statusVal==='실사'?(new Date().getFullYear()+'.'+(new Date().getMonth()+1)+'.'+new Date().getDate()):'',
   statusVal==='계약'?(new Date().getFullYear()+'.'+(new Date().getMonth()+1)+'.'+new Date().getDate()):'',
   ''
 ];
+
           apiPost({action:'addRow',sheet:'계약서',rowData:ctData},function(r2){
             if(r2.success||r2.ok){toast('계약서에도 자동 추가됨','ok');contractData=null;}
           });
