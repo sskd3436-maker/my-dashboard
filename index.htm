@@ -2935,35 +2935,29 @@ function submitContract(){
     dateFields['탈락여부']
   ];
 
-   if(editContractRow){
+     if(editContractRow){
     toast('수정 완료','ok');
     closeContractModal();
-    (function sendNext(idx){
-      if(idx>=rowData.length){
-        contractData=null;
-        renderContract();
-        setTimeout(function(){
-          apiGet({action:'getSheets'},function(data){
-            var sheets=data.sheets||[],loaded=0;
-            var newData={};
-            for(var si=0;si<sheets.length;si++){
-              (function(nm){apiGet({action:'getData',sheet:nm},function(d){
-                newData[nm]=d;loaded++;
-                if(loaded>=sheets.length){
-                  allSheetsData=newData;
-                  localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
-                  buildFlat();buildFilters();renderContract();
-                }
-              });})(sheets[si]);
-            }
-          });
-        },2000);
-        return;
-      }
-      apiPost({action:'updateCell',sheet:'계약서',row:editContractRow,col:idx+2,value:rowData[idx]},function(){
-        setTimeout(function(){sendNext(idx+1);},200);
-      });
-    })(0);
+    apiPost({action:'updateRow',sheet:'계약서',row:editContractRow,colStart:2,values:rowData},function(){
+      contractData=null;
+      renderContract();
+      setTimeout(function(){
+        apiGet({action:'getSheets'},function(data){
+          var sheets=data.sheets||[],loaded=0;
+          var newData={};
+          for(var si=0;si<sheets.length;si++){
+            (function(nm){apiGet({action:'getData',sheet:nm},function(d){
+              newData[nm]=d;loaded++;
+              if(loaded>=sheets.length){
+                allSheetsData=newData;
+                localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
+                buildFlat();buildFilters();renderContract();
+              }
+            });})(sheets[si]);
+          }
+        });
+      },2000);
+    });
   }else{
     toast('저장 완료','ok');
     closeContractModal();
