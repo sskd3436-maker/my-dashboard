@@ -2935,12 +2935,29 @@ function submitContract(){
     dateFields['탈락여부']
   ];
 
-  if(editContractRow){
+   if(editContractRow){
+    toast('수정 완료','ok');
+    closeContractModal();
     (function sendNext(idx){
       if(idx>=rowData.length){
-        toast('수정 완료','ok');
-        closeContractModal();
-        setTimeout(function(){contractData=null;renderContract();},1000);
+        contractData=null;
+        renderContract();
+        setTimeout(function(){
+          apiGet({action:'getSheets'},function(data){
+            var sheets=data.sheets||[],loaded=0;
+            var newData={};
+            for(var si=0;si<sheets.length;si++){
+              (function(nm){apiGet({action:'getData',sheet:nm},function(d){
+                newData[nm]=d;loaded++;
+                if(loaded>=sheets.length){
+                  allSheetsData=newData;
+                  localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
+                  buildFlat();buildFilters();renderContract();
+                }
+              });})(sheets[si]);
+            }
+          });
+        },2000);
         return;
       }
       apiPost({action:'updateCell',sheet:'계약서',row:editContractRow,col:idx+2,value:rowData[idx]},function(){
@@ -2948,12 +2965,34 @@ function submitContract(){
       });
     })(0);
   }else{
+    toast('저장 완료','ok');
+    closeContractModal();
     apiPost({action:'addRow',sheet:'계약서',rowData:rowData},function(r){
-      if(r.success){toast('저장 완료','ok');closeContractModal();contractData=null;renderContract();}
-      else toast('저장 실패','fail');
+      if(r.success){
+        contractData=null;
+        renderContract();
+        setTimeout(function(){
+          apiGet({action:'getSheets'},function(data){
+            var sheets=data.sheets||[],loaded=0;
+            var newData={};
+            for(var si=0;si<sheets.length;si++){
+              (function(nm){apiGet({action:'getData',sheet:nm},function(d){
+                newData[nm]=d;loaded++;
+                if(loaded>=sheets.length){
+                  allSheetsData=newData;
+                  localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
+                  buildFlat();buildFilters();renderContract();
+                }
+              });})(sheets[si]);
+            }
+          });
+        },2000);
+      }else{
+        toast('저장 실패','fail');
+      }
     });
   }
-}
+
 
 
 function editContract(rowIdx){openContractModal(rowIdx);}
