@@ -444,7 +444,8 @@
       <option value="제안">제안</option>
       <option value="입대위">입대위</option>
       <option value="실사">실사</option>
-      <option value="계약">계약</option>
+     <option value="계약">계약</option>
+      <option value="탈락">탈락</option>
     </select>
     <button class="btn btn-primary" style="margin-left:8px;" onclick="openContractModal()">+ 계약서 작성</button>
   </div>
@@ -504,7 +505,7 @@
         <div class="form-group"><label>설치금액</label><input type="text" id="cf_total" class="form-input" readonly></div>
         <div class="form-group"><label>프로모션기간</label><input type="text" id="cf_promo" class="form-input"></div>
         <div class="form-group"><label>프로모션금액</label><input type="text" id="cf_promoAmt" class="form-input"></div>
-        <div class="form-group"><label>진행사항</label><select id="cf_status" class="form-input"><option value="">선택</option><option value="상담">상담</option><option value="제안">제안</option><option value="입대위">입대위</option><option value="실사">실사</option><option value="계약">계약</option></select></div>
+        <div class="form-group"><label>진행사항</label><select id="cf_status" class="form-input"><option value="">선택</option><option value="상담">상담</option><option value="제안">제안</option><option value="입대위">입대위</option><option value="실사">실사</option><option value="계약">계약</option><option value="탈락">탈락</option></select></div>
         <div class="form-group"><label>비고</label><textarea id="cf_note" class="form-input" rows="3"></textarea></div>
         <div class="form-group"><label>담당자</label><input type="text" id="cf_mgr" class="form-input"></div>
       </div>
@@ -2823,6 +2824,51 @@ function submitContract(){
   if(type==='신규설치')price=3500000;
   else if(type==='제자리교체')price=2500000;
 
+  var status=document.getElementById('cf_status').value;
+
+  // 기존 진행사항 확인 (수정 모드일 때)
+  var oldStatus='';
+  if(editContractRow&&contractData&&contractData.rows){
+    var ch=contractData.headers;
+    for(var ci=0;ci<contractData.rows.length;ci++){
+      var cr=contractData.rows[ci];
+      if((cr._rowIndex||ci+4)===editContractRow){
+        oldStatus=(fv(cr,ch,'진행사항')||'').trim();
+        break;
+      }
+    }
+  }
+
+  // 오늘 날짜
+  var today=new Date();
+  var todayStr=today.getFullYear()+'.'+(today.getMonth()+1)+'.'+today.getDate();
+
+  // 기존 날짜 값 유지
+  var dateFields={제안일:'',입대위일:'',실사일:'',계약일:'',탈락여부:''};
+  if(editContractRow&&contractData&&contractData.rows){
+    var ch=contractData.headers;
+    for(var ci=0;ci<contractData.rows.length;ci++){
+      var cr=contractData.rows[ci];
+      if((cr._rowIndex||ci+4)===editContractRow){
+        dateFields['제안일']=fv(cr,ch,'제안일')||'';
+        dateFields['입대위일']=fv(cr,ch,'입대위일')||'';
+        dateFields['실사일']=fv(cr,ch,'실사일')||'';
+        dateFields['계약일']=fv(cr,ch,'계약일')||'';
+        dateFields['탈락여부']=fv(cr,ch,'탈락여부')||'';
+        break;
+      }
+    }
+  }
+
+  // 진행사항이 변경되면 해당 날짜 기록
+  if(status!==oldStatus){
+    if(status==='제안'&&!dateFields['제안일'])dateFields['제안일']=todayStr;
+    if(status==='입대위'&&!dateFields['입대위일'])dateFields['입대위일']=todayStr;
+    if(status==='실사'&&!dateFields['실사일'])dateFields['실사일']=todayStr;
+    if(status==='계약'&&!dateFields['계약일'])dateFields['계약일']=todayStr;
+    if(status==='탈락')dateFields['탈락여부']=todayStr;
+  }
+
   var rowData=[
     document.getElementById('cf_site').value,
     document.getElementById('cf_name').value,
@@ -2836,12 +2882,17 @@ function submitContract(){
     (price*qty)?(price*qty).toLocaleString()+'원':'',
     document.getElementById('cf_promo').value,
     document.getElementById('cf_promoAmt').value,
-    document.getElementById('cf_status').value,
+    status,
     document.getElementById('cf_note').value,
-    document.getElementById('cf_mgr').value
+    document.getElementById('cf_mgr').value,
+    dateFields['제안일'],
+    dateFields['입대위일'],
+    dateFields['실사일'],
+    dateFields['계약일'],
+    dateFields['탈락여부']
   ];
 
-    if(editContractRow){
+  if(editContractRow){
     (function sendNext(idx){
       if(idx>=rowData.length){
         toast('수정 완료','ok');
