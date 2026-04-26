@@ -1914,6 +1914,7 @@ function renderAllStats(){
   pipHtml+='</div>';
   pipHtml+='<div style="text-align:right;margin-top:8px;font-size:13px;color:#666;font-weight:600;">총 '+ctTotal+'건</div></div>';
    var notInCheck=0;if(contractData&&contractData.rows){for(var i=0;i<contractData.rows.length;i++){var sn=(contractData.rows[i]['사이트명']||'').trim();if(!siteCheck[sn])notInCheck++;}}console.log('siteCheck에없는 계약서사이트:', notInCheck);
+  console.log('상단카드총:', totalSites, '파이프라인총:', ctTotal, '차이:', ctTotal-totalSites);
   console.log('파이프라인:', '상담:'+ct상담, '제안:'+ct제안, '입대위:'+ct입대위, '실사:'+ct실사, '계약:'+ct계약, '총:'+ctTotal);
   document.getElementById('allPipeline').innerHTML=pipHtml;
 
