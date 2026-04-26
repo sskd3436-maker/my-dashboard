@@ -1775,8 +1775,12 @@ function submitAddRow(){
             statusVal,
             document.getElementById('cf_note')?document.getElementById('cf_note').value:'',
             mgrVal,
-            '','','','',''
-          ];
+  '',
+  statusVal==='입대위'?(new Date().getFullYear()+'.'+(new Date().getMonth()+1)+'.'+new Date().getDate()):'',
+  statusVal==='실사'?(new Date().getFullYear()+'.'+(new Date().getMonth()+1)+'.'+new Date().getDate()):'',
+  statusVal==='계약'?(new Date().getFullYear()+'.'+(new Date().getMonth()+1)+'.'+new Date().getDate()):'',
+  ''
+];
           apiPost({action:'addRow',sheet:'계약서',rowData:ctData},function(r2){
             if(r2.success||r2.ok){toast('계약서에도 자동 추가됨','ok');contractData=null;}
           });
