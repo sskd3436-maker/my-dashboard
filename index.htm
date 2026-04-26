@@ -1871,7 +1871,7 @@ function renderAllStats(){
     for(var i=0;i<contractData.rows.length;i++){
       var sn=(contractData.rows[i]['사이트명']||'').trim();
       var st=contractData.rows[i]['진행사항']||'상담';
-      if(!siteToSheet[sn])continue;
+      if(!siteCheck[sn])continue;
       existSites[sn]=1;ctTotal++;
       if(st==='상담')ct상담++;else if(st==='제안')ct제안++;else if(st==='입대위')ct입대위++;else if(st==='실사')ct실사++;else if(st==='계약')ct계약++;
     }
