@@ -1775,6 +1775,7 @@ function submitAddRow(){
             statusVal,
             document.getElementById('cf_note')?document.getElementById('cf_note').value:'',
             mgrVal
+            '','','','',''
           ];
           apiPost({action:'addRow',sheet:'계약서',rowData:ctData},function(r2){
             if(r2.success||r2.ok){toast('계약서에도 자동 추가됨','ok');contractData=null;}
@@ -2372,8 +2373,39 @@ function submitSchEdit(){
               }
             }
            if(exists&&existRow){
-              var ctFields=['사이트명','입대위명','주소','사업자번호','관리실번호','계약년수','충전기수량','설치유형','충전기단가','설치금액','프로모션기간','프로모션금액','진행사항','비고','담당자'];
-              var ctIds=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
+              var ctFields=['사이트명','입대위명','주소','사업자번호','관리실번호','계약년수','충전기수량','설치유형','충전기단가','설치금액','프로모션기간','프로모션금액','진행사항','비고','담당자','제안일','입대위일','실사일','계약일','탈락여부'];
+var ctIds=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr','_auto_제안일','_auto_입대위일','_auto_실사일','_auto_계약일','_auto_탈락여부'];
+
+// 날짜 자동 기록
+var today=new Date();
+var todayStr=today.getFullYear()+'.'+(today.getMonth()+1)+'.'+today.getDate();
+var oldStatus='';
+var ch2=contractData.headers;
+for(var ci2=0;ci2<contractData.rows.length;ci2++){
+  if(((contractData.rows[ci2]['사이트명'])||'').trim()===siteVal.trim()){
+    oldStatus=(fv(contractData.rows[ci2],ch2,'진행사항')||'').trim();
+    break;
+  }
+}
+var dateVals={'제안일':'','입대위일':'','실사일':'','계약일':'','탈락여부':''};
+for(var ci2=0;ci2<contractData.rows.length;ci2++){
+  if(((contractData.rows[ci2]['사이트명'])||'').trim()===siteVal.trim()){
+    dateVals['제안일']=fv(contractData.rows[ci2],ch2,'제안일')||'';
+    dateVals['입대위일']=fv(contractData.rows[ci2],ch2,'입대위일')||'';
+    dateVals['실사일']=fv(contractData.rows[ci2],ch2,'실사일')||'';
+    dateVals['계약일']=fv(contractData.rows[ci2],ch2,'계약일')||'';
+    dateVals['탈락여부']=fv(contractData.rows[ci2],ch2,'탈락여부')||'';
+    break;
+  }
+}
+if(statusVal!==oldStatus){
+  if(statusVal==='제안'&&!dateVals['제안일'])dateVals['제안일']=todayStr;
+  if(statusVal==='입대위'&&!dateVals['입대위일'])dateVals['입대위일']=todayStr;
+  if(statusVal==='실사'&&!dateVals['실사일'])dateVals['실사일']=todayStr;
+  if(statusVal==='계약'&&!dateVals['계약일'])dateVals['계약일']=todayStr;
+  if(statusVal==='탈락')dateVals['탈락여부']=todayStr;
+}
+
             var ctPairs=[];
 for(var fi=0;fi<ctFields.length;fi++){
   var ctCol=-1;
@@ -2381,7 +2413,13 @@ for(var fi=0;fi<ctFields.length;fi++){
     if(contractData.headers[ci]===ctFields[fi]){ctCol=ci+2;break;}
   }
   if(ctCol>0){
-    var ctVal=document.getElementById(ctIds[fi])?document.getElementById(ctIds[fi]).value:'';
+    var ctVal='';
+if(ctIds[fi].indexOf('_auto_')===0){
+  var autoKey=ctIds[fi].replace('_auto_','');
+  ctVal=dateVals[autoKey]||'';
+}else{
+  ctVal=document.getElementById(ctIds[fi])?document.getElementById(ctIds[fi]).value:'';
+}
     ctPairs.push({col:ctCol,val:ctVal});
   }
 }
