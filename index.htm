@@ -2944,7 +2944,6 @@ function submitContract(){
     closeContractModal();
     apiPost({action:'updateRow',sheet:'계약서',row:saveRow,colStart:2,values:rowData},function(res){
       console.log('updateRow응답:', JSON.stringify(res));
-      console.log('updateRow응답:', JSON.stringify(res));
       contractData=null;
       renderContract();
       setTimeout(function(){
