@@ -2936,9 +2936,11 @@ function submitContract(){
   ];
 
      if(editContractRow){
+   console.log('rowData길이:', rowData.length, 'rowData:', JSON.stringify(rowData));
     toast('수정 완료','ok');
     closeContractModal();
-    apiPost({action:'updateRow',sheet:'계약서',row:editContractRow,colStart:2,values:rowData},function(){
+    apiPost({action:'updateRow',sheet:'계약서',row:editContractRow,colStart:2,values:rowData},function(res){
+      console.log('updateRow응답:', JSON.stringify(res));
       contractData=null;
       renderContract();
       setTimeout(function(){
