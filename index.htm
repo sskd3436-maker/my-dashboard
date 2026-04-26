@@ -1845,9 +1845,9 @@ function renderAllStats(){
 
   var cardHtml='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">';
   cardHtml+='<div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:16px;padding:20px;color:#fff;box-shadow:0 4px 15px rgba(102,126,234,0.4);">';
-  cardHtml+='<div style="font-size:12px;opacity:0.8;">총 사이트</div><div style="font-size:36px;font-weight:900;margin:4px 0;">'+visitedSites+'</div><div style="font-size:11px;opacity:0.7;">방문 완료 사이트</div></div>';
-    cardHtml+='<div style="background:linear-gradient(135deg,#2ecc71,#27ae60);border-radius:16px;padding:20px;color:#fff;box-shadow:0 4px 15px rgba(46,204,113,0.4);">';
-  cardHtml+='<div style="font-size:12px;opacity:0.8;">전체 사이트</div><div style="font-size:36px;font-weight:900;margin:4px 0;">'+totalSites+'</div><div style="font-size:11px;opacity:0.7;">미방문 '+unvisitedSites+'건</div></div>';
+  cardHtml+='<div style="font-size:12px;opacity:0.8;">총 사이트</div><div style="font-size:36px;font-weight:900;margin:4px 0;">'+totalSites+'</div><div style="font-size:11px;opacity:0.7;">전체 관리 사이트</div></div>';
+  cardHtml+='<div style="background:linear-gradient(135deg,#2ecc71,#27ae60);border-radius:16px;padding:20px;color:#fff;box-shadow:0 4px 15px rgba(46,204,113,0.4);">';
+  cardHtml+='<div style="font-size:12px;opacity:0.8;">방문 완료</div><div style="font-size:36px;font-weight:900;margin:4px 0;">'+visitedSites+'</div><div style="font-size:11px;opacity:0.7;">'+Math.round(visitedSites/totalSites*100)+'% 완료</div></div>';
   cardHtml+='<div style="background:linear-gradient(135deg,#e74c3c,#c0392b);border-radius:16px;padding:20px;color:#fff;box-shadow:0 4px 15px rgba(231,76,60,0.4);">';
   cardHtml+='<div style="font-size:12px;opacity:0.8;">미방문</div><div style="font-size:36px;font-weight:900;margin:4px 0;">'+unvisitedSites+'</div><div style="font-size:11px;opacity:0.7;">'+Math.round(unvisitedSites/totalSites*100)+'% 남음</div></div>';
   cardHtml+='<div style="background:linear-gradient(135deg,#f39c12,#e67e22);border-radius:16px;padding:20px;color:#fff;box-shadow:0 4px 15px rgba(243,156,18,0.4);">';
