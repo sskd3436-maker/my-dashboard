@@ -1937,7 +1937,7 @@ function renderAllStats(){
   chartHtml+='</div></div>';
   document.getElementById('allMonthChart').innerHTML=chartHtml;
 
- // === 담당자별 계약 실적 ===
+   // === 담당자별 계약 실적 ===
   var ctMgr={};
   var ctTotal=0,ctQtyTotal=0;
   if(contractData&&contractData.rows){
@@ -1948,38 +1948,82 @@ function renderAllStats(){
       if(status!=='계약')continue;
       var mgr=(fv(cr,ch,'담당자')||'미지정').trim();
       var qty=parseInt(fv(cr,ch,'충전기수량')||'0')||0;
-      if(!ctMgr[mgr])ctMgr[mgr]={cnt:0,qty:0};
+      var site=(fv(cr,ch,'사이트명')||'').trim();
+      var type=(fv(cr,ch,'설치유형')||'').trim();
+      if(!ctMgr[mgr])ctMgr[mgr]={cnt:0,qty:0,sites:[],color:''};
       ctMgr[mgr].cnt++;
       ctMgr[mgr].qty+=qty;
+      ctMgr[mgr].sites.push({site:site,qty:qty,type:type});
       ctTotal++;
       ctQtyTotal+=qty;
     }
   }
+  var mgrColors=['#667eea','#e67e22','#27ae60','#e74c3c','#9b59b6','#1abc9c','#f39c12','#3498db'];
   var ctKeys=Object.keys(ctMgr).sort(function(a,b){return ctMgr[b].qty-ctMgr[a].qty;});
+  for(var i=0;i<ctKeys.length;i++)ctMgr[ctKeys[i]].color=mgrColors[i%mgrColors.length];
   var maxQty=0;
   for(var i=0;i<ctKeys.length;i++){if(ctMgr[ctKeys[i]].qty>maxQty)maxQty=ctMgr[ctKeys[i]].qty;}
 
+  if(!window._ctMgrOpen)window._ctMgrOpen='';
+
   var pdHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;display:flex;flex-direction:column;">';
-  pdHtml+='<h3 style="margin:0 0 16px 0;font-size:16px;color:#333;">📋 담당자별 계약 실적</h3>';
+  pdHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
+  pdHtml+='<h3 style="margin:0;font-size:16px;color:#333;">📋 담당자별 계약 실적</h3>';
+  if(window._ctMgrOpen)pdHtml+='<button onclick="toggleCtMgr(\'\')" style="background:#f0f0f0;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
+  pdHtml+='</div>';
 
   if(ctKeys.length===0){
     pdHtml+='<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#999;font-size:13px;">계약 완료된 건이 없습니다</div>';
   }else{
-    pdHtml+='<div style="flex:1;">';
+    // 담당자 바
     for(var i=0;i<ctKeys.length;i++){
       var mn=ctKeys[i],md=ctMgr[mn];
       var barW=maxQty>0?Math.max(Math.round(md.qty/maxQty*100),8):8;
-      pdHtml+='<div style="padding:10px 0;'+(i<ctKeys.length-1?'border-bottom:1px solid #f0f0f0;':'')+'">';
-      pdHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
-      pdHtml+='<span style="font-weight:700;font-size:14px;color:#333;">'+esc(mn)+'</span>';
-      pdHtml+='<span style="font-size:13px;color:#333;"><b>'+md.cnt+'</b>건 / <b style="color:#27ae60;">'+md.qty+'</b>기</span>';
+      var isOpen=(window._ctMgrOpen===mn);
+      pdHtml+='<div style="padding:8px 0;'+(i<ctKeys.length-1?'border-bottom:1px solid #f0f0f0;':'')+'">';
+      pdHtml+='<div onclick="toggleCtMgr(\''+esc(mn)+'\')" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;cursor:pointer;">';
+      pdHtml+='<span style="font-weight:700;font-size:14px;color:'+md.color+';">'+esc(mn)+'</span>';
+      pdHtml+='<span style="font-size:13px;color:#333;"><b>'+md.cnt+'</b>건 / <b style="color:'+md.color+';">'+md.qty+'</b>기</span>';
       pdHtml+='</div>';
       pdHtml+='<div style="height:20px;background:#f0f0f0;border-radius:10px;overflow:hidden;">';
-      pdHtml+='<div style="width:'+barW+'%;height:100%;background:linear-gradient(90deg,#27ae60,#2ecc71);border-radius:10px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;">';
+      pdHtml+='<div style="width:'+barW+'%;height:100%;background:linear-gradient(90deg,'+md.color+','+md.color+'cc);border-radius:10px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;">';
       if(barW>20)pdHtml+='<span style="font-size:10px;color:#fff;font-weight:700;">'+md.qty+'기</span>';
-      pdHtml+='</div></div></div>';
+      pdHtml+='</div></div>';
+
+      // 사이트 목록 (클릭 시)
+      if(isOpen){
+        var newSites=[],replaceSites=[];
+        for(var j=0;j<md.sites.length;j++){
+          if(md.sites[j].type==='신규설치')newSites.push(md.sites[j]);
+          else replaceSites.push(md.sites[j]);
+        }
+        pdHtml+='<div style="margin-top:8px;display:flex;gap:8px;">';
+        // 신규설치
+        pdHtml+='<div style="flex:1;background:linear-gradient(135deg,#667eea10,#667eea05);border:1px solid #667eea20;border-radius:10px;padding:10px;">';
+        pdHtml+='<div style="font-size:11px;font-weight:700;color:#667eea;margin-bottom:6px;">🆕 신규설치 ('+newSites.length+'건)</div>';
+        if(newSites.length===0)pdHtml+='<div style="font-size:11px;color:#999;">없음</div>';
+        for(var j=0;j<newSites.length;j++){
+          pdHtml+='<div style="font-size:11px;color:#333;padding:3px 0;display:flex;justify-content:space-between;">';
+          pdHtml+='<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">'+esc(newSites[j].site)+'</span>';
+          pdHtml+='<span style="color:#667eea;font-weight:600;flex-shrink:0;margin-left:6px;">'+newSites[j].qty+'기</span>';
+          pdHtml+='</div>';
+        }
+        pdHtml+='</div>';
+        // 제자리교체
+        pdHtml+='<div style="flex:1;background:linear-gradient(135deg,#e67e2210,#e67e2205);border:1px solid #e67e2220;border-radius:10px;padding:10px;">';
+        pdHtml+='<div style="font-size:11px;font-weight:700;color:#e67e22;margin-bottom:6px;">🔄 제자리교체 ('+replaceSites.length+'건)</div>';
+        if(replaceSites.length===0)pdHtml+='<div style="font-size:11px;color:#999;">없음</div>';
+        for(var j=0;j<replaceSites.length;j++){
+          pdHtml+='<div style="font-size:11px;color:#333;padding:3px 0;display:flex;justify-content:space-between;">';
+          pdHtml+='<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">'+esc(replaceSites[j].site)+'</span>';
+          pdHtml+='<span style="color:#e67e22;font-weight:600;flex-shrink:0;margin-left:6px;">'+replaceSites[j].qty+'기</span>';
+          pdHtml+='</div>';
+        }
+        pdHtml+='</div>';
+        pdHtml+='</div>';
+      }
+      pdHtml+='</div>';
     }
-    pdHtml+='</div>';
 
     // 합계
     pdHtml+='<div style="margin-top:12px;padding-top:12px;border-top:2px solid #eee;display:flex;justify-content:space-between;align-items:center;">';
@@ -1990,7 +2034,6 @@ function renderAllStats(){
 
   pdHtml+='</div>';
   document.getElementById('allMgrBar').innerHTML=pdHtml;
-
 
    // === 캘린더 ===
   if(!window._calY)window._calY=now.getFullYear();
@@ -2132,6 +2175,10 @@ function toggleTlMode(mode){
   renderAllStats();
 }
 
+  function toggleCtMgr(mgr){
+  window._ctMgrOpen=(window._ctMgrOpen===mgr)?'':mgr;
+  renderAllStats();
+}
  
 // 일일
 function moveDaily(dir){if(dir===0)dailyDt=new Date();else dailyDt.setDate(dailyDt.getDate()+dir);dailyDt.setHours(0,0,0,0);renderDaily();}
