@@ -2264,12 +2264,14 @@ function moveAllCal(dir){
   if(window._calM>11){window._calM=0;window._calY++;}
   if(window._calM<0){window._calM=11;window._calY--;}
   window._calSelDay=0;
-  renderAllCalendar();
+  window._visitListPage=1;
+  renderAllStats();
 }
 
 function selectCalDay(d){
   window._calSelDay=(window._calSelDay===d)?0:d;
-  renderAllCalendar();
+  window._visitListPage=1;
+  renderAllStats();
 }
 
 function toggleTlMode(mode){
