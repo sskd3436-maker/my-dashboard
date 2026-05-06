@@ -2065,28 +2065,106 @@ function renderAllStats(){
    window._calFlat=flatNoContract;
   renderAllCalendar();
 
-  // === 시트별 현황 테이블 ===
-  var sc={};for(var i=0;i<flatNoContract.length;i++){var s=flatNoContract[i].sheet;if(!sc[s])sc[s]={positive:0,neutral:0,negative:0,etc:0,total:0,visited:0};sc[s].total++;var v=flatNoContract[i].date||fv(flatNoContract[i].row,flatNoContract[i].headers,'방문일자')||'';if(v)sc[s].visited++;var se=flatNoContract[i].sent;if(se)sc[s][se]++;}
-  var ns=Object.keys(sc);
-  var tblHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);">';
-  tblHtml+='<h3 style="margin:0 0 16px 0;font-size:16px;color:#333;">📄 시트별 현황</h3>';
-  tblHtml+='<table style="width:100%;border-collapse:collapse;font-size:13px;">';
-  tblHtml+='<thead><tr style="background:#f8f9fa;"><th style="padding:12px;text-align:left;border-bottom:2px solid #e0e0e0;">시트명</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">총</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">방문</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">긍정</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">중립</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">부정</th><th style="padding:12px;text-align:center;border-bottom:2px solid #e0e0e0;">방문률</th></tr></thead><tbody>';
-  for(var i=0;i<ns.length;i++){
-    var n=ns[i],c=sc[n],vp=c.total>0?Math.round(c.visited/c.total*100):0;
-    tblHtml+='<tr style="border-bottom:1px solid #f0f0f0;">';
-    tblHtml+='<td style="padding:12px;font-weight:600;">'+esc(n)+'</td>';
-    tblHtml+='<td style="padding:12px;text-align:center;font-weight:700;">'+c.total+'</td>';
-    tblHtml+='<td style="padding:12px;text-align:center;color:#2ecc71;font-weight:600;">'+c.visited+'</td>';
-    tblHtml+='<td style="padding:12px;text-align:center;color:#27ae60;">'+c.positive+'</td>';
-    tblHtml+='<td style="padding:12px;text-align:center;color:#f39c12;">'+c.neutral+'</td>';
-    tblHtml+='<td style="padding:12px;text-align:center;color:#e74c3c;">'+c.negative+'</td>';
-    tblHtml+='<td style="padding:12px;text-align:center;"><div style="display:flex;align-items:center;gap:6px;justify-content:center;"><div style="width:60px;height:6px;background:#eee;border-radius:3px;overflow:hidden;"><div style="width:'+vp+'%;height:100%;background:#667eea;border-radius:3px;"></div></div><span style="font-size:12px;font-weight:600;color:#333;">'+vp+'%</span></div></td>';
-    tblHtml+='</tr>';
+    // === 월별 방문 목록 ===
+  if(!window._visitListPage)window._visitListPage=1;
+  if(!window._visitListMgr)window._visitListMgr='';
+  var perPage=10;
+
+  var calY=window._calY||now.getFullYear();
+  var calM=window._calM!=null?window._calM:now.getMonth();
+  var calDay=window._calSelDay||0;
+  var mStart=new Date(calY,calM,1);
+  var mEnd=new Date(calY,calM+1,0);
+
+  var visitList=[];
+  for(var i=0;i<flatNoContract.length;i++){
+    var it=flatNoContract[i];
+    if(!it.date)continue;
+    if(calDay>0){
+      var sel=new Date(calY,calM,calDay);sel.setHours(0,0,0,0);
+      if(it.date.getTime()!==sel.getTime())continue;
+    }else{
+      if(it.date<mStart||it.date>mEnd)continue;
+    }
+    if(window._visitListMgr&&(it.mgr||'')!==window._visitListMgr)continue;
+    var content=fv(it.row,it.headers,'영업내용')||'';
+    var pos=fv(it.row,it.headers,'긍정')||'';
+    var neu=fv(it.row,it.headers,'중립')||'';
+    var neg=fv(it.row,it.headers,'부정')||'';
+    var sent=pos?'긍정':neu?'중립':neg?'부정':'-';
+    var sentColor=pos?'#27ae60':neu?'#f39c12':neg?'#e74c3c':'#999';
+    var dateStr=it.date.getFullYear()+'.'+(it.date.getMonth()+1)+'.'+it.date.getDate();
+    visitList.push({date:it.date,dateStr:dateStr,site:it.site||'',mgr:it.mgr||'',sheet:it.sheet||'',content:content,sent:sent,sentColor:sentColor});
   }
-  tblHtml+='</tbody></table></div>';
+  visitList.sort(function(a,b){return b.date.getTime()-a.date.getTime();});
+
+  // 담당자 목록
+  var visitMgrs={};
+  for(var i=0;i<visitList.length;i++){if(visitList[i].mgr)visitMgrs[visitList[i].mgr]=1;}
+  var mgrList=Object.keys(visitMgrs).sort();
+
+  var totalPages=Math.ceil(visitList.length/perPage)||1;
+  if(window._visitListPage>totalPages)window._visitListPage=totalPages;
+  var startIdx=(window._visitListPage-1)*perPage;
+  var pageItems=visitList.slice(startIdx,startIdx+perPage);
+
+  var periodLabel=calDay>0?calY+'년 '+(calM+1)+'월 '+calDay+'일':calY+'년 '+(calM+1)+'월';
+
+  var tblHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);">';
+  tblHtml+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">';
+  tblHtml+='<h3 style="margin:0;font-size:16px;color:#333;">📄 '+periodLabel+' 방문 목록 ('+visitList.length+'건)</h3>';
+  tblHtml+='<div style="display:flex;gap:6px;align-items:center;">';
+  tblHtml+='<select onchange="window._visitListMgr=this.value;window._visitListPage=1;renderAllStats();" style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:12px;">';
+  tblHtml+='<option value="">전체 담당자</option>';
+  for(var i=0;i<mgrList.length;i++){
+    tblHtml+='<option value="'+esc(mgrList[i])+'"'+(window._visitListMgr===mgrList[i]?' selected':'')+'>'+esc(mgrList[i])+'</option>';
+  }
+  tblHtml+='</select>';
+  if(calDay>0)tblHtml+='<button onclick="window._calSelDay=0;window._visitListPage=1;renderAllStats();" style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;background:#f8f9fa;font-size:12px;cursor:pointer;">월 전체</button>';
+  tblHtml+='</div></div>';
+
+  tblHtml+='<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+  tblHtml+='<thead><tr style="background:#f8f9fa;">';
+  tblHtml+='<th style="padding:10px;text-align:left;border-bottom:2px solid #e0e0e0;">날짜</th>';
+  tblHtml+='<th style="padding:10px;text-align:left;border-bottom:2px solid #e0e0e0;">사이트명</th>';
+  tblHtml+='<th style="padding:10px;text-align:center;border-bottom:2px solid #e0e0e0;">담당자</th>';
+  tblHtml+='<th style="padding:10px;text-align:center;border-bottom:2px solid #e0e0e0;">평가</th>';
+  tblHtml+='<th style="padding:10px;text-align:left;border-bottom:2px solid #e0e0e0;">영업내용</th>';
+  tblHtml+='</tr></thead><tbody>';
+
+  if(pageItems.length===0){
+    tblHtml+='<tr><td colspan="5" style="padding:24px;text-align:center;color:#999;">방문 기록이 없습니다</td></tr>';
+  }else{
+    for(var i=0;i<pageItems.length;i++){
+      var v=pageItems[i];
+      tblHtml+='<tr style="border-bottom:1px solid #f0f0f0;">';
+      tblHtml+='<td style="padding:10px;white-space:nowrap;color:#666;">'+v.dateStr+'</td>';
+      tblHtml+='<td style="padding:10px;font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(v.site)+'</td>';
+      tblHtml+='<td style="padding:10px;text-align:center;">'+esc(v.mgr)+'</td>';
+      tblHtml+='<td style="padding:10px;text-align:center;"><span style="color:'+v.sentColor+';font-weight:600;">'+v.sent+'</span></td>';
+      tblHtml+='<td style="padding:10px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#666;">'+esc(v.content||'-')+'</td>';
+      tblHtml+='</tr>';
+    }
+  }
+  tblHtml+='</tbody></table>';
+
+  // 페이지네이션
+  if(totalPages>1){
+    tblHtml+='<div style="display:flex;justify-content:center;gap:4px;margin-top:16px;">';
+    if(window._visitListPage>1)tblHtml+='<button onclick="window._visitListPage--;renderAllStats();" style="padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;">◀</button>';
+    var startP=Math.max(1,window._visitListPage-2);
+    var endP=Math.min(totalPages,startP+4);
+    for(var p=startP;p<=endP;p++){
+      tblHtml+='<button onclick="window._visitListPage='+p+';renderAllStats();" style="padding:6px 12px;border:1px solid '+(p===window._visitListPage?'#667eea':'#ddd')+';border-radius:6px;background:'+(p===window._visitListPage?'#667eea':'#fff')+';color:'+(p===window._visitListPage?'#fff':'#333')+';cursor:pointer;font-size:12px;font-weight:'+(p===window._visitListPage?'700':'400')+';">'+p+'</button>';
+    }
+    if(window._visitListPage<totalPages)tblHtml+='<button onclick="window._visitListPage++;renderAllStats();" style="padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;">▶</button>';
+    tblHtml+='</div>';
+  }
+
+  tblHtml+='</div>';
   document.getElementById('allSheetTable').innerHTML=tblHtml;
 }
+
 
 
   function renderAllCalendar(){
