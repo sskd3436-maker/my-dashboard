@@ -2074,14 +2074,20 @@ function renderAllStats(){
     pdHtml+='<span style="font-weight:700;font-size:13px;color:#333;'+(selMgr===mn?'color:#667eea;':'')+'">'+esc(mn)+'</span>';
     pdHtml+='<span style="font-size:12px;color:#888;font-weight:600;">'+totalVal+(chartMode==='qty'?'기':'건')+'</span>';
     pdHtml+='</div>';
-    pdHtml+='<div style="height:18px;background:#f0f0f0;border-radius:9px;overflow:hidden;display:flex;width:'+barW+'%;min-width:20px;">';
-    for(var s=0;s<segments.length;s++){
-      var sPct=totalVal>0?Math.round(segments[s].v/totalVal*100):0;
-      if(segments[s].v>0)pdHtml+='<div style="width:'+sPct+'%;background:'+segments[s].c+';"></div>';
-    }
-    pdHtml+='</div></div>';
-  }
-  pdHtml+='</div>';
+     pdHtml+='<div style="height:18px;background:#f0f0f0;border-radius:9px;overflow:hidden;display:flex;width:'+barW+'%;min-width:20px;">';
+      for(var s=0;s<segments.length;s++){
+        var sPct=totalVal>0?Math.round(segments[s].v/totalVal*100):0;
+        if(segments[s].v>0)pdHtml+='<div style="width:'+sPct+'%;background:'+segments[s].c+';"></div>';
+      }
+      pdHtml+='</div>';
+      if(chartMode==='visit'){
+        pdHtml+='<div style="display:flex;gap:8px;margin-top:2px;font-size:10px;">';
+        pdHtml+='<span style="color:#2ecc71;">긍정 '+vi.positive+'</span>';
+        pdHtml+='<span style="color:#f1c40f;">중립 '+vi.neutral+'</span>';
+        pdHtml+='<span style="color:#e74c3c;">부정 '+vi.negative+'</span>';
+        pdHtml+='</div>';
+      }
+      pdHtml+='</div></div>';
 
   // 선택된 담당자 사이트 목록
   var showSites=(selMgr==='all')?ctAllSites:(mgrPipe[selMgr]?mgrPipe[selMgr].sites:[]);
