@@ -1960,7 +1960,8 @@ function renderAllStats(){
   var mgrVisit={},mgrPipe={};
   for(var i=0;i<flatNoContract.length;i++){
     var it=flatNoContract[i];if(!it.date)continue;
-    var mg=(it.mgr||'미지정').trim();
+    var mg=(it.mgr||'').trim();
+    if(!mg)continue;
     if(!mgrVisit[mg])mgrVisit[mg]={total:0,positive:0,neutral:0,negative:0};
     mgrVisit[mg].total++;
     if(it.sent==='positive')mgrVisit[mg].positive++;
@@ -1972,7 +1973,8 @@ function renderAllStats(){
     for(var ci=0;ci<contractData.rows.length;ci++){
       var cr=contractData.rows[ci];
       var status=(fv(cr,ch,'진행사항')||'').trim();
-      var mgr=(fv(cr,ch,'담당자')||'미지정').trim();
+       var mgr=(fv(cr,ch,'담당자')||'').trim();
+      if(!mgr)continue;
       var qty=parseInt(fv(cr,ch,'충전기수량')||'0')||0;
       var site=(fv(cr,ch,'사이트명')||'').trim();
       var type=(fv(cr,ch,'설치유형')||'').trim();
