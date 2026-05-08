@@ -2080,11 +2080,29 @@ function renderAllStats(){
       if(segments[s].v>0)pdHtml+='<div style="width:'+sPct+'%;background:'+segments[s].c+';"></div>';
     }
     pdHtml+='</div>';
-    if(chartMode==='visit'){
+     if(chartMode==='visit'){
       pdHtml+='<div style="display:flex;gap:8px;margin-top:2px;font-size:10px;">';
       pdHtml+='<span style="color:#2ecc71;">긍정 '+vi.positive+'</span>';
       pdHtml+='<span style="color:#f1c40f;">중립 '+vi.neutral+'</span>';
       pdHtml+='<span style="color:#e74c3c;">부정 '+vi.negative+'</span>';
+      pdHtml+='</div>';
+    }else if(chartMode==='pipe'){
+      pdHtml+='<div style="display:flex;gap:8px;margin-top:2px;font-size:10px;">';
+      pdHtml+='<span style="color:#e67e22;">제안 '+pi.제안+'</span>';
+      pdHtml+='<span style="color:#f39c12;">입대위 '+pi.입대위+'</span>';
+      pdHtml+='<span style="color:#9b59b6;">실사 '+pi.실사+'</span>';
+      pdHtml+='<span style="color:#27ae60;">계약 '+pi.계약+'</span>';
+      pdHtml+='</div>';
+    }else if(chartMode==='qty'){
+      var newQ=0,repQ=0;
+      for(var j=0;j<pi.sites.length;j++){
+        if(pi.sites[j].status==='계약'){
+          if(pi.sites[j].type==='신규설치')newQ+=pi.sites[j].qty;else repQ+=pi.sites[j].qty;
+        }
+      }
+      pdHtml+='<div style="display:flex;gap:8px;margin-top:2px;font-size:10px;">';
+      pdHtml+='<span style="color:#667eea;">신규 '+newQ+'기</span>';
+      pdHtml+='<span style="color:#e67e22;">교체 '+repQ+'기</span>';
       pdHtml+='</div>';
     }
     pdHtml+='</div>';
