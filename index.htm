@@ -2079,14 +2079,6 @@ function renderAllStats(){
         var sPct=totalVal>0?Math.round(segments[s].v/totalVal*100):0;
         if(segments[s].v>0)pdHtml+='<div style="width:'+sPct+'%;background:'+segments[s].c+';"></div>';
       }
-      pdHtml+='</div>';
-      if(chartMode==='visit'){
-        pdHtml+='<div style="display:flex;gap:8px;margin-top:2px;font-size:10px;">';
-        pdHtml+='<span style="color:#2ecc71;">긍정 '+vi.positive+'</span>';
-        pdHtml+='<span style="color:#f1c40f;">중립 '+vi.neutral+'</span>';
-        pdHtml+='<span style="color:#e74c3c;">부정 '+vi.negative+'</span>';
-        pdHtml+='</div>';
-      }
       pdHtml+='</div></div></div>';
 
   // 선택된 담당자 사이트 목록
