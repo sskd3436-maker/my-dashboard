@@ -2010,11 +2010,13 @@ function renderAllStats(){
   pdHtml+='</div>';
 
   // 범례
-  if(chartMode==='visit'){
-    pdHtml+='<div style="display:flex;gap:10px;margin-bottom:8px;font-size:10px;">';
-    pdHtml+='<span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2ecc71;margin-right:3px;"></span>긍정</span>';
-    pdHtml+='<span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f1c40f;margin-right:3px;"></span>중립</span>';
-    pdHtml+='<span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#e74c3c;margin-right:3px;"></span>부정</span>';
+   if(chartMode==='visit'){
+    var totPos=0,totNeu=0,totNeg=0;
+    for(var k in mgrVisit){totPos+=mgrVisit[k].positive;totNeu+=mgrVisit[k].neutral;totNeg+=mgrVisit[k].negative;}
+    pdHtml+='<div style="display:flex;gap:14px;margin-bottom:8px;font-size:12px;">';
+    pdHtml+='<span style="color:#2ecc71;font-weight:600;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2ecc71;margin-right:4px;"></span>긍정 '+totPos+'</span>';
+    pdHtml+='<span style="color:#f1c40f;font-weight:600;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#f1c40f;margin-right:4px;"></span>중립 '+totNeu+'</span>';
+    pdHtml+='<span style="color:#e74c3c;font-weight:600;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e74c3c;margin-right:4px;"></span>부정 '+totNeg+'</span>';
     pdHtml+='</div>';
   }else if(chartMode==='pipe'){
     pdHtml+='<div style="display:flex;gap:10px;margin-bottom:8px;font-size:10px;">';
