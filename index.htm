@@ -2355,16 +2355,12 @@ function drawKoreaMap(geo){
   var container=document.getElementById('koreaMapSvg');
   if(!container)return;
   container.innerHTML='';
-  var width=380,height=420;
+  var width=340,height=440;
   var svg=d3.select('#koreaMapSvg').append('svg')
     .attr('viewBox','0 0 '+width+' '+height)
     .style('width','100%').style('max-width',width+'px').style('height','auto');
-  var projection=d3.geoMercator().center([127.8,36.2]).scale(4000).translate([width/2,height/2]);
-  var path=d3.geoPath().projection(projection);
 
   var rg=window._regionGroup||{};
-
-  // 권역별 달성률 계산
   function getRegionPct(name){
     if(name==='수도권'){
       var t=0,v=0;
@@ -2374,64 +2370,118 @@ function drawKoreaMap(geo){
     return rg[name]?Math.round(rg[name].v/rg[name].t*100):0;
   }
   function getFill(pct){
-    if(pct>=70)return 'rgba(39,174,96,0.4)';
-    if(pct>=50)return 'rgba(243,156,18,0.3)';
-    return 'rgba(231,76,60,0.2)';
+    if(pct>=70)return '#d5f5e3';
+    if(pct>=50)return '#fdebd0';
+    return '#fadbd8';
   }
   function getStroke(pct){
-    if(pct>=70)return 'rgba(39,174,96,0.6)';
-    if(pct>=50)return 'rgba(243,156,18,0.5)';
-    return 'rgba(231,76,60,0.35)';
+    if(pct>=70)return '#82e0aa';
+    if(pct>=50)return '#f0b27a';
+    return '#f1948a';
   }
 
-  // 간략한 지역 폴리곤 (위도/경도 좌표)
-  var regions=[
-    {name:'수도권',coords:[[126.3,37.0],[126.3,37.9],[127.0,38.2],[127.8,37.9],[127.8,37.0],[127.2,36.8],[126.3,37.0]]},
-    {name:'강원권',coords:[[127.8,37.0],[127.8,38.3],[129.1,38.6],[129.3,37.5],[128.5,36.8],[127.8,37.0]]},
-    {name:'충청권',coords:[[125.9,36.8],[126.3,37.0],[127.2,36.8],[127.8,37.0],[128.0,36.3],[127.5,35.9],[126.5,36.0],[125.9,36.3],[125.9,36.8]]},
-    {name:'전라권',coords:[[125.9,36.3],[126.5,36.0],[127.5,35.9],[127.3,35.3],[127.0,34.8],[126.0,34.3],[125.5,34.8],[125.9,35.5],[125.9,36.3]]},
-    {name:'경상권',coords:[[127.5,35.9],[128.0,36.3],[127.8,37.0],[128.5,36.8],[129.3,37.5],[129.6,36.5],[129.4,35.5],[129.0,35.0],[128.5,34.8],[127.3,35.3],[127.5,35.9]]}
+  // 한반도 외곽선 (SVG 좌표 직접 정의)
+  // 위도/경도를 SVG좌표로 변환하는 함수
+  var minLng=125.0,maxLng=130.0,minLat=33.0,maxLat=38.8;
+  function toX(lng){return ((lng-minLng)/(maxLng-minLng))*width*0.9+width*0.05;}
+  function toY(lat){return height-((lat-minLat)/(maxLat-minLat))*height*0.92-height*0.04;}
+
+  // 한반도 외곽 (남한)
+  var outline=[
+    [126.1,38.5],[126.4,37.8],[126.3,37.5],[126.6,37.4],[126.5,37.0],
+    [126.3,36.8],[126.0,36.6],[125.9,36.3],[126.1,35.9],[126.3,35.5],
+    [126.0,35.1],[125.9,34.7],[126.2,34.4],[126.5,34.3],[126.8,34.5],
+    [126.9,34.8],[127.2,34.6],[127.5,34.8],[127.7,34.7],[127.9,34.9],
+    [128.3,35.0],[128.6,35.1],[128.7,35.2],[129.0,35.1],[129.1,35.3],
+    [129.3,35.5],[129.2,35.8],[129.4,36.0],[129.5,36.4],[129.4,36.7],
+    [129.5,37.0],[129.3,37.3],[129.1,37.5],[128.9,37.8],[128.5,38.3],
+    [128.1,38.5],[127.5,38.5],[127.0,38.3],[126.6,38.4],[126.1,38.5]
   ];
 
-  // 제주
-  var jeju={name:'전라권',coords:[[126.1,33.1],[126.1,33.6],[127.0,33.6],[127.0,33.1],[126.1,33.1]]};
+  // 한반도 외곽 그리기 (배경)
+  var outlinePts=outline.map(function(c){return toX(c[0])+','+toY(c[1]);}).join(' ');
+  svg.append('polygon').attr('points',outlinePts)
+    .attr('fill','#f8f9fa').attr('stroke','#ccc').attr('stroke-width',1);
 
-  // 지역 폴리곤 그리기
-  regions.forEach(function(r){
+  // 지역별 영역
+  var regionPolys=[
+    {name:'수도권',coords:[
+      [126.1,38.5],[126.4,37.8],[126.3,37.5],[126.6,37.4],[126.5,37.0],
+      [127.1,36.9],[127.5,37.0],[127.8,37.2],[128.0,37.5],[128.2,37.8],
+      [128.5,38.3],[128.1,38.5],[127.5,38.5],[127.0,38.3],[126.6,38.4],[126.1,38.5]
+    ]},
+    {name:'강원권',coords:[
+      [127.5,37.0],[127.8,37.2],[128.0,37.5],[128.2,37.8],[128.5,38.3],
+      [128.9,37.8],[129.1,37.5],[129.3,37.3],[129.5,37.0],[129.4,36.7],
+      [128.8,36.6],[128.2,36.8],[127.8,36.9],[127.5,37.0]
+    ]},
+    {name:'충청권',coords:[
+      [126.5,37.0],[126.3,36.8],[126.0,36.6],[125.9,36.3],[126.1,35.9],
+      [126.5,35.8],[127.0,35.8],[127.5,35.9],[127.8,36.2],[128.2,36.5],
+      [128.2,36.8],[127.8,36.9],[127.5,37.0],[127.1,36.9],[126.5,37.0]
+    ]},
+    {name:'경상권',coords:[
+      [128.2,36.8],[128.2,36.5],[127.8,36.2],[127.5,35.9],[127.5,35.4],
+      [127.8,35.0],[128.3,35.0],[128.6,35.1],[128.7,35.2],[129.0,35.1],
+      [129.1,35.3],[129.3,35.5],[129.2,35.8],[129.4,36.0],[129.5,36.4],
+      [129.4,36.7],[128.8,36.6],[128.2,36.8]
+    ]},
+    {name:'전라권',coords:[
+      [126.1,35.9],[126.3,35.5],[126.0,35.1],[125.9,34.7],[126.2,34.4],
+      [126.5,34.3],[126.8,34.5],[126.9,34.8],[127.2,34.6],[127.5,34.8],
+      [127.7,34.7],[127.8,35.0],[127.5,35.4],[127.5,35.9],[127.0,35.8],
+      [126.5,35.8],[126.1,35.9]
+    ]}
+  ];
+
+  // 제주도
+  var jejuCoords=[
+    [126.15,33.2],[126.2,33.1],[126.4,33.05],[126.6,33.05],[126.8,33.1],
+    [126.9,33.2],[126.95,33.35],[126.9,33.45],[126.7,33.52],[126.5,33.55],
+    [126.3,33.52],[126.2,33.45],[126.15,33.35],[126.15,33.2]
+  ];
+
+  // 지역 그리기
+  regionPolys.forEach(function(r){
     var pct=getRegionPct(r.name);
-    var points=r.coords.map(function(c){return projection(c);});
-    var d='M'+points.map(function(p){return p[0]+','+p[1];}).join('L')+'Z';
-    svg.append('path').attr('d',d)
+    var pts=r.coords.map(function(c){return toX(c[0])+','+toY(c[1]);}).join(' ');
+    svg.append('polygon').attr('points',pts)
       .attr('fill',getFill(pct)).attr('stroke',getStroke(pct)).attr('stroke-width',1.5)
-      .style('cursor','pointer')
+      .style('cursor','pointer').style('transition','opacity 0.2s')
       .on('mouseover',function(){d3.select(this).attr('opacity',0.7);})
       .on('mouseout',function(){d3.select(this).attr('opacity',1);});
   });
 
-  // 제주 그리기 (전라권에 포함)
-  var jejuPct=getRegionPct(jeju.name);
-  var jejuPts=jeju.coords.map(function(c){return projection(c);});
-  var jejuD='M'+jejuPts.map(function(p){return p[0]+','+p[1];}).join('L')+'Z';
-  svg.append('path').attr('d',jejuD)
+  // 제주 그리기
+  var jejuPct=getRegionPct('전라권');
+  var jejuPts=jejuCoords.map(function(c){return toX(c[0])+','+toY(c[1]);}).join(' ');
+  svg.append('polygon').attr('points',jejuPts)
     .attr('fill',getFill(jejuPct)).attr('stroke',getStroke(jejuPct)).attr('stroke-width',1.5);
 
-  // 라벨
+  // 라벨 표시
   var labels=[
-    {name:'수도권',lat:37.45,lng:126.9},
-    {name:'강원권',lat:37.7,lng:128.5},
-    {name:'충청권',lat:36.45,lng:126.9},
-    {name:'전라권',lat:35.2,lng:126.5},
-    {name:'경상권',lat:35.9,lng:128.8}
+    {name:'수도권',lat:37.7,lng:127.0},
+    {name:'강원권',lat:37.5,lng:128.6},
+    {name:'충청권',lat:36.4,lng:127.0},
+    {name:'전라권',lat:35.0,lng:126.7},
+    {name:'경상권',lat:35.8,lng:128.7},
+    {name:'제주',lat:33.3,lng:126.55}
   ];
   labels.forEach(function(lb){
-    var pos=projection([lb.lng,lb.lat]);
-    var pct=getRegionPct(lb.name);
+    var x=toX(lb.lng),y=toY(lb.lat);
+    var regionName=lb.name==='제주'?'전라권':lb.name;
+    var pct=getRegionPct(regionName);
     var color=pct>=70?'#27ae60':pct>=50?'#e67e22':'#e74c3c';
-    svg.append('text').attr('x',pos[0]).attr('y',pos[1]-10)
+
+    // 배경 원
+    svg.append('circle').attr('cx',x).attr('cy',y)
+      .attr('r',24).attr('fill','rgba(255,255,255,0.85)').attr('stroke',color).attr('stroke-width',1);
+
+    svg.append('text').attr('x',x).attr('y',y-6)
+      .attr('text-anchor','middle').attr('font-size','9px')
+      .attr('font-weight','700').attr('fill','#555').text(lb.name);
+    svg.append('text').attr('x',x).attr('y',y+9)
       .attr('text-anchor','middle').attr('font-size','12px')
-      .attr('font-weight','700').attr('fill','#444').text(lb.name);
-    svg.append('text').attr('x',pos[0]).attr('y',pos[1]+10)
-      .attr('text-anchor','middle').attr('font-size','16px')
       .attr('font-weight','900').attr('fill',color).text(pct+'%');
   });
 }
