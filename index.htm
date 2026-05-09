@@ -321,6 +321,7 @@
 }
     
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 </head>
 <body>
 
@@ -1926,61 +1927,29 @@ function renderAllStats(){
   cardHtml+='</div></div>';
   document.getElementById('allTopCards').innerHTML=cardHtml;
 
-  // === 전국 지도 ===
+   // === 전국 지도 ===
   var mapHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;display:flex;flex-direction:column;">';
   mapHtml+='<h3 style="margin:0 0 12px 0;font-size:16px;color:#333;">🗺️ 전국 방문 현황</h3>';
-
-  mapHtml+='<div style="flex:1;display:flex;align-items:center;justify-content:center;">';
-  mapHtml+='<svg viewBox="0 0 500 580" style="width:100%;max-width:400px;height:auto;">';
-
-  // 수도권 (서울/경기/인천)
-  var sudoPct=regionGroup['수도권'].pct;
-  var sudoColor=sudoPct>=70?'#27ae60':sudoPct>=50?'#f39c12':'#e74c3c';
-  mapHtml+='<path d="M185,145 L215,130 L250,135 L270,150 L275,175 L265,200 L250,215 L230,220 L210,215 L190,200 L180,180 L175,160 Z" fill="'+sudoColor+'22" stroke="'+sudoColor+'" stroke-width="2"/>';
-  mapHtml+='<text x="225" y="175" text-anchor="middle" font-size="11" font-weight="700" fill="'+sudoColor+'">수도권</text>';
-  mapHtml+='<text x="225" y="190" text-anchor="middle" font-size="13" font-weight="900" fill="'+sudoColor+'">'+sudoPct+'%</text>';
-
-  // 강원권
-  var gangPct=regionGroup['강원권'].pct;
-  var gangColor=gangPct>=70?'#27ae60':gangPct>=50?'#f39c12':'#e74c3c';
-  mapHtml+='<path d="M270,120 L310,105 L350,115 L370,140 L365,175 L350,200 L330,215 L300,220 L275,210 L265,190 L270,160 Z" fill="'+gangColor+'22" stroke="'+gangColor+'" stroke-width="2"/>';
-  mapHtml+='<text x="315" y="160" text-anchor="middle" font-size="11" font-weight="700" fill="'+gangColor+'">강원</text>';
-  mapHtml+='<text x="315" y="175" text-anchor="middle" font-size="13" font-weight="900" fill="'+gangColor+'">'+gangPct+'%</text>';
-
-  // 충청권
-  var chungPct=regionGroup['충청권'].pct;
-  var chungColor=chungPct>=70?'#27ae60':chungPct>=50?'#f39c12':'#e74c3c';
-  mapHtml+='<path d="M160,215 L200,210 L240,215 L270,225 L290,245 L285,275 L270,300 L245,310 L220,305 L195,295 L170,280 L155,255 L150,235 Z" fill="'+chungColor+'22" stroke="'+chungColor+'" stroke-width="2"/>';
-  mapHtml+='<text x="220" y="260" text-anchor="middle" font-size="11" font-weight="700" fill="'+chungColor+'">충청</text>';
-  mapHtml+='<text x="220" y="275" text-anchor="middle" font-size="13" font-weight="900" fill="'+chungColor+'">'+chungPct+'%</text>';
-
-  // 전라권
-  var jeonPct=regionGroup['전라권'].pct;
-  var jeonColor=jeonPct>=70?'#27ae60':jeonPct>=50?'#f39c12':'#e74c3c';
-  mapHtml+='<path d="M130,300 L170,290 L210,300 L230,320 L225,355 L210,385 L190,400 L165,405 L145,395 L125,375 L115,345 L120,320 Z" fill="'+jeonColor+'22" stroke="'+jeonColor+'" stroke-width="2"/>';
-  mapHtml+='<text x="172" y="350" text-anchor="middle" font-size="11" font-weight="700" fill="'+jeonColor+'">전라</text>';
-  mapHtml+='<text x="172" y="365" text-anchor="middle" font-size="13" font-weight="900" fill="'+jeonColor+'">'+jeonPct+'%</text>';
-
-  // 경상권
-  var gyeongPct=regionGroup['경상권'].pct;
-  var gyeongColor=gyeongPct>=70?'#27ae60':gyeongPct>=50?'#f39c12':'#e74c3c';
-  mapHtml+='<path d="M250,300 L290,280 L330,290 L355,310 L365,345 L355,380 L335,405 L310,415 L280,410 L255,395 L240,370 L235,340 Z" fill="'+gyeongColor+'22" stroke="'+gyeongColor+'" stroke-width="2"/>';
-  mapHtml+='<text x="298" y="350" text-anchor="middle" font-size="11" font-weight="700" fill="'+gyeongColor+'">경상</text>';
-  mapHtml+='<text x="298" y="365" text-anchor="middle" font-size="13" font-weight="900" fill="'+gyeongColor+'">'+gyeongPct+'%</text>';
-
-  // 제주
-  mapHtml+='<ellipse cx="180" cy="480" rx="35" ry="15" fill="#e0e0e022" stroke="#ccc" stroke-width="1.5"/>';
-  mapHtml+='<text x="180" y="484" text-anchor="middle" font-size="10" fill="#999">제주</text>';
-
-  // 범례
-  mapHtml+='</svg></div>';
-
-  mapHtml+='<div style="display:flex;justify-content:center;gap:16px;margin-top:8px;font-size:11px;">';
-  mapHtml+='<span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#27ae6022;border:2px solid #27ae60;margin-right:4px;vertical-align:middle;"></span>70%+</span>';
-  mapHtml+='<span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#f39c1222;border:2px solid #f39c12;margin-right:4px;vertical-align:middle;"></span>50~69%</span>';
-  mapHtml+='<span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#e74c3c22;border:2px solid #e74c3c;margin-right:4px;vertical-align:middle;"></span>50% 미만</span>';
-  mapHtml+='</div></div>';
+  mapHtml+='<div style="display:flex;justify-content:center;gap:16px;margin-bottom:8px;font-size:11px;">';
+  mapHtml+='<span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:rgba(39,174,96,0.5);margin-right:4px;vertical-align:middle;"></span>70%+</span>';
+  mapHtml+='<span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:rgba(243,156,18,0.35);margin-right:4px;vertical-align:middle;"></span>50~69%</span>';
+  mapHtml+='<span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:rgba(231,76,60,0.25);margin-right:4px;vertical-align:middle;"></span>50% 미만</span>';
+  mapHtml+='</div>';
+  mapHtml+='<div id="koreaMapSvg" style="flex:1;display:flex;align-items:center;justify-content:center;min-height:350px;"></div>';
+  mapHtml+='</div>';
   document.getElementById('allMapView').innerHTML=mapHtml;
+
+  // 지도 그리기
+  window._regionGroup=regionGroup;
+  if(!window._koreaGeo){
+    var geoUrl='https://raw.githubusercontent.com/southkorea/southkorea-maps/master/koreamap/TL_SCCO_CTPRVN_geo.json';
+    d3.json(geoUrl).then(function(geo){
+      window._koreaGeo=geo;
+      drawKoreaMap(geo);
+    });
+  }else{
+    drawKoreaMap(window._koreaGeo);
+  }
 
 
   // === 계약 파이프라인 ===
