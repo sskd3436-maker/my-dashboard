@@ -2359,6 +2359,90 @@ function renderAllStats(){
   document.getElementById('allSheetTable').innerHTML=tblHtml;
 }
 
+  tblHtml+='</div>';
+  document.getElementById('allSheetTable').innerHTML=tblHtml;
+}
+
+function drawKoreaMap(geo){
+  var container=document.getElementById('koreaMapSvg');
+  if(!container)return;
+  container.innerHTML='';
+  var width=380,height=420;
+  var svg=d3.select('#koreaMapSvg').append('svg')
+    .attr('viewBox','0 0 '+width+' '+height)
+    .style('width','100%').style('max-width',width+'px').style('height','auto');
+  var projection=d3.geoMercator().center([127.5,36.0]).scale(3800).translate([width/2,height/2]);
+  var path=d3.geoPath().projection(projection);
+  var sidoToRegion={
+    '서울특별시':'수도권','인천광역시':'수도권','경기도':'수도권',
+    '강원도':'강원권','강원특별자치도':'강원권',
+    '대전광역시':'충청권','세종특별자치시':'충청권','충청북도':'충청권','충청남도':'충청권',
+    '광주광역시':'전라권','전라북도':'전라권','전북특별자치도':'전라권','전라남도':'전라권','제주특별자치도':'전라권',
+    '부산광역시':'경상권','대구광역시':'경상권','울산광역시':'경상권','경상북도':'경상권','경상남도':'경상권'
+  };
+  var rg=window._regionGroup||{};
+  function getRegionPct(sido){
+    var region=sidoToRegion[sido];
+    if(!region)return 0;
+    if(region==='수도권'){
+      var t=0,v=0;
+      ['수도권남동','수도권북동','수도권남서','수도권북서'].forEach(function(k){
+        if(rg[k]){t+=rg[k].t;v+=rg[k].v;}
+      });
+      return t>0?Math.round(v/t*100):0;
+    }
+    return rg[region]?Math.round(rg[region].v/rg[region].t*100):0;
+  }
+  function getFill(sido){
+    var pct=getRegionPct(sido);
+    if(pct>=70)return 'rgba(39,174,96,0.45)';
+    if(pct>=50)return 'rgba(243,156,18,0.3)';
+    return 'rgba(231,76,60,0.2)';
+  }
+  function getStroke(sido){
+    var pct=getRegionPct(sido);
+    if(pct>=70)return 'rgba(39,174,96,0.7)';
+    if(pct>=50)return 'rgba(243,156,18,0.6)';
+    return 'rgba(231,76,60,0.4)';
+  }
+  svg.selectAll('path').data(geo.features).enter()
+    .append('path').attr('d',path)
+    .attr('fill',function(d){return getFill(d.properties.CTP_KOR_NM||d.properties.name||'');})
+    .attr('stroke',function(d){return getStroke(d.properties.CTP_KOR_NM||d.properties.name||'');})
+    .attr('stroke-width',1)
+    .style('cursor','pointer')
+    .on('mouseover',function(){d3.select(this).attr('opacity',0.7);})
+    .on('mouseout',function(){d3.select(this).attr('opacity',1);});
+  var labels=[
+    {name:'수도권',lat:37.5,lng:127.0},
+    {name:'강원권',lat:37.8,lng:128.5},
+    {name:'충청권',lat:36.5,lng:127.0},
+    {name:'전라권',lat:35.1,lng:126.8},
+    {name:'경상권',lat:35.8,lng:128.8}
+  ];
+  labels.forEach(function(lb){
+    var pos=projection([lb.lng,lb.lat]);
+    var pct=0;
+    if(lb.name==='수도권'){
+      var t=0,v=0;
+      ['수도권남동','수도권북동','수도권남서','수도권북서'].forEach(function(k){
+        if(rg[k]){t+=rg[k].t;v+=rg[k].v;}
+      });
+      pct=t>0?Math.round(v/t*100):0;
+    }else{
+      pct=rg[lb.name]?Math.round(rg[lb.name].v/rg[lb.name].t*100):0;
+    }
+    var color=pct>=70?'#27ae60':pct>=50?'#e67e22':'#e74c3c';
+    svg.append('text').attr('x',pos[0]).attr('y',pos[1]-8)
+      .attr('text-anchor','middle').attr('font-size','11px')
+      .attr('font-weight','700').attr('fill','#333').text(lb.name);
+    svg.append('text').attr('x',pos[0]).attr('y',pos[1]+8)
+      .attr('text-anchor','middle').attr('font-size','13px')
+      .attr('font-weight','900').attr('fill',color).text(pct+'%');
+  });
+}
+
+function renderAllCalendar(){
 
 
 function renderAllCalendar(){
