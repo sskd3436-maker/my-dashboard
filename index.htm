@@ -2359,13 +2359,9 @@ function drawKoreaMap(geo){
     .style('width','100%').style('max-width',width+'px').style('height','auto');
 
   var rg=window._regionGroup||{};
-  function getRegionPct(name){
-    if(name==='수도권'){
-      var t=0,v=0;
-      ['수도권남동','수도권북동','수도권남서','수도권북서'].forEach(function(k){if(rg[k]){t+=rg[k].t;v+=rg[k].v;}});
-      return t>0?Math.round(v/t*100):0;
-    }
-    return rg[name]?Math.round(rg[name].v/rg[name].t*100):0;
+   function getRegionPct(name){
+    if(rg[name])return rg[name].pct||0;
+    return 0;
   }
   function getFill(pct){
     if(pct>=70)return '#d5f5e3';
