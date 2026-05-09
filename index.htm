@@ -1941,16 +1941,7 @@ function renderAllStats(){
 
   // 지도 그리기
   window._regionGroup=regionGroup;
-  if(!window._koreaGeo){
-    var geoUrl='https://raw.githubusercontent.com/southkorea/southkorea-maps/master/koreamap/TL_SCCO_CTPRVN_geo.json';
-    d3.json(geoUrl).then(function(geo){
-      window._koreaGeo=geo;
-      drawKoreaMap(geo);
-    });
-  }else{
-    drawKoreaMap(window._koreaGeo);
-  }
-
+ drawKoreaMap(null);
 
   // === 계약 파이프라인 ===
   var siteToSheet={};
