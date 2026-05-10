@@ -2462,14 +2462,15 @@ function drawKoreaMap(geo){
   regionPolys.forEach(function(r){
     var pct=getRegionPct(r.name);
     var pts=r.coords.map(function(c){return toX(c[0])+','+toY(c[1]);}).join(' ');
-        (function(regionName){
+            (function(regionName){
       svg.append('polygon').attr('points',pts)
         .attr('fill',getFill(pct)).attr('stroke',getStroke(pct)).attr('stroke-width',1.5)
         .style('cursor','pointer').style('transition','opacity 0.2s')
         .on('mouseover',function(){d3.select(this).attr('opacity',0.7);})
-        .on('mouseout',function(){d3.select(this).attr('opacity',1);
+        .on('mouseout',function(){d3.select(this).attr('opacity',1);})
         .on('click',function(){window._selectedRegion=regionName;renderAllStats();});
     })(r.name);
+
   });
 
   // 제주 그리기
