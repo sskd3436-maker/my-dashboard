@@ -2447,10 +2447,10 @@ function drawKoreaMap(geo){
   });
 
   // 제주 그리기
-  var jejuPct=getRegionPct('전라권');
-  var jejuPts=jejuCoords.map(function(c){return toX(c[0])+','+toY(c[1]);}).join(' ');
+    var jejuPts=jejuCoords.map(function(c){return toX(c[0])+','+toY(c[1]);}).join(' ');
   svg.append('polygon').attr('points',jejuPts)
-    .attr('fill',getFill(jejuPct)).attr('stroke',getStroke(jejuPct)).attr('stroke-width',1.5);
+    .attr('fill','#f0f0f0').attr('stroke','#ccc').attr('stroke-width',1.5);
+
 
   // 라벨 표시
   var labels=[
@@ -2459,7 +2459,6 @@ function drawKoreaMap(geo){
     {name:'충청권',lat:36.4,lng:127.0},
     {name:'전라권',lat:35.0,lng:126.7},
     {name:'경상권',lat:35.8,lng:128.7},
-    {name:'제주',lat:33.3,lng:126.55}
   ];
   labels.forEach(function(lb){
     var x=toX(lb.lng),y=toY(lb.lat);
