@@ -2071,7 +2071,7 @@ function renderAllStats(){
   console.log('파이프라인:', '상담:'+ct상담, '제안:'+ct제안, '입대위:'+ct입대위, '실사:'+ct실사, '계약:'+ct계약, '총:'+ctTotal);
   document.getElementById('allPipeline').innerHTML=pipHtml;
 
-  // === 월별 방문 추이 (최근 6개월) ===
+    // === 월별 방문 추이 (최근 6개월) ===
   var now=new Date();
   var months=[],monthLabels=[];
   for(var mi=5;mi>=0;mi--){
@@ -2080,33 +2080,53 @@ function renderAllStats(){
     months.push({y:y,m:m});
     monthLabels.push((m+1)+'월');
   }
-  var monthCounts=[];
+  var monthCounts=[],monthPos=[],monthNeu=[],monthNeg=[];
   for(var mi=0;mi<months.length;mi++){
     var first=new Date(months[mi].y,months[mi].m,1);
     var last=new Date(months[mi].y,months[mi].m+1,0);
-    var cnt=0;
+    var cnt=0,pc=0,nc=0,ngc=0;
     for(var i=0;i<flatNoContract.length;i++){
       var d=flatNoContract[i].date;
-      if(d&&d>=first&&d<=last)cnt++;
+      if(d&&d>=first&&d<=last){
+        cnt++;
+        if(flatNoContract[i].sent==='positive')pc++;
+        else if(flatNoContract[i].sent==='neutral')nc++;
+        else if(flatNoContract[i].sent==='negative')ngc++;
+      }
     }
-    monthCounts.push(cnt);
+    monthCounts.push(cnt);monthPos.push(pc);monthNeu.push(nc);monthNeg.push(ngc);
   }
   var maxMonth=Math.max.apply(null,monthCounts)||1;
 
-    var chartHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;">';
-  chartHtml+='<h3 style="margin:0 0 16px 0;font-size:16px;color:#333;">📊 월별 방문 추이</h3>';
-  chartHtml+='<div style="display:flex;align-items:flex-end;gap:12px;height:180px;padding:0 8px;">';
+  var chartHtml='<div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);box-sizing:border-box;">';
+  chartHtml+='<h3 style="margin:0 0 12px 0;font-size:15px;color:#333;">📈 월별 방문 추이</h3>';
+  chartHtml+='<div style="display:flex;align-items:flex-end;gap:8px;height:160px;padding:0 4px;">';
   for(var mi=0;mi<months.length;mi++){
-    var h=Math.max(Math.round(monthCounts[mi]/maxMonth*160),4);
+    var total=monthCounts[mi]||1;
+    var hTotal=Math.max(Math.round(monthCounts[mi]/maxMonth*140),4);
+    var hPos=Math.round(monthPos[mi]/total*hTotal);
+    var hNeu=Math.round(monthNeu[mi]/total*hTotal);
+    var hNeg=hTotal-hPos-hNeu;
+    if(hNeg<0)hNeg=0;
     var isThis=(months[mi].y===now.getFullYear()&&months[mi].m===now.getMonth());
-    var barColor=isThis?'linear-gradient(180deg,#667eea,#764ba2)':'linear-gradient(180deg,#a8b8d8,#7b8db5)';
-    chartHtml+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;">';
-    chartHtml+='<div style="font-size:12px;font-weight:700;color:#333;margin-bottom:4px;">'+monthCounts[mi]+'</div>';
-    chartHtml+='<div style="width:100%;height:'+h+'px;background:'+barColor+';border-radius:8px 8px 4px 4px;"></div>';
-    chartHtml+='<div style="font-size:11px;color:#888;margin-top:6px;">'+monthLabels[mi]+'</div></div>';
+    var mY=months[mi].y,mM=months[mi].m;
+    chartHtml+='<div onclick="window._calY='+mY+';window._calM='+mM+';window._calSelDay=0;window._calWeek=0;window._visitListPage=1;renderAllStats();" style="flex:1;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:transform 0.2s;'+(isThis?'transform:scale(1.05);':'')+'" onmouseover="this.style.transform=\'scale(1.08)\'" onmouseout="this.style.transform=\''+(isThis?'scale(1.05)':'scale(1)')+'\';">';
+    chartHtml+='<div style="font-size:11px;font-weight:700;color:'+(isThis?'#667eea':'#555')+';margin-bottom:3px;">'+monthCounts[mi]+'</div>';
+    chartHtml+='<div style="width:100%;height:'+hTotal+'px;border-radius:6px 6px 3px 3px;overflow:hidden;display:flex;flex-direction:column;'+(isThis?'box-shadow:0 2px 8px rgba(102,126,234,0.3);':'opacity:0.85;')+'">';
+    chartHtml+='<div style="height:'+hNeg+'px;background:#e74c3c;"></div>';
+    chartHtml+='<div style="height:'+hNeu+'px;background:#f1c40f;"></div>';
+    chartHtml+='<div style="height:'+hPos+'px;background:#2ecc71;"></div>';
+    chartHtml+='</div>';
+    chartHtml+='<div style="font-size:10px;color:'+(isThis?'#667eea':'#999')+';margin-top:4px;font-weight:'+(isThis?'700':'400')+';">'+monthLabels[mi]+'</div></div>';
   }
+  chartHtml+='</div>';
+  chartHtml+='<div style="display:flex;justify-content:center;gap:12px;margin-top:8px;font-size:10px;">';
+  chartHtml+='<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#2ecc71;margin-right:3px;vertical-align:middle;"></span>긍정</span>';
+  chartHtml+='<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#f1c40f;margin-right:3px;vertical-align:middle;"></span>중립</span>';
+  chartHtml+='<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#e74c3c;margin-right:3px;vertical-align:middle;"></span>부정</span>';
   chartHtml+='</div></div>';
   document.getElementById('allMonthChart').innerHTML=chartHtml;
+
 
      // === 담당자별 영업 실적 ===
   var ctTotal=0,ctQtyTotal=0,ctAllSites=[];
