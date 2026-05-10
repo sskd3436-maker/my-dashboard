@@ -2846,8 +2846,8 @@ function renderAllCalendar(){
   }
 
   var useMgrKeys,useMgrDay,useTotPos,useTotNeu,useTotNeg,useTotAll;
-  if(isFiltered&&!selR3&&(selDay2>0||selWeek2>0||(calY2!==defaultY||calM2!==defaultM))){
-    // 캘린더 필터만: 기존 mgrDay 사용
+   if(!selR3&&(selDay2>0||selWeek2>0||(calY2!==defaultY||calM2!==defaultM))){
+    // 캘린더 필터만 (권역 없음): 기존 mgrDay 사용
     useMgrKeys=mgrKeys;useMgrDay=mgrDay;
     useTotPos=totPos;useTotNeu=totNeu;useTotNeg=totNeg;useTotAll=totAll;
   }else{
