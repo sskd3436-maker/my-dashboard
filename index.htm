@@ -2032,44 +2032,7 @@ function renderAllStats(){
   window._regionGroup=regionGroup;
   drawKoreaMap(null);
 
-    // === 담당자별 긍정률 (지도 아래) ===
-  var mgrData=window._calMgrData||{mgrKeys:[],mgrDay:{},totPos:0,totNeu:0,totNeg:0,totAll:0};
-  var mgrHtml='<div style="margin-top:16px;border-top:1px solid #eee;padding-top:12px;">';
-  mgrHtml+='<div style="display:flex;gap:14px;margin-bottom:8px;font-size:11px;">';
-  mgrHtml+='<span style="color:#2ecc71;font-weight:600;">● 긍정 '+mgrData.totPos+'</span>';
-  mgrHtml+='<span style="color:#f1c40f;font-weight:600;">● 중립 '+mgrData.totNeu+'</span>';
-  mgrHtml+='<span style="color:#e74c3c;font-weight:600;">● 부정 '+mgrData.totNeg+'</span>';
-  mgrHtml+='<span style="color:#888;font-weight:600;">총 '+mgrData.totAll+'</span>';
-  mgrHtml+='</div>';
-  if(mgrData.mgrKeys.length===0){
-    mgrHtml+='<div style="text-align:center;color:#999;font-size:11px;padding:8px;">방문 기록 없음</div>';
-  }else{
-    var mgrMax2=0;
-    for(var i=0;i<mgrData.mgrKeys.length;i++){if(mgrData.mgrDay[mgrData.mgrKeys[i]].total>mgrMax2)mgrMax2=mgrData.mgrDay[mgrData.mgrKeys[i]].total;}
-    for(var i=0;i<mgrData.mgrKeys.length;i++){
-      var mn2=mgrData.mgrKeys[i],md2=mgrData.mgrDay[mn2];
-      var barW2=mgrMax2>0?Math.round(md2.total/mgrMax2*100):0;
-      mgrHtml+='<div style="padding:4px 0;">';
-      mgrHtml+='<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;">';
-      mgrHtml+='<span style="font-weight:600;color:#333;">'+esc(mn2)+'</span>';
-      mgrHtml+='<span style="color:#888;">'+md2.total+'건</span></div>';
-      mgrHtml+='<div style="height:14px;background:#f0f0f0;border-radius:7px;overflow:hidden;display:flex;width:'+barW2+'%;min-width:30px;">';
-      var pW2=md2.total>0?Math.round(md2.positive/md2.total*100):0;
-      var nW2=md2.total>0?Math.round(md2.neutral/md2.total*100):0;
-      var ngW2=md2.total>0?Math.round(md2.negative/md2.total*100):0;
-      mgrHtml+='<div style="width:'+pW2+'%;background:#2ecc71;"></div>';
-      mgrHtml+='<div style="width:'+nW2+'%;background:#f1c40f;"></div>';
-      mgrHtml+='<div style="width:'+ngW2+'%;background:#e74c3c;"></div>';
-      mgrHtml+='</div></div>';
-    }
-  }
-  mgrHtml+='</div>';
-  var mapEl=document.getElementById('allMapView');
-  if(mapEl){
-    var wrapper=mapEl.querySelector('div');
-    if(wrapper)wrapper.insertAdjacentHTML('beforeend',mgrHtml);
-  }
-
+    
 
 
   // === 계약 파이프라인 ===
@@ -2830,10 +2793,61 @@ function renderAllCalendar(){
  
 
   // 담당자별 데이터를 전역에 저장 (전체현황에서 사용)
- window._calMgrData={mgrKeys:mgrKeys,mgrDay:mgrDay,totPos:totPos,totNeu:totNeu,totNeg:totNeg,totAll:totAll};
+   window._calMgrData={mgrKeys:mgrKeys,mgrDay:mgrDay,totPos:totPos,totNeu:totNeu,totNeg:totNeg,totAll:totAll};
   calHtml+='</div></div>';
   document.getElementById('allCalendar').innerHTML=calHtml;
+
+  // === 담당자별 긍정률 (지도 아래) ===
+  var calY=window._calY||new Date().getFullYear();
+  var calM=window._calM!=null?window._calM:new Date().getMonth();
+  var selDay=window._calSelDay||0;
+  var selWeek2=window._calWeek||0;
+  var titleTxt2=(calY)+'년 '+(calM+1)+'월';
+  if(selDay>0)titleTxt2+=' '+selDay+'일';
+  else if(selWeek2>0)titleTxt2+=' '+selWeek2+'주차';
+
+  var mgrHtml='<div style="margin-top:16px;border-top:1px solid #eee;padding-top:12px;">';
+  mgrHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
+  mgrHtml+='<span style="font-size:13px;font-weight:700;color:#333;">👤 '+titleTxt2+' 담당자별</span>';
+  if(selDay>0)mgrHtml+='<button onclick="selectCalDay(0)" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
+  else if(selWeek2>0)mgrHtml+='<button onclick="selCalWeek(0)" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
+  mgrHtml+='</div>';
+  mgrHtml+='<div style="display:flex;gap:14px;margin-bottom:8px;font-size:11px;">';
+  mgrHtml+='<span style="color:#2ecc71;font-weight:600;">● 긍정 '+totPos+'</span>';
+  mgrHtml+='<span style="color:#f1c40f;font-weight:600;">● 중립 '+totNeu+'</span>';
+  mgrHtml+='<span style="color:#e74c3c;font-weight:600;">● 부정 '+totNeg+'</span>';
+  mgrHtml+='<span style="color:#888;font-weight:600;">총 '+totAll+'</span>';
+  mgrHtml+='</div>';
+  if(mgrKeys.length===0){
+    mgrHtml+='<div style="text-align:center;color:#999;font-size:11px;padding:8px;">방문 기록 없음</div>';
+  }else{
+    var mgrMax2=0;
+    for(var i=0;i<mgrKeys.length;i++){if(mgrDay[mgrKeys[i]].total>mgrMax2)mgrMax2=mgrDay[mgrKeys[i]].total;}
+    for(var i=0;i<mgrKeys.length;i++){
+      var mn2=mgrKeys[i],md2=mgrDay[mn2];
+      var barW2=mgrMax2>0?Math.round(md2.total/mgrMax2*100):0;
+      mgrHtml+='<div style="padding:4px 0;">';
+      mgrHtml+='<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;">';
+      mgrHtml+='<span style="font-weight:600;color:#333;">'+esc(mn2)+'</span>';
+      mgrHtml+='<span style="color:#888;">'+md2.total+'건</span></div>';
+      mgrHtml+='<div style="height:14px;background:#f0f0f0;border-radius:7px;overflow:hidden;display:flex;width:'+barW2+'%;min-width:30px;">';
+      var pW2=md2.total>0?Math.round(md2.positive/md2.total*100):0;
+      var nW2=md2.total>0?Math.round(md2.neutral/md2.total*100):0;
+      var ngW2=md2.total>0?Math.round(md2.negative/md2.total*100):0;
+      mgrHtml+='<div style="width:'+pW2+'%;background:#2ecc71;"></div>';
+      mgrHtml+='<div style="width:'+nW2+'%;background:#f1c40f;"></div>';
+      mgrHtml+='<div style="width:'+ngW2+'%;background:#e74c3c;"></div>';
+      mgrHtml+='</div></div>';
+    }
+  }
+  mgrHtml+='</div>';
+  var mapEl=document.getElementById('allMapView');
+  if(mapEl){
+    var wrapper=mapEl.querySelector('div');
+    if(wrapper)wrapper.insertAdjacentHTML('beforeend',mgrHtml);
+  }
 }
+
 
 function moveAllCal(dir){
   window._calM+=dir;
