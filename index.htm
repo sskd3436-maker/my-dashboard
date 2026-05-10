@@ -1828,7 +1828,7 @@ function renderAllStats(){
   if(!contractData){loadContract(function(){renderAllStats();});return;}
   var flatNoContract=allFlat.filter(function(f){return f.sheet!=='계약서';});
 
-    // === 상단 카드 ===
+      // === 상단 카드 ===
   var totalSites=0,visitedSites=0,unvisitedSites=0,posCount=0,neuCount=0,negCount=0;
   var siteCheck={};
   var regionData={};
@@ -1844,67 +1844,89 @@ function renderAllStats(){
     else if(it.sent==='negative')negCount++;
     var rg=(fv(it.row,it.headers,'권역별')||'').trim();
     if(rg){
-      if(!regionData[rg])regionData[rg]={t:0,v:0};
+      if(!regionData[rg])regionData[rg]={t:0,v:0,pos:0,neu:0,neg:0};
       regionData[rg].t++;
-      if(visited)regionData[rg].v++;
+      if(visited){
+        regionData[rg].v++;
+        if(it.sent==='positive')regionData[rg].pos++;
+        else if(it.sent==='neutral')regionData[rg].neu++;
+        else if(it.sent==='negative')regionData[rg].neg++;
+      }
     }
   }
-  var posRate=visitedSites>0?Math.round(posCount/visitedSites*100):0;
-  var visitPct=totalSites>0?Math.round(visitedSites/totalSites*100):0;
 
   // 권역 그룹핑
   var regionGroup={
-    '수도권':{t:0,v:0,color:'#667eea',subs:['수도권남동','수도권북동','수도권북서','수도권남서']},
-    '강원권':{t:0,v:0,color:'#2ecc71',subs:['강원권']},
-    '충청권':{t:0,v:0,color:'#e67e22',subs:['충청권']},
-    '전라권':{t:0,v:0,color:'#9b59b6',subs:['전라권']},
-    '경상권':{t:0,v:0,color:'#e74c3c',subs:['경상권']}
+    '수도권':{t:0,v:0,pos:0,neu:0,neg:0,color:'#667eea',subs:['수도권남동','수도권북동','수도권북서','수도권남서']},
+    '강원권':{t:0,v:0,pos:0,neu:0,neg:0,color:'#2ecc71',subs:['강원권']},
+    '충청권':{t:0,v:0,pos:0,neu:0,neg:0,color:'#e67e22',subs:['충청권']},
+    '전라권':{t:0,v:0,pos:0,neu:0,neg:0,color:'#9b59b6',subs:['전라권']},
+    '경상권':{t:0,v:0,pos:0,neu:0,neg:0,color:'#e74c3c',subs:['경상권']}
   };
   for(var gk in regionGroup){
     var g=regionGroup[gk];
     for(var si=0;si<g.subs.length;si++){
       var rd=regionData[g.subs[si]];
-      if(rd){g.t+=rd.t;g.v+=rd.v;}
+      if(rd){g.t+=rd.t;g.v+=rd.v;g.pos+=rd.pos;g.neu+=rd.neu;g.neg+=rd.neg;}
     }
     g.pct=g.t>0?Math.round(g.v/g.t*100):0;
   }
 
+  // 선택된 권역 확인
+  var selRegion=window._selectedRegion||'';
+  var cardTitle='📊 전체 현황';
+  var cTS=totalSites,cVS=visitedSites,cUS=unvisitedSites,cPos=posCount,cNeu=neuCount,cNeg=negCount;
+
+  if(selRegion&&regionGroup[selRegion]){
+    var sg=regionGroup[selRegion];
+    cardTitle='📊 '+selRegion+' 현황';
+    cTS=sg.t;cVS=sg.v;cUS=sg.t-sg.v;cPos=sg.pos;cNeu=sg.neu;cNeg=sg.neg;
+  }
+
+  var cPosRate=cVS>0?Math.round(cPos/cVS*100):0;
+  var cVisitPct=cTS>0?Math.round(cVS/cTS*100):0;
+
   // 우측: 도넛 + 권역별 통계
   var cardHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;display:flex;flex-direction:column;">';
-  cardHtml+='<h3 style="margin:0 0 14px 0;font-size:16px;color:#333;">📊 전체 현황</h3>';
+  cardHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">';
+  cardHtml+='<h3 style="margin:0;font-size:16px;color:#333;">'+cardTitle+'</h3>';
+  if(selRegion){
+    cardHtml+='<button onclick="window._selectedRegion=\'\';renderAllStats();" style="padding:4px 12px;border:1px solid #ddd;border-radius:16px;background:#fff;color:#666;font-size:11px;cursor:pointer;font-weight:600;">← 전체보기</button>';
+  }
+  cardHtml+='</div>';
 
   // 도넛 + 숫자 요약
-  var vDeg=Math.round(visitedSites/Math.max(totalSites,1)*360);
+  var vDeg=Math.round(cVS/Math.max(cTS,1)*360);
   cardHtml+='<div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;">';
   cardHtml+='<div style="flex-shrink:0;position:relative;width:100px;height:100px;">';
   cardHtml+='<div style="width:100px;height:100px;border-radius:50%;background:conic-gradient(#2ecc71 0deg '+vDeg+'deg,#e0e0e0 '+vDeg+'deg 360deg);"></div>';
   cardHtml+='<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;">';
-  cardHtml+='<div style="font-size:20px;font-weight:900;color:#2ecc71;">'+visitPct+'%</div>';
+  cardHtml+='<div style="font-size:20px;font-weight:900;color:#2ecc71;">'+cVisitPct+'%</div>';
   cardHtml+='<div style="font-size:9px;color:#999;">방문률</div>';
   cardHtml+='</div></div>';
   cardHtml+='<div style="flex:1;">';
   cardHtml+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f0f0;">';
-  cardHtml+='<span style="font-size:13px;color:#666;">총 사이트</span><span style="font-size:15px;font-weight:800;color:#333;">'+totalSites+'</span></div>';
+  cardHtml+='<span style="font-size:13px;color:#666;">총 사이트</span><span style="font-size:15px;font-weight:800;color:#333;">'+cTS+'</span></div>';
   cardHtml+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f0f0;">';
-  cardHtml+='<span style="font-size:13px;color:#2ecc71;">방문</span><span style="font-size:15px;font-weight:800;color:#2ecc71;">'+visitedSites+'</span></div>';
+  cardHtml+='<span style="font-size:13px;color:#2ecc71;">방문</span><span style="font-size:15px;font-weight:800;color:#2ecc71;">'+cVS+'</span></div>';
   cardHtml+='<div style="display:flex;justify-content:space-between;padding:5px 0;">';
-  cardHtml+='<span style="font-size:13px;color:#e74c3c;">미방문</span><span style="font-size:15px;font-weight:800;color:#e74c3c;">'+unvisitedSites+'</span></div>';
+  cardHtml+='<span style="font-size:13px;color:#e74c3c;">미방문</span><span style="font-size:15px;font-weight:800;color:#e74c3c;">'+cUS+'</span></div>';
   cardHtml+='</div></div>';
 
   // 긍정률 요약
-  var pDeg=Math.round(posCount/Math.max(visitedSites,1)*360);
-  var nDeg=Math.round(neuCount/Math.max(visitedSites,1)*360);
+  var pDeg=Math.round(cPos/Math.max(cVS,1)*360);
+  var nDeg=Math.round(cNeu/Math.max(cVS,1)*360);
   cardHtml+='<div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;padding-top:12px;border-top:1px solid #eee;">';
-    cardHtml+='<div style="flex-shrink:0;position:relative;width:100px;height:100px;">';
+  cardHtml+='<div style="flex-shrink:0;position:relative;width:100px;height:100px;">';
   cardHtml+='<div style="width:100px;height:100px;border-radius:50%;background:conic-gradient(#2ecc71 0deg '+pDeg+'deg,#f1c40f '+pDeg+'deg '+(pDeg+nDeg)+'deg,#e74c3c '+(pDeg+nDeg)+'deg 360deg);"></div>';
   cardHtml+='<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;">';
-  cardHtml+='<div style="font-size:20px;font-weight:900;color:#27ae60;">'+posRate+'%</div>';
+  cardHtml+='<div style="font-size:20px;font-weight:900;color:#27ae60;">'+cPosRate+'%</div>';
   cardHtml+='<div style="font-size:8px;color:#999;">긍정률</div>';
   cardHtml+='</div></div>';
   cardHtml+='<div style="flex:1;display:flex;gap:12px;">';
-  cardHtml+='<div style="text-align:center;flex:1;"><div style="font-size:18px;font-weight:800;color:#2ecc71;">'+posCount+'</div><div style="font-size:10px;color:#999;">긍정</div></div>';
-  cardHtml+='<div style="text-align:center;flex:1;"><div style="font-size:18px;font-weight:800;color:#f1c40f;">'+neuCount+'</div><div style="font-size:10px;color:#999;">중립</div></div>';
-  cardHtml+='<div style="text-align:center;flex:1;"><div style="font-size:18px;font-weight:800;color:#e74c3c;">'+negCount+'</div><div style="font-size:10px;color:#999;">부정</div></div>';
+  cardHtml+='<div style="text-align:center;flex:1;"><div style="font-size:18px;font-weight:800;color:#2ecc71;">'+cPos+'</div><div style="font-size:10px;color:#999;">긍정</div></div>';
+  cardHtml+='<div style="text-align:center;flex:1;"><div style="font-size:18px;font-weight:800;color:#f1c40f;">'+cNeu+'</div><div style="font-size:10px;color:#999;">중립</div></div>';
+  cardHtml+='<div style="text-align:center;flex:1;"><div style="font-size:18px;font-weight:800;color:#e74c3c;">'+cNeg+'</div><div style="font-size:10px;color:#999;">부정</div></div>';
   cardHtml+='</div></div>';
 
   // 권역별 달성률
@@ -1913,9 +1935,10 @@ function renderAllStats(){
   var gKeys=['수도권','경상권','충청권','전라권','강원권'];
   for(var gi=0;gi<gKeys.length;gi++){
     var gk=gKeys[gi],gd=regionGroup[gk];
-    cardHtml+='<div style="padding:4px 0;">';
+    var isSelR=(selRegion===gk);
+    cardHtml+='<div style="padding:4px 0;'+(isSelR?'background:#f0f4ff;border-radius:6px;padding:4px 8px;margin:0 -8px;':'')+'">';
     cardHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">';
-    cardHtml+='<span style="font-size:12px;font-weight:600;color:'+gd.color+';">'+gk+'</span>';
+    cardHtml+='<span style="font-size:12px;font-weight:'+(isSelR?'800':'600')+';color:'+gd.color+';">'+gk+(isSelR?' ✔':'')+'</span>';
     cardHtml+='<span style="font-size:11px;color:#888;">'+gd.v+'/'+gd.t+' ('+gd.pct+'%)</span>';
     cardHtml+='</div>';
     cardHtml+='<div style="height:12px;background:#f0f0f0;border-radius:6px;overflow:hidden;">';
@@ -2439,11 +2462,14 @@ function drawKoreaMap(geo){
   regionPolys.forEach(function(r){
     var pct=getRegionPct(r.name);
     var pts=r.coords.map(function(c){return toX(c[0])+','+toY(c[1]);}).join(' ');
-    svg.append('polygon').attr('points',pts)
-      .attr('fill',getFill(pct)).attr('stroke',getStroke(pct)).attr('stroke-width',1.5)
-      .style('cursor','pointer').style('transition','opacity 0.2s')
-      .on('mouseover',function(){d3.select(this).attr('opacity',0.7);})
-      .on('mouseout',function(){d3.select(this).attr('opacity',1);});
+        (function(regionName){
+      svg.append('polygon').attr('points',pts)
+        .attr('fill',getFill(pct)).attr('stroke',getStroke(pct)).attr('stroke-width',1.5)
+        .style('cursor','pointer').style('transition','opacity 0.2s')
+        .on('mouseover',function(){d3.select(this).attr('opacity',0.7);})
+        .on('mouseout',function(){d3.select(this).attr('opacity',1);
+        .on('click',function(){window._selectedRegion=regionName;renderAllStats();});
+    })(r.name);
   });
 
   // 제주 그리기
