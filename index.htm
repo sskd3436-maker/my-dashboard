@@ -2359,13 +2359,7 @@ function renderAllStats(){
       if(segments[s].v>0)pdHtml+='<div style="width:'+sPct+'%;background:'+segments[s].c+';"></div>';
     }
     pdHtml+='</div>';
-     if(chartMode==='visit'){
-      pdHtml+='<div style="display:flex;gap:8px;margin-top:2px;font-size:10px;">';
-      pdHtml+='<span style="color:#2ecc71;">긍정 '+vi.positive+'</span>';
-      pdHtml+='<span style="color:#f1c40f;">중립 '+vi.neutral+'</span>';
-      pdHtml+='<span style="color:#e74c3c;">부정 '+vi.negative+'</span>';
-      pdHtml+='</div>';
-    }else if(chartMode==='pipe'){
+     if(chartMode==='pipe'){
       pdHtml+='<div style="display:flex;gap:8px;margin-top:2px;font-size:10px;">';
       pdHtml+='<span style="color:#e67e22;">제안 '+pi.제안+'</span>';
       pdHtml+='<span style="color:#f39c12;">입대위 '+pi.입대위+'</span>';
@@ -2797,34 +2791,62 @@ function renderAllCalendar(){
   calHtml+='</div></div>';
   document.getElementById('allCalendar').innerHTML=calHtml;
 
-  // === 담당자별 긍정률 (지도 아래) ===
-  var calY=window._calY||new Date().getFullYear();
-  var calM=window._calM!=null?window._calM:new Date().getMonth();
-  var selDay=window._calSelDay||0;
+    // === 담당자별 긍정률 (지도 아래) ===
+  var calY2=window._calY||new Date().getFullYear();
+  var calM2=window._calM!=null?window._calM:new Date().getMonth();
+  var selDay2=window._calSelDay||0;
   var selWeek2=window._calWeek||0;
-  var titleTxt2=(calY)+'년 '+(calM+1)+'월';
-  if(selDay>0)titleTxt2+=' '+selDay+'일';
-  else if(selWeek2>0)titleTxt2+=' '+selWeek2+'주차';
+  var isFiltered=(selDay2>0||selWeek2>0);
+
+  var titleTxt2='전체 담당자별 감정현황';
+  if(selDay2>0)titleTxt2=(calY2)+'년 '+(calM2+1)+'월 '+selDay2+'일 담당자별';
+  else if(selWeek2>0)titleTxt2=(calY2)+'년 '+(calM2+1)+'월 '+selWeek2+'주차 담당자별';
+
+  // 기본값: 전체 데이터 / 필터시: 캘린더 데이터
+  var useMgrKeys,useMgrDay,useTotPos,useTotNeu,useTotNeg,useTotAll;
+  if(isFiltered){
+    useMgrKeys=mgrKeys;useMgrDay=mgrDay;
+    useTotPos=totPos;useTotNeu=totNeu;useTotNeg=totNeg;useTotAll=totAll;
+  }else{
+    // 전체 방문 데이터 집계
+    var allMgrDay2={},allTotPos2=0,allTotNeu2=0,allTotNeg2=0,allTotAll2=0;
+    var flatAll=window._calFlat||[];
+    for(var i=0;i<flatAll.length;i++){
+      var it=flatAll[i];if(!it.date)continue;
+      var mg=(it.mgr||'').trim();if(!mg)continue;
+      if(!allMgrDay2[mg])allMgrDay2[mg]={total:0,positive:0,neutral:0,negative:0};
+      allMgrDay2[mg].total++;allTotAll2++;
+      var content=fv(it.row,it.headers,'영업내용')||'';
+      var pos=parseFloat(fv(it.row,it.headers,'긍정')||'0');
+      var neu=parseFloat(fv(it.row,it.headers,'중립')||'0');
+      var neg=parseFloat(fv(it.row,it.headers,'부정')||'0');
+      if(pos>=neu&&pos>=neg){allMgrDay2[mg].positive++;allTotPos2++;}
+      else if(neg>=pos&&neg>=neu){allMgrDay2[mg].negative++;allTotNeg2++;}
+      else{allMgrDay2[mg].neutral++;allTotNeu2++;}
+    }
+    useMgrKeys=Object.keys(allMgrDay2).sort();
+    useMgrDay=allMgrDay2;
+    useTotPos=allTotPos2;useTotNeu=allTotNeu2;useTotNeg=allTotNeg2;useTotAll=allTotAll2;
+  }
 
   var mgrHtml='<div style="margin-top:16px;border-top:1px solid #eee;padding-top:12px;">';
   mgrHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
-  mgrHtml+='<span style="font-size:13px;font-weight:700;color:#333;">👤 '+titleTxt2+' 담당자별</span>';
-  if(selDay>0)mgrHtml+='<button onclick="selectCalDay(0)" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
-  else if(selWeek2>0)mgrHtml+='<button onclick="selCalWeek(0)" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
+  mgrHtml+='<span style="font-size:13px;font-weight:700;color:#333;">👤 '+titleTxt2+'</span>';
+  if(isFiltered)mgrHtml+='<button onclick="selectCalDay(0);selCalWeek(0);" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
   mgrHtml+='</div>';
   mgrHtml+='<div style="display:flex;gap:14px;margin-bottom:8px;font-size:11px;">';
-  mgrHtml+='<span style="color:#2ecc71;font-weight:600;">● 긍정 '+totPos+'</span>';
-  mgrHtml+='<span style="color:#f1c40f;font-weight:600;">● 중립 '+totNeu+'</span>';
-  mgrHtml+='<span style="color:#e74c3c;font-weight:600;">● 부정 '+totNeg+'</span>';
-  mgrHtml+='<span style="color:#888;font-weight:600;">총 '+totAll+'</span>';
+  mgrHtml+='<span style="color:#2ecc71;font-weight:600;">● 긍정 '+useTotPos+'</span>';
+  mgrHtml+='<span style="color:#f1c40f;font-weight:600;">● 중립 '+useTotNeu+'</span>';
+  mgrHtml+='<span style="color:#e74c3c;font-weight:600;">● 부정 '+useTotNeg+'</span>';
+  mgrHtml+='<span style="color:#888;font-weight:600;">총 '+useTotAll+'</span>';
   mgrHtml+='</div>';
-  if(mgrKeys.length===0){
+  if(useMgrKeys.length===0){
     mgrHtml+='<div style="text-align:center;color:#999;font-size:11px;padding:8px;">방문 기록 없음</div>';
   }else{
     var mgrMax2=0;
-    for(var i=0;i<mgrKeys.length;i++){if(mgrDay[mgrKeys[i]].total>mgrMax2)mgrMax2=mgrDay[mgrKeys[i]].total;}
-    for(var i=0;i<mgrKeys.length;i++){
-      var mn2=mgrKeys[i],md2=mgrDay[mn2];
+    for(var i=0;i<useMgrKeys.length;i++){if(useMgrDay[useMgrKeys[i]].total>mgrMax2)mgrMax2=useMgrDay[useMgrKeys[i]].total;}
+    for(var i=0;i<useMgrKeys.length;i++){
+      var mn2=useMgrKeys[i],md2=useMgrDay[mn2];
       var barW2=mgrMax2>0?Math.round(md2.total/mgrMax2*100):0;
       mgrHtml+='<div style="padding:4px 0;">';
       mgrHtml+='<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;">';
@@ -2847,6 +2869,7 @@ function renderAllCalendar(){
     if(wrapper)wrapper.insertAdjacentHTML('beforeend',mgrHtml);
   }
 }
+
 
 
 function moveAllCal(dir){
