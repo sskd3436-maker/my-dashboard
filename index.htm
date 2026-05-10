@@ -2796,11 +2796,13 @@ function renderAllCalendar(){
   var calM2=window._calM!=null?window._calM:new Date().getMonth();
   var selDay2=window._calSelDay||0;
   var selWeek2=window._calWeek||0;
-  var isFiltered=(selDay2>0||selWeek2>0);
+  var defaultY=new Date().getFullYear(),defaultM=new Date().getMonth();
+  var isFiltered=(selDay2>0||selWeek2>0||(calY2!==defaultY||calM2!==defaultM));
 
   var titleTxt2='전체 담당자별 감정현황';
   if(selDay2>0)titleTxt2=(calY2)+'년 '+(calM2+1)+'월 '+selDay2+'일 담당자별';
   else if(selWeek2>0)titleTxt2=(calY2)+'년 '+(calM2+1)+'월 '+selWeek2+'주차 담당자별';
+  else if(isFiltered)titleTxt2=(calY2)+'년 '+(calM2+1)+'월 담당자별';
 
   // 기본값: 전체 데이터 / 필터시: 캘린더 데이터
   var useMgrKeys,useMgrDay,useTotPos,useTotNeu,useTotNeg,useTotAll;
@@ -2832,7 +2834,7 @@ function renderAllCalendar(){
   var mgrHtml='<div style="margin-top:16px;border-top:1px solid #eee;padding-top:12px;">';
   mgrHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
   mgrHtml+='<span style="font-size:13px;font-weight:700;color:#333;">👤 '+titleTxt2+'</span>';
-  if(isFiltered)mgrHtml+='<button onclick="selectCalDay(0);selCalWeek(0);" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
+    if(isFiltered)mgrHtml+='<button onclick="window._calY='+defaultY+';window._calM='+defaultM+';window._calSelDay=0;window._calWeek=0;window._visitListPage=1;renderAllStats();" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
   mgrHtml+='</div>';
   mgrHtml+='<div style="display:flex;gap:14px;margin-bottom:8px;font-size:11px;">';
   mgrHtml+='<span style="color:#2ecc71;font-weight:600;">● 긍정 '+useTotPos+'</span>';
