@@ -1955,7 +1955,7 @@ function renderAllStats(){
 
 
      // === 전국 지도 + 전체현황 합침 ===
-  var mapHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:680px;box-sizing:border-box;display:flex;flex-direction:column;overflow-y:auto;">';
+  var mapHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:680px;box-sizing:border-box;display:flex;flex-direction:column;
 
   
   // 헤더 + 전체보기 버튼
@@ -2214,7 +2214,7 @@ for(var mi=0;mi<months.length;mi++){
     points.push({x:x,y:y,cnt:monthCounts[mi],mi:mi});
   }
 
-  var chartHtml='<div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);box-sizing:border-box;height:680px;overflow-y:auto;">';
+  var chartHtml='<div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);box-sizing:border-box;height:680px;
   chartHtml+='<h3 style="margin:0 0 8px 0;font-size:15px;color:#333;">📈 '+(selR?selR+' ':'')+'월별 방문 추이</h3>';
   chartHtml+='<svg viewBox="0 0 '+svgW+' '+svgH+'" style="width:100%;height:auto;">';
 
