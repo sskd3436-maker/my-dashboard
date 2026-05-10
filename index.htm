@@ -2037,6 +2037,7 @@ function renderAllStats(){
   document.getElementById('allTopCards').innerHTML='';
 
   // 지도 그리기
+  window._siteCheck=siteCheck;
   window._regionGroup=regionGroup;
   drawKoreaMap(null);
 
@@ -2835,7 +2836,7 @@ function renderAllCalendar(){
   // 권역 필터 함수
   function matchRegion3(siteName){
     if(!selR3)return true;
-    var sc=siteCheck[siteName];
+    var sc=window._siteCheck?window._siteCheck[siteName]:null;
     if(!sc)return false;
     var rg=sc.region||'';
     if(selR3==='수도권'){
