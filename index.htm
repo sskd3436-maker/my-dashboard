@@ -570,19 +570,22 @@
       
 
       
-     <!-- 전체 현황 -->
+    <!-- 전체 현황 -->
       <div class="sub-page active" id="sub-all">
-       <div style="display:flex;gap:16px;flex-wrap:wrap;">
-  <div style="flex:1;min-width:320px;max-width:50%;" id="allMapView"></div>
-  <div style="flex:1;min-width:320px;max-width:50%;">
-    <div id="allMonthChart"></div>
-    <div id="allCalendar" style="margin-top:16px;"></div>
-  </div>
-</div>
-<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
-  <div style="flex:1;min-width:320px;max-width:50%;" id="allPipeline"></div>
-  <div style="flex:1;min-width:320px;max-width:50%;" id="allMgrBar"></div>
-</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:320px;max-width:50%;" id="allMapView"></div>
+          <div style="flex:1;min-width:320px;max-width:50%;">
+            <div id="allMonthChart"></div>
+            <div id="allCalendar" style="margin-top:16px;"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
+          <div style="flex:1;min-width:320px;max-width:50%;">
+            <div id="allPipeline"></div>
+            <div id="allMgrBar" style="margin-top:16px;"></div>
+          </div>
+          <div style="flex:1;min-width:320px;max-width:50%;" id="allContractSites"></div>
+        </div>
         <div style="margin-top:16px;" id="allSheetTable"></div>
         <div style="display:none;" id="allTopCards"></div>
       </div>
@@ -2101,6 +2104,62 @@ function renderAllStats(){
   console.log('파이프라인:', '상담:'+ct상담, '제안:'+ct제안, '입대위:'+ct입대위, '실사:'+ct실사, '계약:'+ct계약, '총:'+ctTotal);
   document.getElementById('allPipeline').innerHTML=pipHtml;
 
+  // === 계약 사이트 목록 (4분류) ===
+  var ctSites={신규사이트:[],신규추가설치:[],제자리교체:[],이전설치:[]};
+  if(contractData&&contractData.rows){
+    var ch3=contractData.headers;
+    for(var i=0;i<contractData.rows.length;i++){
+      var cr=contractData.rows[i];
+      var status=(fv(cr,ch3,'진행사항')||'').trim();
+      if(status!=='계약')continue;
+      var site=(fv(cr,ch3,'사이트명')||'').trim();
+      var type=(fv(cr,ch3,'설치유형')||'').trim();
+      var qty=parseInt(fv(cr,ch3,'충전기수량')||'0')||0;
+      var mgr=(fv(cr,ch3,'담당자')||'').trim();
+      var item={site:site,qty:qty,mgr:mgr};
+      if(type==='신규추가설치')ctSites.신규추가설치.push(item);
+      else if(type==='제자리교체')ctSites.제자리교체.push(item);
+      else if(type==='이전설치')ctSites.이전설치.push(item);
+      else ctSites.신규사이트.push(item);
+    }
+  }
+  var csHtml='<div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;display:flex;flex-direction:column;">';
+  csHtml+='<h3 style="margin:0 0 12px 0;font-size:15px;color:#333;">🏢 계약 완료 사이트</h3>';
+  csHtml+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1;">';
+
+  var categories=[
+    {name:'신규사이트',icon:'🆕',color:'#667eea',list:ctSites.신규사이트},
+    {name:'신규추가설치',icon:'➕',color:'#2ecc71',list:ctSites.신규추가설치},
+    {name:'제자리교체',icon:'🔄',color:'#e67e22',list:ctSites.제자리교체},
+    {name:'이전설치',icon:'📦',color:'#9b59b6',list:ctSites.이전설치}
+  ];
+
+  for(var ci=0;ci<categories.length;ci++){
+    var cat=categories[ci];
+    var totalQty=0;
+    for(var j=0;j<cat.list.length;j++)totalQty+=cat.list[j].qty;
+    csHtml+='<div style="background:'+cat.color+'08;border:1px solid '+cat.color+'20;border-radius:12px;padding:12px;display:flex;flex-direction:column;">';
+    csHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
+    csHtml+='<span style="font-size:12px;font-weight:700;color:'+cat.color+';">'+cat.icon+' '+cat.name+'</span>';
+    csHtml+='<span style="font-size:11px;color:#888;font-weight:600;">'+cat.list.length+'건 / '+totalQty+'기</span>';
+    csHtml+='</div>';
+    csHtml+='<div style="flex:1;max-height:150px;overflow-y:auto;">';
+    if(cat.list.length===0){
+      csHtml+='<div style="font-size:11px;color:#bbb;text-align:center;padding:20px 0;">없음</div>';
+    }
+    for(var j=0;j<cat.list.length;j++){
+      csHtml+='<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid '+cat.color+'10;font-size:11px;">';
+      csHtml+='<span style="color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">'+esc(cat.list[j].site)+'</span>';
+      csHtml+='<span style="color:'+cat.color+';font-weight:700;margin-left:6px;white-space:nowrap;">'+cat.list[j].qty+'기</span>';
+      csHtml+='</div>';
+    }
+    csHtml+='</div></div>';
+  }
+
+  csHtml+='</div></div>';
+  document.getElementById('allContractSites').innerHTML=csHtml;
+
+  
       // === 월별 방문 추이 (최근 6개월) ===
   var now=new Date();
   var months=[],monthLabels=[];
