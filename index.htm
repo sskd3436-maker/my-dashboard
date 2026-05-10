@@ -2250,7 +2250,7 @@ for(var mi=0;mi<months.length;mi++){
         chartHtml+='<circle cx="'+p.x+'" cy="'+p.y+'" r="'+(isThis?5:3.5)+'" fill="'+(isThis?'#667eea':'#fff')+'" stroke="#667eea" stroke-width="2" class="'+(isThis?'dot-anim-big':'dot-anim')+'" style="animation-delay:'+(0.3+pi*0.15)+'s;"/>';
     chartHtml+='<text x="'+p.x+'" y="'+(p.y-10)+'" text-anchor="middle" font-size="10" font-weight="700" fill="'+(isThis?'#667eea':'#888')+'">'+p.cnt+'</text>';
     chartHtml+='<text x="'+p.x+'" y="'+(padT+drawH+16)+'" text-anchor="middle" font-size="10" fill="'+(isThis?'#667eea':'#aaa')+'" font-weight="'+(isThis?'700':'400')+'">'+monthLabels[pi]+'</text>';
-    chartHtml+='<rect x="'+(p.x-20)+'" y="'+padT+'" width="40" height="'+(drawH+padB)+'" fill="transparent" style="cursor:pointer;" onmouseover="this.setAttribute(\'fill\',\'rgba(102,126,234,0.08)\');" onmouseout="this.setAttribute(\'fill\',\'transparent\');" onclick="window._calY='+mY+';window._calM='+mM+';window._calSelDay=0;window._calWeek=0;window._visitListPage=1;renderAllStats();"/>';
+    chartHtml+='<rect x="'+(p.x-20)+'" y="'+padT+'" width="40" height="'+(drawH+padB)+'" fill="transparent" style="cursor:pointer;" onmouseover="this.setAttribute(\'fill\',\'rgba(102,126,234,0.08)\');" onmouseout="this.setAttribute(\'fill\',\'transparent\');" onclick="window._calY='+mY+';window._calM='+mM+';window._calSelDay=0;window._calWeek=0;window._visitListPage=1;window._monthClicked=true;renderAllStats();"/>
   }
 
    chartHtml+='</svg>';
@@ -2824,7 +2824,9 @@ function renderAllCalendar(){
   var selWeek2=window._calWeek||0;
   var selR3=window._selectedRegion||'';
   var defaultY=new Date().getFullYear(),defaultM=new Date().getMonth();
-  var isFiltered=(selDay2>0||selWeek2>0||(calY2!==defaultY||calM2!==defaultM)||selR3!=='');
+  var monthClicked=window._monthClicked||false;
+var isFiltered=(selDay2>0||selWeek2>0||(calY2!==defaultY||calM2!==defaultM)||selR3!==''||monthClicked);
+
 
   var titleTxt2='전체 담당자별 감정현황';
   if(selR3&&selDay2>0)titleTxt2=selR3+' '+(calY2)+'년 '+(calM2+1)+'월 '+selDay2+'일 담당자별';
@@ -2888,7 +2890,8 @@ function renderAllCalendar(){
   var mgrHtml='<div style="margin-top:16px;border-top:1px solid #eee;padding-top:12px;">';
   mgrHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
   mgrHtml+='<span style="font-size:13px;font-weight:700;color:#333;">👤 '+titleTxt2+'</span>';
-  if(isFiltered)mgrHtml+='<button onclick="window._selectedRegion=\'\';window._calY='+defaultY+';window._calM='+defaultM+';window._calSelDay=0;window._calWeek=0;window._visitListPage=1;renderAllStats();" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
+  if(isFiltered)mgrHtml+='<button onclick="window._selectedRegion=\'\';window._calY='+defaultY+';window._calM='+defaultM+';window._calSelDay=0;window._calWeek=0;window._visitListPage=1;window._monthClicked=false;renderAllStats();
+" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
   mgrHtml+='</div>';
   mgrHtml+='<div style="display:flex;gap:14px;margin-bottom:8px;font-size:11px;">';
   mgrHtml+='<span style="color:#2ecc71;font-weight:600;">● 긍정 '+useTotPos+'</span>';
