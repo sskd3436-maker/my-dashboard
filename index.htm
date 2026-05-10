@@ -1829,31 +1829,44 @@ function renderAllStats(){
   var flatNoContract=allFlat.filter(function(f){return f.sheet!=='계약서';});
 
       // === 상단 카드 ===
-  var totalSites=0,visitedSites=0,unvisitedSites=0,posCount=0,neuCount=0,negCount=0;
+    var totalSites=0,visitedSites=0,unvisitedSites=0,posCount=0,neuCount=0,negCount=0;
   var siteCheck={};
   var regionData={};
+  // 1차: 사이트별 방문 여부 및 감정 집계
   for(var i=0;i<flatNoContract.length;i++){
     var it=flatNoContract[i],sn=(it.site||'').trim();
-    if(siteCheck[sn])continue;siteCheck[sn]=1;
-    totalSites++;
+    if(!sn)continue;
     var v=it.date||fv(it.row,it.headers,'방문일자')||'';
     var visited=!!v;
-    if(visited)visitedSites++;else unvisitedSites++;
-    if(it.sent==='positive')posCount++;
-    else if(it.sent==='neutral')neuCount++;
-    else if(it.sent==='negative')negCount++;
-    var rg=(fv(it.row,it.headers,'권역별')||'').trim();
+    if(!siteCheck[sn]){
+      siteCheck[sn]={visited:false,pos:0,neu:0,neg:0,region:''};
+      var rg=(fv(it.row,it.headers,'권역별')||'').trim();
+      if(rg)siteCheck[sn].region=rg;
+    }
+    if(visited)siteCheck[sn].visited=true;
+    if(it.sent==='positive')siteCheck[sn].pos++;
+    else if(it.sent==='neutral')siteCheck[sn].neu++;
+    else if(it.sent==='negative')siteCheck[sn].neg++;
+  }
+  // 2차: 사이트별 합산
+  for(var sn in siteCheck){
+    var sc=siteCheck[sn];
+    totalSites++;
+    if(sc.visited)visitedSites++;else unvisitedSites++;
+    posCount+=sc.pos;neuCount+=sc.neu;negCount+=sc.neg;
+    var rg=sc.region;
     if(rg){
       if(!regionData[rg])regionData[rg]={t:0,v:0,pos:0,neu:0,neg:0};
       regionData[rg].t++;
-      if(visited){
+      if(sc.visited){
         regionData[rg].v++;
-        if(it.sent==='positive')regionData[rg].pos++;
-        else if(it.sent==='neutral')regionData[rg].neu++;
-        else if(it.sent==='negative')regionData[rg].neg++;
+        regionData[rg].pos+=sc.pos;
+        regionData[rg].neu+=sc.neu;
+        regionData[rg].neg+=sc.neg;
       }
     }
   }
+
 
   // 권역 그룹핑
   var regionGroup={
