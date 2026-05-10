@@ -2297,22 +2297,24 @@ for(var mi=0;mi<months.length;mi++){
   for(var k in mgrPipe)allMgrs[k]=1;
   var mgrKeys=Object.keys(allMgrs).sort();
 
-  if(!window._ctMgrOpen)window._ctMgrOpen='all';
-  if(!window._ctMgrChart)window._ctMgrChart='visit';
+    if(!window._ctMgrOpen)window._ctMgrOpen='all';
+  if(!window._ctMgrChart||window._ctMgrChart==='visit')window._ctMgrChart='pipe';
   var selMgr=window._ctMgrOpen;
   var chartMode=window._ctMgrChart;
+
 
    var pdHtml='<div style="display:flex;flex-direction:column;">';
   pdHtml+='<h3 style="margin:0 0 10px 0;font-size:16px;color:#333;">📊 담당자별 영업 실적</h3>';
 
-  // 차트 모드 탭
+    // 차트 모드 탭
   pdHtml+='<div style="display:flex;gap:4px;margin-bottom:12px;">';
-  var tabs=[{k:'visit',n:'방문현황'},{k:'pipe',n:'계약진행'},{k:'qty',n:'충전기수량'}];
+  var tabs=[{k:'pipe',n:'계약진행'},{k:'qty',n:'충전기수량'}];
   for(var t=0;t<tabs.length;t++){
     var tb=tabs[t],isSel=(chartMode===tb.k);
     pdHtml+='<button onclick="window._ctMgrChart=\''+tb.k+'\';renderAllStats();" style="flex:1;padding:6px;border-radius:8px;border:1px solid '+(isSel?'#667eea':'#e0e0e0')+';background:'+(isSel?'#667eea':'#fff')+';color:'+(isSel?'#fff':'#666')+';font-size:11px;font-weight:600;cursor:pointer;">'+tb.n+'</button>';
   }
   pdHtml+='</div>';
+
 
   // 범례
    if(chartMode==='visit'){
