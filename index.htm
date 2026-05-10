@@ -2827,14 +2827,7 @@ function renderAllCalendar(){
 
   calHtml+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid #eee;">';
 
-  // 제목 + 범례
-  calHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">';
-  calHtml+='<span style="font-size:13px;font-weight:700;color:#333;">👤 '+titleTxt+' 담당자별</span>';
-  var resetHtml='';
-  if(selDay>0)resetHtml='<button onclick="selectCalDay(0)" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
-  else if(selWeek>0)resetHtml='<button onclick="selCalWeek(0)" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
-  calHtml+=resetHtml;
-  calHtml+='</div>';
+ 
 
   // 담당자별 데이터를 전역에 저장 (전체현황에서 사용)
  window._calMgrData={mgrKeys:mgrKeys,mgrDay:mgrDay,totPos:totPos,totNeu:totNeu,totNeg:totNeg,totAll:totAll};
