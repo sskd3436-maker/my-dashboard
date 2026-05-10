@@ -2850,7 +2850,7 @@ var isFiltered=(selDay2>0||selWeek2>0||(calY2!==defaultY||calM2!==defaultM)||sel
   }
 
   var useMgrKeys,useMgrDay,useTotPos,useTotNeu,useTotNeg,useTotAll;
-   if(!selR3&&(selDay2>0||selWeek2>0||(calY2!==defaultY||calM2!==defaultM))){
+   if(!selR3&&!monthClicked&&(selDay2>0||selWeek2>0||(calY2!==defaultY||calM2!==defaultM))){
     // 캘린더 필터만 (권역 없음): 기존 mgrDay 사용
     useMgrKeys=mgrKeys;useMgrDay=mgrDay;
     useTotPos=totPos;useTotNeu=totNeu;useTotNeg=totNeg;useTotAll=totAll;
