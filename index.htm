@@ -2172,10 +2172,22 @@ function renderAllStats(){
     var first=new Date(months[mi].y,months[mi].m,1);
     var last=new Date(months[mi].y,months[mi].m+1,0);
     var cnt=0;
-    for(var i=0;i<flatNoContract.length;i++){
-      var d=flatNoContract[i].date;
-      if(d&&d>=first&&d<=last)cnt++;
+var selR=window._selectedRegion||'';
+for(var i=0;i<flatNoContract.length;i++){
+  var f=flatNoContract[i];
+  var d=f.date;
+  if(!d||d<first||d>last)continue;
+  if(selR){
+    var fRegion=f.region||'';
+    if(selR==='수도권'){
+      if(fRegion!=='수도권남동'&&fRegion!=='수도권북동'&&fRegion!=='수도권남서'&&fRegion!=='수도권북서')continue;
+    }else{
+      if(fRegion!==selR)continue;
     }
+  }
+  cnt++;
+}
+
     monthCounts.push(cnt);
   }
   var maxMonth=Math.max.apply(null,monthCounts)||1;
@@ -2190,7 +2202,7 @@ function renderAllStats(){
   }
 
   var chartHtml='<div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);box-sizing:border-box;">';
-  chartHtml+='<h3 style="margin:0 0 8px 0;font-size:15px;color:#333;">📈 월별 방문 추이</h3>';
+  chartHtml+='<h3 style="margin:0 0 8px 0;font-size:15px;color:#333;">📈 '+(selR?selR+' ':'')+'월별 방문 추이</h3>';
   chartHtml+='<svg viewBox="0 0 '+svgW+' '+svgH+'" style="width:100%;height:auto;">';
 
   // 가로 눈금선
