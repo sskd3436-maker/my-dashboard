@@ -2014,7 +2014,7 @@ function renderAllStats(){
   for(var gi=0;gi<gKeys2.length;gi++){
     var gk2=gKeys2[gi],gd2=regionGroup[gk2];
     var isSelR2=(selRegion===gk2);
-    mapHtml+='<div style="padding:3px 0;'+(isSelR2?'background:#f0f4ff;border-radius:6px;padding:3px 6px;margin:0 -6px;':'')+'">';
+    mapHtml+='<div onclick="window._selectedRegion='+(isSelR2?'\'\'':'\''+gk2+'\'')+';renderAllStats();" style="padding:3px 0;cursor:pointer;transition:background 0.2s;'+(isSelR2?'background:#f0f4ff;border-radius:6px;padding:3px 6px;margin:0 -6px;':'')+'" onmouseover="this.style.background=\'#f8f9fa\';" onmouseout="this.style.background=\''+(isSelR2?'#f0f4ff':'transparent')+'\';">';
     mapHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1px;">';
     mapHtml+='<span style="font-size:11px;font-weight:'+(isSelR2?'800':'600')+';color:'+gd2.color+';">'+gk2+(isSelR2?' ✔':'')+'</span>';
     mapHtml+='<span style="font-size:10px;color:#888;">'+gd2.v+'/'+gd2.t+' ('+gd2.pct+'%)</span>';
