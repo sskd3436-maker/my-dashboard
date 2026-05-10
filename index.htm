@@ -574,10 +574,7 @@
       <div class="sub-page active" id="sub-all">
         <div style="display:flex;gap:16px;flex-wrap:wrap;">
           <div style="flex:1;min-width:320px;max-width:50%;" id="allMapView"></div>
-          <div style="flex:1;min-width:320px;max-width:50%;">
-            <div id="allMonthChart"></div>
-            <div id="allCalendar" style="margin-top:16px;"></div>
-          </div>
+           <div style="flex:1;min-width:320px;max-width:50%;" id="allMonthChart"></div>
         </div>
         <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
           <div style="flex:1;min-width:320px;max-width:50%;">
@@ -2229,7 +2226,9 @@ function renderAllStats(){
     chartHtml+='<rect x="'+(p.x-20)+'" y="'+padT+'" width="40" height="'+(drawH+padB)+'" fill="transparent" style="cursor:pointer;" onmouseover="this.setAttribute(\'fill\',\'rgba(102,126,234,0.08)\');" onmouseout="this.setAttribute(\'fill\',\'transparent\');" onclick="window._calY='+mY+';window._calM='+mM+';window._calSelDay=0;window._calWeek=0;window._visitListPage=1;renderAllStats();"/>';
   }
 
-  chartHtml+='</svg></div>';
+   chartHtml+='</svg>';
+  chartHtml+='<div id="allCalendar" style="margin-top:12px;"></div>';
+  chartHtml+='</div>';
   document.getElementById('allMonthChart').innerHTML=chartHtml;
 
 
