@@ -2274,7 +2274,7 @@ function renderAllStats(){
   var selMgr=window._ctMgrOpen;
   var chartMode=window._ctMgrChart;
 
-  var pdHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;display:flex;flex-direction:column;">';
+   var pdHtml='<div style="display:flex;flex-direction:column;">';
   pdHtml+='<h3 style="margin:0 0 10px 0;font-size:16px;color:#333;">📊 담당자별 영업 실적</h3>';
 
   // 차트 모드 탭
@@ -2426,7 +2426,7 @@ function renderAllStats(){
   pdHtml+='<span style="font-size:14px;font-weight:700;color:#333;">합계</span>';
   pdHtml+='<span style="font-size:15px;font-weight:800;color:#27ae60;">'+ctTotal+'건 / '+ctQtyTotal+'기</span>';
   pdHtml+='</div></div>';
-  document.getElementById('allMgrBar').innerHTML=pdHtml;
+  document.getElementById('allMgrBar').innerHTML='';
 
 
 
