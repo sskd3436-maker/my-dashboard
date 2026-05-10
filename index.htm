@@ -2837,7 +2837,10 @@ function renderAllCalendar(){
   calHtml+='</div>';
 
   // 담당자별 데이터를 전역에 저장 (전체현황에서 사용)
-  window._calMgrData={mgrKeys:mgrKeys,mgrDay:mgrDay,totPos:totPos,totNeu:totNeu,totNeg:totNeg,totAll:totAll};
+ window._calMgrData={mgrKeys:mgrKeys,mgrDay:mgrDay,totPos:totPos,totNeu:totNeu,totNeg:totNeg,totAll:totAll};
+  calHtml+='</div></div>';
+  document.getElementById('allCalendar').innerHTML=calHtml;
+}
 
 function moveAllCal(dir){
   window._calM+=dir;
