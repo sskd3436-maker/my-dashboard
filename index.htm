@@ -2220,13 +2220,12 @@ for(var mi=0;mi<months.length;mi++){
   chartHtml+='<h3 style="margin:0 0 8px 0;font-size:15px;color:#333;">📈 '+(selR?selR+' ':'')+'월별 방문 추이</h3>';
   chartHtml+='<svg viewBox="0 0 '+svgW+' '+svgH+'" style="width:100%;height:auto;">';
 
-  // 가로 눈금선
-  for(var gi=0;gi<=4;gi++){
-    var gy=padT+(drawH/4)*gi;
-    var gVal=Math.round(maxMonth-maxMonth/4*gi);
-    chartHtml+='<line x1="'+padL+'" y1="'+gy+'" x2="'+(svgW-padR)+'" y2="'+gy+'" stroke="#f0f0f0" stroke-width="1"/>';
-    chartHtml+='<text x="'+(padL-5)+'" y="'+(gy+3)+'" text-anchor="end" font-size="9" fill="#bbb">'+gVal+'</text>';
-  }
+ // Y축 수치만 표시 (눈금선 없음)
+for(var gi=0;gi<=4;gi++){
+  var gy=padT+(drawH/4)*gi;
+  var gVal=Math.round(maxMonth-maxMonth/4*gi);
+  chartHtml+='<text x="'+(padL-5)+'" y="'+(gy+3)+'" text-anchor="end" font-size="9" fill="#ccc">'+gVal+'</text>';
+}
 
   // 그라데이션 영역
   chartHtml+='<defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">';
