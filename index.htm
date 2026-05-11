@@ -555,6 +555,7 @@
         <div class="form-group"><label>관리실번호</label><input type="text" id="cf_tel" class="form-input"></div>
         <div class="form-group"><label>계약년수</label><input type="number" id="cf_year" class="form-input"></div>
         <div class="form-group"><label>충전기수량</label><input type="number" id="cf_qty" class="form-input" oninput="calcContract()"></div>
+        <div class="form-group"><label>설치구분</label><select id="cf_installType" class="form-input"><option value="">선택</option><option value="신규사이트">신규사이트</option><option value="신규추가설치">신규추가설치</option><option value="제자리교체">제자리교체</option><option value="이전설치">이전설치</option></select></div>
         <div class="form-group"><label>설치유형</label><select id="cf_type" class="form-input" onchange="calcContract()"><option value="">선택</option><option value="신규설치">신규설치</option><option value="제자리교체">제자리교체</option></select></div>
         <div class="form-group"><label>충전기단가</label><input type="text" id="cf_price" class="form-input" readonly></div>
         <div class="form-group"><label>설치금액</label><input type="text" id="cf_total" class="form-input" readonly></div>
@@ -2122,7 +2123,7 @@ function renderAllStats(){
       var status=(fv(cr,ch3,'진행사항')||'').trim();
       if(status!=='계약')continue;
       var site=(fv(cr,ch3,'사이트명')||'').trim();
-      var type=(fv(cr,ch3,'설치유형')||'').trim();
+      var type=(fv(cr,ch3,'설치구분')||'').trim();
       var qty=parseInt(fv(cr,ch3,'충전기수량')||'0')||0;
       var mgr=(fv(cr,ch3,'담당자')||'').trim();
       var item={site:site,qty:qty,mgr:mgr};
@@ -3609,7 +3610,7 @@ function openContractModal(rowIdx){
   editContractRow=rowIdx||null;
   document.getElementById('contractModalTitle').textContent=rowIdx?'계약서 수정':'계약서 작성';
   document.getElementById('contractSubmitBtn').textContent=rowIdx?'수정':'저장';
-  var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr'];
+  var fields=['cf_site','cf_name','cf_addr','cf_biz','cf_tel','cf_year','cf_qty','cf_type','cf_price','cf_total','cf_promo','cf_promoAmt','cf_status','cf_note','cf_mgr','cf_installType'];
   for(var i=0;i<fields.length;i++){var el=document.getElementById(fields[i]);if(el)el.value='';}
   if(rowIdx&&contractData&&contractData.rows){
     for(var i=0;i<contractData.rows.length;i++){
@@ -3628,6 +3629,7 @@ function openContractModal(rowIdx){
         document.getElementById('cf_promoAmt').value=r['프로모션금액']||'';
         document.getElementById('cf_status').value=r['진행사항']||'';
         document.getElementById('cf_note').value=r['비고']||'';
+        document.getElementById('cf_installType').value=r['설치구분']||'';
         document.getElementById('cf_mgr').value=r['담당자']||'';
         break;
       }
@@ -3709,11 +3711,12 @@ function submitContract(){
     status,
     document.getElementById('cf_note').value,
     document.getElementById('cf_mgr').value,
-    dateFields['제안일'],
+     dateFields['제안일'],
     dateFields['입대위일'],
     dateFields['실사일'],
     dateFields['계약일'],
-    dateFields['탈락여부']
+    dateFields['탈락여부'],
+    document.getElementById('cf_installType').value
   ];
 
      if(editContractRow){
