@@ -2346,7 +2346,7 @@ for(var mi=0;mi<months.length;mi++){
     var mn=mgrKeys[i];
     var val=0;
     if(chartMode==='visit')val=(mgrVisit[mn]||{total:0}).total;
-    else if(chartMode==='pipe'){var p=mgrPipe[mn];val=p?(p.제안+p.입대위+p.실사+p.계약):0;}
+    else if(chartMode==='pipe'){var p=mgrPipe[mn];val=p?(p.입대위+p.실사+p.계약):0;}
     else{var p=mgrPipe[mn];val=p?p.qty:0;}
     if(val>maxVal)maxVal=val;
   }
@@ -2362,8 +2362,8 @@ for(var mi=0;mi<months.length;mi++){
       totalVal=vi.total;
       segments=[{v:vi.positive,c:'#2ecc71'},{v:vi.neutral,c:'#f1c40f'},{v:vi.negative,c:'#e74c3c'}];
     }else if(chartMode==='pipe'){
-      totalVal=pi.제안+pi.입대위+pi.실사+pi.계약;
-      segments=[{v:pi.제안,c:'#e67e22'},{v:pi.입대위,c:'#f39c12'},{v:pi.실사,c:'#9b59b6'},{v:pi.계약,c:'#27ae60'}];
+      totalVal=pi.입대위+pi.실사+pi.계약;
+      segments=[{v:pi.입대위,c:'#f39c12'},{v:pi.실사,c:'#9b59b6'},{v:pi.계약,c:'#27ae60'}];
     }else{
       var newQ=0,repQ=0;
       for(var j=0;j<pi.sites.length;j++){
@@ -2390,7 +2390,6 @@ for(var mi=0;mi<months.length;mi++){
     pdHtml+='</div>';
      if(chartMode==='pipe'){
       pdHtml+='<div style="display:flex;gap:8px;margin-top:2px;font-size:10px;">';
-      pdHtml+='<span style="color:#e67e22;">제안 '+pi.제안+'</span>';
       pdHtml+='<span style="color:#f39c12;">입대위 '+pi.입대위+'</span>';
       pdHtml+='<span style="color:#9b59b6;">실사 '+pi.실사+'</span>';
       pdHtml+='<span style="color:#27ae60;">계약 '+pi.계약+'</span>';
