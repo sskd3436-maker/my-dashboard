@@ -2215,7 +2215,7 @@ for(var mi=0;mi<months.length;mi++){
     points.push({x:x,y:y,cnt:monthCounts[mi],mi:mi});
   }
 
-  var chartHtml='<div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);box-sizing:border-box;">';
+  var chartHtml='<div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);box-sizing:border-box;height:100%;">';
   chartHtml+='<h3 style="margin:0 0 8px 0;font-size:15px;color:#333;">📈 '+(selR?selR+' ':'')+'월별 방문 추이</h3>';
   chartHtml+='<svg viewBox="0 0 '+svgW+' '+svgH+'" style="width:100%;height:auto;">';
 
