@@ -2115,6 +2115,7 @@ function renderAllStats(){
   document.getElementById('allPipeline').innerHTML=pipHtml;
 
   // === 계약 사이트 목록 (4분류) ===
+  var ctSelMgr=window._ctMgrOpen||'all';
   var ctSites={신규사이트:[],신규추가설치:[],제자리교체:[],이전설치:[]};
   if(contractData&&contractData.rows){
     var ch3=contractData.headers;
@@ -2126,6 +2127,7 @@ function renderAllStats(){
       var type=(fv(cr,ch3,'설치구분')||'').trim();
       var qty=parseInt(fv(cr,ch3,'충전기수량')||'0')||0;
       var mgr=(fv(cr,ch3,'담당자')||'').trim();
+      if(ctSelMgr!=='all'&&mgr!==ctSelMgr)continue;
       var item={site:site,qty:qty,mgr:mgr};
       if(type==='신규추가설치')ctSites.신규추가설치.push(item);
       else if(type==='제자리교체')ctSites.제자리교체.push(item);
@@ -2133,8 +2135,12 @@ function renderAllStats(){
       else ctSites.신규사이트.push(item);
     }
   }
+  var csLabel=(ctSelMgr==='all')?'전체':'👤 '+ctSelMgr;
   var csHtml='<div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;display:flex;flex-direction:column;">';
-  csHtml+='<h3 style="margin:0 0 12px 0;font-size:15px;color:#333;">🏢 계약 완료 사이트</h3>';
+  csHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
+  csHtml+='<h3 style="margin:0;font-size:15px;color:#333;">🏢 '+csLabel+' 계약 완료 사이트</h3>';
+  if(ctSelMgr!=='all')csHtml+='<button onclick="window._ctMgrOpen=\'all\';renderAllStats();" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
+  csHtml+='</div>';
   csHtml+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1;">';
 
   var categories=[
@@ -2168,6 +2174,7 @@ function renderAllStats(){
 
   csHtml+='</div></div>';
   document.getElementById('allContractSites').innerHTML=csHtml;
+
 
   
       // === 월별 방문 추이 (최근 6개월) ===
