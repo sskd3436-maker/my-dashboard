@@ -1956,7 +1956,7 @@ function renderAllStats(){
 
 
      // === 전국 지도 + 전체현황 합침 ===
- var mapHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);box-sizing:border-box;display:flex;flex-direction:column;">';
+ var mapHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);box-sizing:border-box;display:flex;flex-direction:column;min-height:710px;">';
 
 
   
@@ -2887,7 +2887,7 @@ var isFiltered=(selDay2>0||selWeek2>0||(calY2!==defaultY||calM2!==defaultM)||sel
     useTotPos=allTotPos2;useTotNeu=allTotNeu2;useTotNeg=allTotNeg2;useTotAll=allTotAll2;
   }
 
-  var mgrHtml='<div style="margin-top:16px;border-top:1px solid #eee;padding-top:12px;">';
+    var mgrHtml='<div style="margin-top:16px;border-top:1px solid #eee;padding-top:12px;">';
   mgrHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
   mgrHtml+='<span style="font-size:13px;font-weight:700;color:#333;">👤 '+titleTxt2+'</span>';
     if(isFiltered)mgrHtml+='<button onclick="window._selectedRegion=\'\';window._calY='+defaultY+';window._calM='+defaultM+';window._calSelDay=0;window._calWeek=0;window._visitListPage=1;window._monthClicked=false;renderAllStats();" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
