@@ -1589,7 +1589,7 @@ if(window._actMyLoc){
 }else if(mapBounds.length>0){
   window._actMap.fitBounds(mapBounds,{padding:[30,30]});
 }
-
+setTimeout(function(){ if(window._actMap) window._actMap.invalidateSize(); },100);
 
    // 사이트명 기준 합치기
   var siteMap={};
