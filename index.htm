@@ -2893,9 +2893,12 @@ var isFiltered=(selDay2>0||selWeek2>0||(calY2!==defaultY||calM2!==defaultM)||sel
     if(isFiltered)mgrHtml+='<button onclick="window._selectedRegion=\'\';window._calY='+defaultY+';window._calM='+defaultM+';window._calSelDay=0;window._calWeek=0;window._visitListPage=1;window._monthClicked=false;renderAllStats();" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
   mgrHtml+='</div>';
   mgrHtml+='<div style="display:flex;gap:14px;margin-bottom:8px;font-size:11px;">';
-  mgrHtml+='<span style="color:#2ecc71;font-weight:600;">● 긍정 '+useTotPos+'</span>';
-  mgrHtml+='<span style="color:#f1c40f;font-weight:600;">● 중립 '+useTotNeu+'</span>';
-  mgrHtml+='<span style="color:#e74c3c;font-weight:600;">● 부정 '+useTotNeg+'</span>';
+   var posPct=useTotAll>0?Math.round(useTotPos/useTotAll*100):0;
+  var neuPct=useTotAll>0?Math.round(useTotNeu/useTotAll*100):0;
+  var negPct=useTotAll>0?Math.round(useTotNeg/useTotAll*100):0;
+  mgrHtml+='<span style="color:#2ecc71;font-weight:600;">● 긍정 '+useTotPos+'('+posPct+'%)</span>';
+  mgrHtml+='<span style="color:#f1c40f;font-weight:600;">● 중립 '+useTotNeu+'('+neuPct+'%)</span>';
+  mgrHtml+='<span style="color:#e74c3c;font-weight:600;">● 부정 '+useTotNeg+'('+negPct+'%)</span>';
   mgrHtml+='<span style="color:#888;font-weight:600;">총 '+useTotAll+'</span>';
   mgrHtml+='</div>';
   if(useMgrKeys.length===0){
