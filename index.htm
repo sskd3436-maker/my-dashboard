@@ -2963,10 +2963,14 @@ var isFiltered=(selDay2>0||selWeek2>0||(calY2!==defaultY||calM2!==defaultM)||sel
   }
   mgrHtml+='</div>';
   var mapEl=document.getElementById('allMapView');
-  if(mapEl){
-    var wrapper=mapEl.querySelector('div');
-    if(wrapper)wrapper.insertAdjacentHTML('beforeend',mgrHtml);
+if(mapEl){
+  var wrapper=mapEl.querySelector('div');
+  if(wrapper){
+    wrapper.insertAdjacentHTML('beforeend',mgrHtml);
+  }else{
+    mapEl.insertAdjacentHTML('beforeend',mgrHtml);
   }
+}
 }
 
 
