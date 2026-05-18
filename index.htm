@@ -3000,9 +3000,10 @@ function toggleTlMode(mode){
 }
 
   function toggleCtMgr(mgr){
-  window._ctMgrOpen=(window._ctMgrOpen===mgr)?'':mgr;
+  window._ctMgrOpen=(window._ctMgrOpen===mgr)?'all':mgr;
   renderAllStats();
 }
+
  
 // 일일
 function moveDaily(dir){if(dir===0)dailyDt=new Date();else dailyDt.setDate(dailyDt.getDate()+dir);dailyDt.setHours(0,0,0,0);renderDaily();}
