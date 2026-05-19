@@ -2416,20 +2416,19 @@ pipHtml+='<div style="font-size:10px;color:#888;">총 건수</div>';
 pipHtml+='</div></div>';
 
 // 오른쪽: 단계별 건수/수량 상세
-pipHtml+='<div style="flex:1;display:flex;flex-direction:column;gap:8px;">';
+pipHtml+='<div style="flex:1;display:flex;flex-direction:column;gap:6px;">';
 for(var i=0;i<pStages.length;i++){
   var s=pStages[i],pct=pipTotal>0?Math.round(s.c/pipTotal*100):0;
-  pipHtml+='<div onclick="window._ctListStatus=\''+s.n+'\';window._ctListPage=1;renderAllStats();setTimeout(function(){document.getElementById(\'allSheetTable\').scrollIntoView({behavior:\'smooth\'});},100);" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:'+s.bg+'10;border:1px solid '+s.bg+'30;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform=\'scale(1.02)\'" onmouseout="this.style.transform=\'scale(1)\'">';
-  pipHtml+='<div style="width:10px;height:10px;border-radius:50%;background:'+s.bg+';flex-shrink:0;"></div>';
-  pipHtml+='<div style="flex:1;">';
-  pipHtml+='<div style="font-size:13px;font-weight:700;color:#333;">'+s.n+'</div>';
+  pipHtml+='<div onclick="window._ctListStatus=\''+s.n+'\';window._ctListPage=1;renderAllStats();setTimeout(function(){document.getElementById(\'allSheetTable\').scrollIntoView({behavior:\'smooth\'});},100);" style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;background:'+s.bg+'10;border:1px solid '+s.bg+'30;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform=\'scale(1.02)\'" onmouseout="this.style.transform=\'scale(1)\'">';
+  pipHtml+='<div style="width:8px;height:8px;border-radius:50%;background:'+s.bg+';flex-shrink:0;"></div>';
+  pipHtml+='<div style="font-size:12px;font-weight:700;color:#333;min-width:36px;">'+s.n+'</div>';
+  pipHtml+='<div style="font-size:14px;font-weight:800;color:'+s.bg+';">'+s.c+'<span style="font-size:10px;font-weight:400;color:#888;">건</span></div>';
+  pipHtml+='<div style="font-size:11px;color:#666;">'+s.q+'<span style="font-size:10px;color:#aaa;">기</span></div>';
+  pipHtml+='<div style="font-size:10px;color:#aaa;margin-left:auto;">'+pct+'%</div>';
   pipHtml+='</div>';
-  pipHtml+='<div style="text-align:right;">';
-  pipHtml+='<div style="font-size:15px;font-weight:800;color:'+s.bg+';">'+s.c+'<span style="font-size:11px;font-weight:400;color:#888;">건</span></div>';
-  pipHtml+='<div style="font-size:12px;color:#666;">'+s.q+'<span style="font-size:10px;color:#aaa;">기</span> · '+pct+'%</div>';
-  pipHtml+='</div></div>';
 }
 pipHtml+='</div></div>';
+
 
 // 하단 요약
 pipHtml+='<div style="text-align:right;margin-top:4px;font-size:13px;color:#666;font-weight:600;">계약 '+pipTotal+'건 / '+showPipe.qty+'기</div>';
