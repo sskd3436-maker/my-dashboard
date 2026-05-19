@@ -2549,103 +2549,115 @@ pipHtml+='<div style="text-align:right;margin-top:8px;font-size:13px;color:#666;
    window._calFlat=flatNoContract;
   renderAllCalendar();
 
-    // === 월별 방문 목록 ===
-  if(!window._visitListPage)window._visitListPage=1;
-  if(!window._visitListMgr)window._visitListMgr='';
-  var perPage=10;
+     // === 계약서 목록 ===
+  if(!window._ctListPage)window._ctListPage=1;
+  if(!window._ctListMgr)window._ctListMgr='';
+  if(!window._ctListStatus)window._ctListStatus='';
+  var ctPerPage=10;
 
-  var calY=window._calY||now.getFullYear();
-  var calM=window._calM!=null?window._calM:now.getMonth();
-  var calDay=window._calSelDay||0;
-  var mStart=new Date(calY,calM,1);
-  var mEnd=new Date(calY,calM+1,0);
-
-  var visitList=[];
-  for(var i=0;i<flatNoContract.length;i++){
-    var it=flatNoContract[i];
-    if(!it.date)continue;
-    if(calDay>0){
-      var sel=new Date(calY,calM,calDay);sel.setHours(0,0,0,0);
-      if(it.date.getTime()!==sel.getTime())continue;
-    }else{
-      if(it.date<mStart||it.date>mEnd)continue;
+  var ctList=[];
+  if(contractData&&contractData.rows){
+    var ch4=contractData.headers;
+    for(var i=0;i<contractData.rows.length;i++){
+      var cr=contractData.rows[i];
+      var site=(fv(cr,ch4,'사이트명')||'').trim();
+      var mgr=(fv(cr,ch4,'담당자')||'').trim();
+      var status=(fv(cr,ch4,'진행사항')||'').trim();
+      var qty=fv(cr,ch4,'충전기수량')||'';
+      var type=(fv(cr,ch4,'설치유형')||'').trim();
+      var installType=(fv(cr,ch4,'설치구분')||'').trim();
+      var addr=(fv(cr,ch4,'주소')||'').trim();
+      var note=(fv(cr,ch4,'비고')||'').trim();
+      var rowIdx=cr._rowIndex||(i+4);
+      if(!site)continue;
+      if(window._ctListMgr&&mgr!==window._ctListMgr)continue;
+      if(window._ctListStatus&&status!==window._ctListStatus)continue;
+      var statusColor=status==='계약'?'#27ae60':status==='실사'?'#9b59b6':status==='입대위'?'#f39c12':status==='제안'?'#e67e22':status==='탈락'?'#e74c3c':'#3498db';
+      ctList.push({site:site,mgr:mgr,status:status,statusColor:statusColor,qty:qty,type:type,installType:installType,addr:addr,note:note,rowIdx:rowIdx});
     }
-    if(window._visitListMgr&&(it.mgr||'')!==window._visitListMgr)continue;
-    var content=fv(it.row,it.headers,'영업내용')||'';
-    var pos=fv(it.row,it.headers,'긍정')||'';
-    var neu=fv(it.row,it.headers,'중립')||'';
-    var neg=fv(it.row,it.headers,'부정')||'';
-    var sent=pos?'긍정':neu?'중립':neg?'부정':'-';
-    var sentColor=pos?'#27ae60':neu?'#f39c12':neg?'#e74c3c':'#999';
-    var dateStr=it.date.getFullYear()+'.'+(it.date.getMonth()+1)+'.'+it.date.getDate();
-    visitList.push({date:it.date,dateStr:dateStr,site:it.site||'',mgr:it.mgr||'',sheet:it.sheet||'',content:content,sent:sent,sentColor:sentColor});
   }
-  visitList.sort(function(a,b){return b.date.getTime()-a.date.getTime();});
 
-  // 담당자 목록
-  var visitMgrs={};
-  for(var i=0;i<visitList.length;i++){if(visitList[i].mgr)visitMgrs[visitList[i].mgr]=1;}
-  var mgrList=Object.keys(visitMgrs).sort();
+  // 담당자/진행사항 목록
+  var ctMgrs={},ctStatuses={};
+  if(contractData&&contractData.rows){
+    var ch4=contractData.headers;
+    for(var i=0;i<contractData.rows.length;i++){
+      var mg=(fv(contractData.rows[i],ch4,'담당자')||'').trim();
+      var st=(fv(contractData.rows[i],ch4,'진행사항')||'').trim();
+      if(mg)ctMgrs[mg]=1;
+      if(st)ctStatuses[st]=1;
+    }
+  }
+  var ctMgrList=Object.keys(ctMgrs).sort();
+  var ctStatusList=Object.keys(ctStatuses).sort();
 
-  var totalPages=Math.ceil(visitList.length/perPage)||1;
-  if(window._visitListPage>totalPages)window._visitListPage=totalPages;
-  var startIdx=(window._visitListPage-1)*perPage;
-  var pageItems=visitList.slice(startIdx,startIdx+perPage);
-
-  var periodLabel=calDay>0?calY+'년 '+(calM+1)+'월 '+calDay+'일':calY+'년 '+(calM+1)+'월';
+  var ctTotalPages=Math.ceil(ctList.length/ctPerPage)||1;
+  if(window._ctListPage>ctTotalPages)window._ctListPage=ctTotalPages;
+  var ctStartIdx=(window._ctListPage-1)*ctPerPage;
+  var ctPageItems=ctList.slice(ctStartIdx,ctStartIdx+ctPerPage);
 
   var tblHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);">';
   tblHtml+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">';
-  tblHtml+='<h3 style="margin:0;font-size:16px;color:#333;">📄 '+periodLabel+' 방문 목록 ('+visitList.length+'건)</h3>';
+  tblHtml+='<h3 style="margin:0;font-size:16px;color:#333;">📋 계약서 목록 ('+ctList.length+'건)</h3>';
   tblHtml+='<div style="display:flex;gap:6px;align-items:center;">';
-  tblHtml+='<select onchange="window._visitListMgr=this.value;window._visitListPage=1;renderAllStats();" style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:12px;">';
+  tblHtml+='<select onchange="window._ctListMgr=this.value;window._ctListPage=1;renderAllStats();" style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:12px;">';
   tblHtml+='<option value="">전체 담당자</option>';
-  for(var i=0;i<mgrList.length;i++){
-    tblHtml+='<option value="'+esc(mgrList[i])+'"'+(window._visitListMgr===mgrList[i]?' selected':'')+'>'+esc(mgrList[i])+'</option>';
+  for(var i=0;i<ctMgrList.length;i++){
+    tblHtml+='<option value="'+esc(ctMgrList[i])+'"'+(window._ctListMgr===ctMgrList[i]?' selected':'')+'>'+esc(ctMgrList[i])+'</option>';
   }
   tblHtml+='</select>';
-  if(calDay>0)tblHtml+='<button onclick="window._calSelDay=0;window._visitListPage=1;renderAllStats();" style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;background:#f8f9fa;font-size:12px;cursor:pointer;">월 전체</button>';
+  tblHtml+='<select onchange="window._ctListStatus=this.value;window._ctListPage=1;renderAllStats();" style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:12px;">';
+  tblHtml+='<option value="">전체 진행사항</option>';
+  for(var i=0;i<ctStatusList.length;i++){
+    tblHtml+='<option value="'+esc(ctStatusList[i])+'"'+(window._ctListStatus===ctStatusList[i]?' selected':'')+'>'+esc(ctStatusList[i])+'</option>';
+  }
+  tblHtml+='</select>';
   tblHtml+='</div></div>';
 
   tblHtml+='<table style="width:100%;border-collapse:collapse;font-size:13px;">';
   tblHtml+='<thead><tr style="background:#f8f9fa;">';
-  tblHtml+='<th style="padding:10px;text-align:left;border-bottom:2px solid #e0e0e0;">날짜</th>';
   tblHtml+='<th style="padding:10px;text-align:left;border-bottom:2px solid #e0e0e0;">사이트명</th>';
   tblHtml+='<th style="padding:10px;text-align:center;border-bottom:2px solid #e0e0e0;">담당자</th>';
-  tblHtml+='<th style="padding:10px;text-align:center;border-bottom:2px solid #e0e0e0;">평가</th>';
-  tblHtml+='<th style="padding:10px;text-align:left;border-bottom:2px solid #e0e0e0;">영업내용</th>';
+  tblHtml+='<th style="padding:10px;text-align:center;border-bottom:2px solid #e0e0e0;">진행사항</th>';
+  tblHtml+='<th style="padding:10px;text-align:center;border-bottom:2px solid #e0e0e0;">설치구분</th>';
+  tblHtml+='<th style="padding:10px;text-align:center;border-bottom:2px solid #e0e0e0;">충전기</th>';
+  tblHtml+='<th style="padding:10px;text-align:left;border-bottom:2px solid #e0e0e0;">주소</th>';
+  tblHtml+='<th style="padding:10px;text-align:center;border-bottom:2px solid #e0e0e0;">수정</th>';
   tblHtml+='</tr></thead><tbody>';
 
-  if(pageItems.length===0){
-    tblHtml+='<tr><td colspan="5" style="padding:24px;text-align:center;color:#999;">방문 기록이 없습니다</td></tr>';
+  if(ctPageItems.length===0){
+    tblHtml+='<tr><td colspan="7" style="padding:24px;text-align:center;color:#999;">계약서가 없습니다</td></tr>';
   }else{
-    for(var i=0;i<pageItems.length;i++){
-      var v=pageItems[i];
+    for(var i=0;i<ctPageItems.length;i++){
+      var c=ctPageItems[i];
       tblHtml+='<tr style="border-bottom:1px solid #f0f0f0;">';
-      tblHtml+='<td style="padding:10px;white-space:nowrap;color:#666;">'+v.dateStr+'</td>';
-      tblHtml+='<td style="padding:10px;font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(v.site)+'</td>';
-      tblHtml+='<td style="padding:10px;text-align:center;">'+esc(v.mgr)+'</td>';
-      tblHtml+='<td style="padding:10px;text-align:center;"><span style="color:'+v.sentColor+';font-weight:600;">'+v.sent+'</span></td>';
-      tblHtml+='<td style="padding:10px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#666;">'+esc(v.content||'-')+'</td>';
+      tblHtml+='<td style="padding:10px;font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(c.site)+'</td>';
+      tblHtml+='<td style="padding:10px;text-align:center;">'+esc(c.mgr)+'</td>';
+      tblHtml+='<td style="padding:10px;text-align:center;"><span style="color:'+c.statusColor+';font-weight:700;background:'+c.statusColor+'15;padding:2px 8px;border-radius:10px;font-size:11px;">'+esc(c.status)+'</span></td>';
+      tblHtml+='<td style="padding:10px;text-align:center;font-size:11px;color:#666;">'+esc(c.installType||'-')+'</td>';
+      tblHtml+='<td style="padding:10px;text-align:center;font-weight:600;">'+esc(c.qty)+'기</td>';
+      tblHtml+='<td style="padding:10px;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#666;font-size:11px;">'+esc(c.addr||'-')+'</td>';
+      tblHtml+='<td style="padding:10px;text-align:center;"><button onclick="openContractModal('+c.rowIdx+')" style="background:#667eea;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:600;">수정</button></td>';
       tblHtml+='</tr>';
     }
   }
   tblHtml+='</tbody></table>';
 
   // 페이지네이션
-  if(totalPages>1){
+  if(ctTotalPages>1){
     tblHtml+='<div style="display:flex;justify-content:center;gap:4px;margin-top:16px;">';
-    if(window._visitListPage>1)tblHtml+='<button onclick="window._visitListPage--;renderAllStats();" style="padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;">◀</button>';
-    var startP=Math.max(1,window._visitListPage-2);
-    var endP=Math.min(totalPages,startP+4);
+    if(window._ctListPage>1)tblHtml+='<button onclick="window._ctListPage--;renderAllStats();" style="padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;">◀</button>';
+    var startP=Math.max(1,window._ctListPage-2);
+    var endP=Math.min(ctTotalPages,startP+4);
     for(var p=startP;p<=endP;p++){
-      tblHtml+='<button onclick="window._visitListPage='+p+';renderAllStats();" style="padding:6px 12px;border:1px solid '+(p===window._visitListPage?'#667eea':'#ddd')+';border-radius:6px;background:'+(p===window._visitListPage?'#667eea':'#fff')+';color:'+(p===window._visitListPage?'#fff':'#333')+';cursor:pointer;font-size:12px;font-weight:'+(p===window._visitListPage?'700':'400')+';">'+p+'</button>';
+      tblHtml+='<button onclick="window._ctListPage='+p+';renderAllStats();" style="padding:6px 12px;border:1px solid '+(p===window._ctListPage?'#667eea':'#ddd')+';border-radius:6px;background:'+(p===window._ctListPage?'#667eea':'#fff')+';color:'+(p===window._ctListPage?'#fff':'#333')+';cursor:pointer;font-size:12px;font-weight:'+(p===window._ctListPage?'700':'400')+';">'+p+'</button>';
     }
-    if(window._visitListPage<totalPages)tblHtml+='<button onclick="window._visitListPage++;renderAllStats();" style="padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;">▶</button>';
+    if(window._ctListPage<ctTotalPages)tblHtml+='<button onclick="window._ctListPage++;renderAllStats();" style="padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;">▶</button>';
     tblHtml+='</div>';
   }
 
   tblHtml+='</div>';
+
   document.getElementById('allSheetTable').innerHTML=tblHtml;
 }
 
