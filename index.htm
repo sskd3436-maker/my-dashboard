@@ -583,7 +583,7 @@
       <div class="sub-page active" id="sub-all">
         <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:stretch;">
     <div style="flex:1;min-width:320px;max-width:50%;" id="allMapView"></div>
-    <div style="flex:1;min-width:320px;max-width:50%;" id="allPipeline"></div>
+    <div style="flex:1;min-width:320px;max-width:50%;" id="allPipelineWrap"></div>
 </div>
 <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
     <div style="flex:1;min-width:320px;max-width:50%;" id="allMonthChart"></div>
@@ -2138,57 +2138,7 @@ function renderAllStats(){
   var csLabel=(ctSelMgr==='all')?'전체':'👤 '+ctSelMgr;
   var csHtml='<div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;display:flex;flex-direction:column;">';
 
- // 설치구분별 현황 (상단 - 미니 도넛)
-  csHtml+='<div style="margin-bottom:12px;">';
-  csHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">';
-  csHtml+='<h3 style="margin:0;font-size:15px;color:#333;">📦 '+csLabel+' 설치구분별 현황</h3>';
-  if(ctSelMgr!=='all')csHtml+='<button onclick="window._ctMgrOpen=\'all\';renderAllStats();" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
-  csHtml+='</div>';
-  var instCats2=[
-    {name:'신규사이트',color:'#667eea',count:mgrInstall2.신규사이트},
-    {name:'신규추가설치',color:'#2ecc71',count:mgrInstall2.신규추가설치},
-    {name:'제자리교체',color:'#e67e22',count:mgrInstall2.제자리교체},
-    {name:'이전설치',color:'#9b59b6',count:mgrInstall2.이전설치}
-  ];
-  var dSize=110,dStroke=14,dRadius=(dSize-dStroke)/2;
-  var dCircum=2*Math.PI*dRadius;
 
-  csHtml+='<div style="display:flex;align-items:center;gap:16px;">';
-  // 미니 도넛
-  csHtml+='<div style="position:relative;width:'+dSize+'px;height:'+dSize+'px;flex-shrink:0;">';
-  csHtml+='<svg width="'+dSize+'" height="'+dSize+'" viewBox="0 0 '+dSize+' '+dSize+'">';
-  csHtml+='<circle cx="'+dSize/2+'" cy="'+dSize/2+'" r="'+dRadius+'" fill="none" stroke="#eee" stroke-width="'+dStroke+'"/>';
-  var dOff=0;
-  for(var ii=0;ii<instCats2.length;ii++){
-    var ic=instCats2[ii];
-    var pct2=instTotal2>0?(ic.count/instTotal2):0;
-    var dash2=pct2*dCircum;
-    var gap2=dCircum-dash2;
-    if(ic.count>0){
-      csHtml+='<circle cx="'+dSize/2+'" cy="'+dSize/2+'" r="'+dRadius+'" fill="none" stroke="'+ic.color+'" stroke-width="'+dStroke+'" stroke-dasharray="'+dash2.toFixed(1)+' '+gap2.toFixed(1)+'" stroke-dashoffset="'+(-dOff).toFixed(1)+'" transform="rotate(-90 '+dSize/2+' '+dSize/2+')" style="transition:stroke-dasharray 0.6s ease;"/>';
-    }
-    dOff+=dash2;
-  }
-  csHtml+='</svg>';
-  csHtml+='<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">';
-  csHtml+='<div style="font-size:22px;font-weight:900;color:#333;">'+instTotal2+'</div>';
-csHtml+='<div style="font-size:10px;color:#888;">총 건수</div>';
-  csHtml+='</div></div>';
-
-  // 오른쪽 항목별 상세
-  csHtml+='<div style="flex:1;display:flex;flex-direction:column;gap:4px;">';
-  for(var ii=0;ii<instCats2.length;ii++){
-    var ic=instCats2[ii];
-    var iPct=instTotal2>0?Math.round(ic.count/instTotal2*100):0;
-    csHtml+='<div style="display:flex;align-items:center;gap:6px;">';
-    csHtml+='<div style="width:8px;height:8px;border-radius:50%;background:'+ic.color+';flex-shrink:0;"></div>';
-    csHtml+='<span style="font-size:13px;color:#333;font-weight:600;min-width:75px;">'+ic.name+'</span>';
-csHtml+='<span style="font-size:15px;font-weight:800;color:'+ic.color+';">'+ic.count+'</span><span style="font-size:11px;color:#888;">건</span>';
-csHtml+='<span style="font-size:12px;font-weight:600;color:'+ic.color+';margin-left:auto;">'+iPct+'%</span>';
-    csHtml+='</div>';
-  }
-  csHtml+='<div style="margin-top:4px;padding-top:6px;border-top:1px solid #eee;text-align:right;font-size:14px;color:#333;font-weight:700;">총 <span style="color:#27ae60;">'+mgrInstall2.총qty+'기</span></div>';
-  csHtml+='</div></div></div>';
 
 
   // 계약 완료 사이트 (하단)
@@ -2226,6 +2176,69 @@ csHtml+='<span style="font-size:12px;font-weight:600;color:'+ic.color+';margin-l
   }
 
   csHtml+='</div></div></div>';
+
+// === 합쳐진 박스: 계약현황(왼쪽) + 설치구분(오른쪽) ===
+var comboHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;display:flex;flex-direction:column;">';
+
+// 상단: 계약현황 + 설치구분 가로 반반
+comboHtml+='<div style="display:flex;gap:0;flex:1;">';
+
+// 왼쪽: 전체 계약 현황
+comboHtml+='<div style="flex:1;padding-right:16px;border-right:1px solid #eee;">';
+comboHtml+=pipHtml.replace(/<div id="allMgrBar"[^>]*><\/div>/,'');
+comboHtml+='</div>';
+
+// 오른쪽: 설치구분별 현황
+comboHtml+='<div style="flex:1;padding-left:16px;">';
+comboHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">';
+comboHtml+='<h3 style="margin:0;font-size:15px;color:#333;">📦 '+csLabel+' 설치구분별 현황</h3>';
+if(ctSelMgr!=='all')comboHtml+='<button onclick="window._ctMgrOpen=\'all\';renderAllStats();" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
+comboHtml+='</div>';
+comboHtml+='<div style="display:flex;align-items:center;gap:16px;">';
+var dSize2=110,dStroke2=14,dRadius2=(dSize2-dStroke2)/2;
+var dCircum2=2*Math.PI*dRadius2;
+comboHtml+='<div style="position:relative;width:'+dSize2+'px;height:'+dSize2+'px;flex-shrink:0;">';
+comboHtml+='<svg width="'+dSize2+'" height="'+dSize2+'" viewBox="0 0 '+dSize2+' '+dSize2+'">';
+comboHtml+='<circle cx="'+dSize2/2+'" cy="'+dSize2/2+'" r="'+dRadius2+'" fill="none" stroke="#eee" stroke-width="'+dStroke2+'"/>';
+var dOff2=0;
+for(var ii=0;ii<instCats2.length;ii++){
+  var ic2=instCats2[ii];
+  var pct3=instTotal2>0?(ic2.count/instTotal2):0;
+  var dash3=pct3*dCircum2;
+  var gap3=dCircum2-dash3;
+  if(ic2.count>0){
+    comboHtml+='<circle cx="'+dSize2/2+'" cy="'+dSize2/2+'" r="'+dRadius2+'" fill="none" stroke="'+ic2.color+'" stroke-width="'+dStroke2+'" stroke-dasharray="'+dash3.toFixed(1)+' '+gap3.toFixed(1)+'" stroke-dashoffset="'+(-dOff2).toFixed(1)+'" transform="rotate(-90 '+dSize2/2+' '+dSize2/2+')" style="transition:stroke-dasharray 0.6s ease;"/>';
+  }
+  dOff2+=dash3;
+}
+comboHtml+='</svg>';
+comboHtml+='<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">';
+comboHtml+='<div style="font-size:22px;font-weight:900;color:#333;">'+instTotal2+'</div>';
+comboHtml+='<div style="font-size:10px;color:#888;">총 건수</div>';
+comboHtml+='</div></div>';
+comboHtml+='<div style="flex:1;display:flex;flex-direction:column;gap:4px;">';
+for(var ii=0;ii<instCats2.length;ii++){
+  var ic2=instCats2[ii];
+  var iPct2=instTotal2>0?Math.round(ic2.count/instTotal2*100):0;
+  comboHtml+='<div style="display:flex;align-items:center;gap:6px;">';
+  comboHtml+='<div style="width:8px;height:8px;border-radius:50%;background:'+ic2.color+';flex-shrink:0;"></div>';
+  comboHtml+='<span style="font-size:13px;color:#333;font-weight:600;min-width:75px;">'+ic2.name+'</span>';
+  comboHtml+='<span style="font-size:15px;font-weight:800;color:'+ic2.color+';">'+ic2.count+'</span><span style="font-size:11px;color:#888;">건</span>';
+  comboHtml+='<span style="font-size:12px;font-weight:600;color:'+ic2.color+';margin-left:auto;">'+iPct2+'%</span>';
+  comboHtml+='</div>';
+}
+comboHtml+='<div style="margin-top:4px;padding-top:6px;border-top:1px solid #eee;text-align:right;font-size:14px;color:#333;font-weight:700;">총 <span style="color:#27ae60;">'+mgrInstall2.총qty+'기</span></div>';
+comboHtml+='</div></div></div>';
+
+comboHtml+='</div>';
+
+// 하단: 담당자별 영업실적
+comboHtml+='<div id="allMgrBar" style="margin-top:16px;border-top:1px solid #eee;padding-top:16px;"></div>';
+comboHtml+='</div>';
+
+document.getElementById('allPipelineWrap').innerHTML=comboHtml;
+
+  
   document.getElementById('allContractSites').innerHTML=csHtml;
 
   
@@ -2400,7 +2413,7 @@ if(pipSelMgr!=='all'&&contractData&&contractData.rows){
 }
 
 var pipTotal=showPipe.입대위+showPipe.실사+showPipe.계약;
-var pipHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;">';
+var pipHtml='';
 pipHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
 pipHtml+='<h3 style="margin:0;font-size:16px;color:#333;">📋 '+(pipSelMgr==='all'?'전체':'👤 '+pipSelMgr)+' 계약 현황</h3>';
 if(pipSelMgr!=='all')pipHtml+='<button onclick="window._ctMgrOpen=\'all\';renderAllStats();" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
@@ -2456,12 +2469,11 @@ pipHtml+='</div></div>';
 pipHtml+='<div style="text-align:center;margin-top:8px;padding-top:8px;border-top:1px solid #eee;font-size:13px;color:#666;font-weight:600;">총 '+pipTotal+'건 / '+showPipe.qty+'기</div>';
 
 pipHtml+='<div id="allMgrBar" style="margin-top:16px;border-top:1px solid #eee;padding-top:16px;"></div>';
-pipHtml+='</div>';
 
 var notInCheck=0;if(contractData&&contractData.rows){for(var i=0;i<contractData.rows.length;i++){var sn=(contractData.rows[i]['사이트명']||'').trim();if(!siteCheck[sn])notInCheck++;}}console.log('siteCheck에없는 계약서사이트:', notInCheck);
 console.log('상단카드총:', totalSites, '파이프라인총:', ctTotal, '차이:', ctTotal-totalSites);
 console.log('파이프라인:', '상담:'+ct상담, '제안:'+ct제안, '입대위:'+ct입대위, '실사:'+ct실사, '계약:'+ct계약, '총:'+ctTotal);
-document.getElementById('allPipeline').innerHTML=pipHtml;
+
 
 
 
