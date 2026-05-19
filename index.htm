@@ -2150,7 +2150,7 @@ function renderAllStats(){
     {name:'제자리교체',color:'#e67e22',count:mgrInstall2.제자리교체},
     {name:'이전설치',color:'#9b59b6',count:mgrInstall2.이전설치}
   ];
-  var dSize=80,dStroke=10,dRadius=(dSize-dStroke)/2;
+  var dSize=110,dStroke=14,dRadius=(dSize-dStroke)/2;
   var dCircum=2*Math.PI*dRadius;
 
   csHtml+='<div style="display:flex;align-items:center;gap:16px;">';
@@ -2171,8 +2171,8 @@ function renderAllStats(){
   }
   csHtml+='</svg>';
   csHtml+='<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">';
-  csHtml+='<div style="font-size:16px;font-weight:900;color:#333;">'+instTotal2+'</div>';
-  csHtml+='<div style="font-size:8px;color:#888;">건</div>';
+  csHtml+='<div style="font-size:22px;font-weight:900;color:#333;">'+instTotal2+'</div>';
+csHtml+='<div style="font-size:10px;color:#888;">총 건수</div>';
   csHtml+='</div></div>';
 
   // 오른쪽 항목별 상세
@@ -2182,12 +2182,12 @@ function renderAllStats(){
     var iPct=instTotal2>0?Math.round(ic.count/instTotal2*100):0;
     csHtml+='<div style="display:flex;align-items:center;gap:6px;">';
     csHtml+='<div style="width:8px;height:8px;border-radius:50%;background:'+ic.color+';flex-shrink:0;"></div>';
-    csHtml+='<span style="font-size:11px;color:#333;min-width:65px;">'+ic.name+'</span>';
-    csHtml+='<span style="font-size:12px;font-weight:700;color:'+ic.color+';">'+ic.count+'</span><span style="font-size:10px;color:#888;">건</span>';
-    csHtml+='<span style="font-size:10px;color:#aaa;margin-left:auto;">'+iPct+'%</span>';
+    csHtml+='<span style="font-size:13px;color:#333;font-weight:600;min-width:75px;">'+ic.name+'</span>';
+csHtml+='<span style="font-size:15px;font-weight:800;color:'+ic.color+';">'+ic.count+'</span><span style="font-size:11px;color:#888;">건</span>';
+csHtml+='<span style="font-size:12px;font-weight:600;color:'+ic.color+';margin-left:auto;">'+iPct+'%</span>';
     csHtml+='</div>';
   }
-  csHtml+='<div style="margin-top:2px;padding-top:4px;border-top:1px solid #eee;text-align:right;font-size:11px;color:#666;font-weight:600;">총 '+mgrInstall2.총qty+'기</div>';
+  csHtml+='<div style="margin-top:4px;padding-top:6px;border-top:1px solid #eee;text-align:right;font-size:14px;color:#333;font-weight:700;">총 <span style="color:#27ae60;">'+mgrInstall2.총qty+'기</span></div>';
   csHtml+='</div></div></div>';
 
 
