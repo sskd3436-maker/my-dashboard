@@ -3730,6 +3730,73 @@ function openContractModal(rowIdx){
       }
     }
   }
+
+  // 왼쪽 시트 데이터 로드
+  var sdHtml='';
+  var siteName=document.getElementById('cf_site').value.trim();
+  var matchedItem=null;
+  if(siteName){
+    for(var fi=0;fi<allFlat.length;fi++){
+      if((allFlat[fi].site||'').trim()===siteName&&allFlat[fi].sheet!=='계약서'){
+        matchedItem=allFlat[fi];
+        break;
+      }
+    }
+  }
+  if(matchedItem){
+    var row=matchedItem.row;
+    var h=matchedItem.headers;
+    var sheetNames=[];
+    for(var k in allSheetsData){if(k!=='계약서')sheetNames.push(k);}
+    sdHtml+='<div style="display:flex;align-items:center;padding:8px 0;border-bottom:2px solid #1a73e8;margin-bottom:8px;">';
+    sdHtml+='<div style="min-width:100px;font-weight:700;font-size:13px;color:#1a73e8;">시트</div>';
+    sdHtml+='<select id="editRowSheet" class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" onchange="copyToSheet(this.value)">';
+    for(var si=0;si<sheetNames.length;si++){sdHtml+='<option value="'+sheetNames[si]+'"'+(sheetNames[si]===matchedItem.sheet?' selected':'')+'>'+sheetNames[si]+'</option>';}
+    sdHtml+='</select></div>';
+    window._sheetEditRow=row;
+    window._sheetEditHeaders=h;
+    window._sheetEditSheet=matchedItem.sheet;
+    window._sheetEditRowIdx=row._rowIndex||(allFlat.indexOf(matchedItem)+4);
+    var sentFields=['긍정','중립','부정'];
+    var hideFields=['재계약'];
+    var sentDone=false;
+    for(var i=0;i<h.length;i++){
+      var val=row[h[i]]!==undefined?row[h[i]]:'';
+      if(String(val).indexOf('T')>0&&String(val).indexOf('Z')>0)val=String(val).split('T')[0];
+      if(hideFields.indexOf(h[i])>=0)continue;
+      if(sentFields.indexOf(h[i])>=0){
+        if(!sentDone){
+          sentDone=true;
+          var curSent='';
+          if(String(row['긍정'])==='1')curSent='긍정';
+          else if(String(row['중립'])==='1')curSent='중립';
+          else if(String(row['부정'])==='1')curSent='부정';
+          else if(String(row['기타'])==='1')curSent='기타';
+          sdHtml+='<div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;">';
+          sdHtml+='<div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">감정상태</div>';
+          sdHtml+='<select class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" data-header="감정상태" onchange="updateSentCell(this)">';
+          sdHtml+='<option value="">선택</option>';
+          sdHtml+='<option value="긍정"'+(curSent==='긍정'?' selected':'')+'>긍정</option>';
+          sdHtml+='<option value="중립"'+(curSent==='중립'?' selected':'')+'>중립</option>';
+          sdHtml+='<option value="부정"'+(curSent==='부정'?' selected':'')+'>부정</option>';
+          sdHtml+='<option value="기타"'+(curSent==='기타'?' selected':'')+'>기타</option>';
+          sdHtml+='</select></div>';
+        }
+        continue;
+      }
+      sdHtml+='<div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;">';
+      sdHtml+='<div style="min-width:100px;font-weight:600;font-size:12px;color:#555;">'+esc(h[i])+'</div>';
+      var inputType='text';
+      if(h[i]==='방문일자'){inputType='date';if(val&&val.indexOf('T')>0)val=val.split('T')[0];}
+      sdHtml+='<input type="'+inputType+'" class="form-input" style="flex:1;font-size:13px;padding:4px 8px;" value="'+esc(String(val))+'" data-col="'+(i+1)+'" data-header="'+esc(h[i])+'" onchange="updateSheetCell(this)">';
+      sdHtml+='</div>';
+    }
+  }else{
+    sdHtml='<div class="empty-msg">시트 데이터 없음</div>';
+  }
+  document.getElementById('cf_sheetData').innerHTML=sdHtml;
+
+  
   document.getElementById('contractModal').classList.add('show');
 }
 
