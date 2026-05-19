@@ -2343,18 +2343,38 @@ for(var gi=0;gi<=4;gi++){
 
 
 // 전체 입대위/실사/계약 합산
-var allPipeTotal={입대위:0,실사:0,계약:0,qty:0};
-for(var k in mgrPipe){
-  allPipeTotal.입대위+=mgrPipe[k].입대위;
-  allPipeTotal.실사+=mgrPipe[k].실사;
-  allPipeTotal.계약+=mgrPipe[k].계약;
-  allPipeTotal.qty+=mgrPipe[k].qty;
+var allPipeTotal={입대위:0,실사:0,계약:0,qty:0,입대위qty:0,실사qty:0,계약qty:0};
+if(contractData&&contractData.rows){
+  var chP=contractData.headers;
+  for(var pi2=0;pi2<contractData.rows.length;pi2++){
+    var crP=contractData.rows[pi2];
+    var stP=(fv(crP,chP,'진행사항')||'').trim();
+    var qtyP=parseInt(fv(crP,chP,'충전기수량')||'0')||0;
+    var mgrP=(fv(crP,chP,'담당자')||'').trim();
+    if(stP==='입대위'){allPipeTotal.입대위++;allPipeTotal.입대위qty+=qtyP;}
+    else if(stP==='실사'){allPipeTotal.실사++;allPipeTotal.실사qty+=qtyP;}
+    else if(stP==='계약'){allPipeTotal.계약++;allPipeTotal.계약qty+=qtyP;}
+  }
+  allPipeTotal.qty=allPipeTotal.입대위qty+allPipeTotal.실사qty+allPipeTotal.계약qty;
 }
 var pipSelMgr=window._ctMgrOpen||'all';
 var showPipe=allPipeTotal;
-if(pipSelMgr!=='all'&&mgrPipe[pipSelMgr]){
-  showPipe={입대위:mgrPipe[pipSelMgr].입대위,실사:mgrPipe[pipSelMgr].실사,계약:mgrPipe[pipSelMgr].계약,qty:mgrPipe[pipSelMgr].qty};
+if(pipSelMgr!=='all'&&contractData&&contractData.rows){
+  showPipe={입대위:0,실사:0,계약:0,qty:0,입대위qty:0,실사qty:0,계약qty:0};
+  var chP=contractData.headers;
+  for(var pi2=0;pi2<contractData.rows.length;pi2++){
+    var crP=contractData.rows[pi2];
+    var stP=(fv(crP,chP,'진행사항')||'').trim();
+    var qtyP=parseInt(fv(crP,chP,'충전기수량')||'0')||0;
+    var mgrP=(fv(crP,chP,'담당자')||'').trim();
+    if(mgrP!==pipSelMgr)continue;
+    if(stP==='입대위'){showPipe.입대위++;showPipe.입대위qty+=qtyP;}
+    else if(stP==='실사'){showPipe.실사++;showPipe.실사qty+=qtyP;}
+    else if(stP==='계약'){showPipe.계약++;showPipe.계약qty+=qtyP;}
+  }
+  showPipe.qty=showPipe.입대위qty+showPipe.실사qty+showPipe.계약qty;
 }
+
 var pipTotal=showPipe.입대위+showPipe.실사+showPipe.계약;
 var pipHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;">';
 pipHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
@@ -2362,13 +2382,14 @@ pipHtml+='<h3 style="margin:0;font-size:16px;color:#333;">📋 '+(pipSelMgr==='a
 if(pipSelMgr!=='all')pipHtml+='<button onclick="window._ctMgrOpen=\'all\';renderAllStats();" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
 pipHtml+='</div>';
 pipHtml+='<div style="display:flex;gap:8px;margin-bottom:16px;">';
-var pStages=[{n:'입대위',c:showPipe.입대위,bg:'#f39c12'},{n:'실사',c:showPipe.실사,bg:'#9b59b6'},{n:'계약',c:showPipe.계약,bg:'#27ae60'}];
+var pStages=[{n:'입대위',c:showPipe.입대위,q:showPipe.입대위qty,bg:'#f39c12'},{n:'실사',c:showPipe.실사,q:showPipe.실사qty,bg:'#9b59b6'},{n:'계약',c:showPipe.계약,q:showPipe.계약qty,bg:'#27ae60'}];
 for(var i=0;i<pStages.length;i++){
   var s=pStages[i],pct=pipTotal>0?Math.round(s.c/pipTotal*100):0;
   pipHtml+='<div style="flex:1;text-align:center;">';
   pipHtml+='<div onclick="window._ctListStatus=\''+s.n+'\';window._ctListPage=1;renderAllStats();setTimeout(function(){document.getElementById(\'allSheetTable\').scrollIntoView({behavior:\'smooth\'});},100);" style="background:'+s.bg+';color:#fff;border-radius:12px;padding:16px 8px;margin-bottom:6px;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">';
   pipHtml+='<div style="font-size:28px;font-weight:900;">'+s.c+'</div>';
-  pipHtml+='<div style="font-size:11px;opacity:0.9;">'+s.n+'</div></div>';
+pipHtml+='<div style="font-size:11px;opacity:0.9;">'+s.n+'</div>';
+pipHtml+='<div style="font-size:11px;opacity:0.8;margin-top:2px;">'+s.q+'기</div></div>';
   pipHtml+='<div style="font-size:11px;color:#888;">'+pct+'%</div></div>';
   if(i<pStages.length-1)pipHtml+='<div style="display:flex;align-items:center;color:#ccc;font-size:20px;margin-top:-20px;">▶</div>';
 }
