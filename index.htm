@@ -2381,7 +2381,7 @@ pipHtml+='<div style="display:flex;justify-content:space-between;align-items:cen
 pipHtml+='<h3 style="margin:0;font-size:16px;color:#333;">📋 '+(pipSelMgr==='all'?'전체':'👤 '+pipSelMgr)+' 계약 현황</h3>';
 if(pipSelMgr!=='all')pipHtml+='<button onclick="window._ctMgrOpen=\'all\';renderAllStats();" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
 pipHtml+='</div>';
-pipHtml+='<div style="display:flex;gap:8px;margin-bottom:16px;">';
+
 var pStages=[
   {n:'입대위',c:showPipe.입대위,q:showPipe.입대위qty,bg:'#f39c12'},
   {n:'실사',c:showPipe.실사,q:showPipe.실사qty,bg:'#9b59b6'},
