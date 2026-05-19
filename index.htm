@@ -2138,7 +2138,12 @@ function renderAllStats(){
   var csLabel=(ctSelMgr==='all')?'전체':'👤 '+ctSelMgr;
   var csHtml='<div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;display:flex;flex-direction:column;">';
 
-
+  var instCats2=[
+    {name:'신규사이트',color:'#667eea',count:mgrInstall2.신규사이트},
+    {name:'신규추가설치',color:'#2ecc71',count:mgrInstall2.신규추가설치},
+    {name:'제자리교체',color:'#e67e22',count:mgrInstall2.제자리교체},
+    {name:'이전설치',color:'#9b59b6',count:mgrInstall2.이전설치}
+  ];
 
 
   // 계약 완료 사이트 (하단)
