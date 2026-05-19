@@ -2388,13 +2388,13 @@ var pStages=[
   {n:'계약',c:showPipe.계약,q:showPipe.계약qty,bg:'#27ae60'}
 ];
 
-// 도넛 + 상세 (세로 배치)
-pipHtml+='<div style="display:flex;flex-direction:column;align-items:center;margin-bottom:12px;">';
+// 도넛(왼쪽) + 상세(오른쪽) 가로 배치
+pipHtml+='<div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">';
 
-// 도넛 차트
-var donutSize=110, donutStroke=16, donutRadius=(donutSize-donutStroke)/2;
+// 왼쪽: 도넛 차트
+var donutSize=100, donutStroke=14, donutRadius=(donutSize-donutStroke)/2;
 var donutCircum=2*Math.PI*donutRadius;
-pipHtml+='<div style="position:relative;width:'+donutSize+'px;height:'+donutSize+'px;margin-bottom:12px;">';
+pipHtml+='<div style="position:relative;width:'+donutSize+'px;height:'+donutSize+'px;flex-shrink:0;">';
 pipHtml+='<svg width="'+donutSize+'" height="'+donutSize+'" viewBox="0 0 '+donutSize+' '+donutSize+'">';
 pipHtml+='<circle cx="'+donutSize/2+'" cy="'+donutSize/2+'" r="'+donutRadius+'" fill="none" stroke="#eee" stroke-width="'+donutStroke+'"/>';
 var donutOffset=0;
@@ -2408,23 +2408,24 @@ for(var i=0;i<pStages.length;i++){
 }
 pipHtml+='</svg>';
 pipHtml+='<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">';
-pipHtml+='<div style="font-size:20px;font-weight:900;color:#333;">'+pipTotal+'</div>';
+pipHtml+='<div style="font-size:18px;font-weight:900;color:#333;">'+pipTotal+'</div>';
 pipHtml+='<div style="font-size:9px;color:#888;">총 건수</div>';
 pipHtml+='</div></div>';
 
-// 상세 항목 (가로 3칸)
-pipHtml+='<div style="display:flex;gap:6px;width:100%;">';
+// 오른쪽: 상세 항목 (세로 3줄)
+pipHtml+='<div style="flex:1;display:flex;flex-direction:column;gap:4px;">';
 for(var i=0;i<pStages.length;i++){
   var s=pStages[i],pct=pipTotal>0?Math.round(s.c/pipTotal*100):0;
-  pipHtml+='<div onclick="window._ctListStatus=\''+s.n+'\';window._ctListPage=1;renderAllStats();setTimeout(function(){document.getElementById(\'allSheetTable\').scrollIntoView({behavior:\'smooth\'});},100);" style="flex:1;text-align:center;padding:8px 4px;border-radius:8px;background:'+s.bg+'10;border:1px solid '+s.bg+'30;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform=\'scale(1.03)\'" onmouseout="this.style.transform=\'scale(1)\'">';
-  pipHtml+='<div style="width:8px;height:8px;border-radius:50%;background:'+s.bg+';margin:0 auto 4px;"></div>';
-  pipHtml+='<div style="font-size:11px;font-weight:700;color:#333;">'+s.n+'</div>';
-  pipHtml+='<div style="font-size:16px;font-weight:800;color:'+s.bg+';margin:2px 0;">'+s.c+'<span style="font-size:10px;color:#888;">건</span></div>';
-  pipHtml+='<div style="font-size:11px;color:#666;">'+s.q+'<span style="font-size:9px;color:#aaa;">기</span></div>';
-  pipHtml+='<div style="font-size:9px;color:#aaa;margin-top:2px;">'+pct+'%</div>';
+  pipHtml+='<div onclick="window._ctListStatus=\''+s.n+'\';window._ctListPage=1;renderAllStats();setTimeout(function(){document.getElementById(\'allSheetTable\').scrollIntoView({behavior:\'smooth\'});},100);" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;background:'+s.bg+'10;cursor:pointer;transition:transform 0.15s;" onmouseover="this.style.transform=\'scale(1.02)\'" onmouseout="this.style.transform=\'scale(1)\'">';
+  pipHtml+='<div style="width:8px;height:8px;border-radius:50%;background:'+s.bg+';flex-shrink:0;"></div>';
+  pipHtml+='<span style="font-size:12px;font-weight:700;color:#333;min-width:32px;">'+s.n+'</span>';
+  pipHtml+='<span style="font-size:15px;font-weight:800;color:'+s.bg+';">'+s.c+'</span><span style="font-size:10px;color:#888;">건</span>';
+  pipHtml+='<span style="font-size:12px;color:#555;margin-left:4px;">'+s.q+'<span style="font-size:10px;color:#aaa;">기</span></span>';
+  pipHtml+='<span style="font-size:10px;color:#aaa;margin-left:auto;">'+pct+'%</span>';
   pipHtml+='</div>';
 }
 pipHtml+='</div></div>';
+
 
 
 // 하단 요약
