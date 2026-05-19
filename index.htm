@@ -2092,7 +2092,7 @@ function renderAllStats(){
 
    
   
-  // === 계약 사이트 목록 (4분류) ===
+ // === 계약 사이트 목록 (4분류) ===
   var ctSelMgr=window._ctMgrOpen||'all';
   var ctSites={신규사이트:[],신규추가설치:[],제자리교체:[],이전설치:[]};
   if(contractData&&contractData.rows){
@@ -2113,43 +2113,100 @@ function renderAllStats(){
       else ctSites.신규사이트.push(item);
     }
   }
-  var csLabel=(ctSelMgr==='all')?'전체':'👤 '+ctSelMgr;
-  var csHtml='<div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;display:flex;flex-direction:column;">';
-  csHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
-  csHtml+='<h3 style="margin:0;font-size:15px;color:#333;">🏢 '+csLabel+' 계약 완료 사이트</h3>';
-  if(ctSelMgr!=='all')csHtml+='<button onclick="window._ctMgrOpen=\'all\';renderAllStats();" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
-  csHtml+='</div>';
-  csHtml+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1;">';
 
-  var categories=[
-    {name:'신규사이트',icon:'🆕',color:'#667eea',list:ctSites.신규사이트},
-    {name:'신규추가설치',icon:'➕',color:'#2ecc71',list:ctSites.신규추가설치},
-    {name:'제자리교체',icon:'🔄',color:'#e67e22',list:ctSites.제자리교체},
-    {name:'이전설치',icon:'📦',color:'#9b59b6',list:ctSites.이전설치}
-  ];
-
-  for(var ci=0;ci<categories.length;ci++){
-    var cat=categories[ci];
-    var totalQty=0;
-    for(var j=0;j<cat.list.length;j++)totalQty+=cat.list[j].qty;
-    csHtml+='<div style="background:'+cat.color+'08;border:1px solid '+cat.color+'20;border-radius:12px;padding:12px;display:flex;flex-direction:column;">';
-    csHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
-    csHtml+='<span style="font-size:12px;font-weight:700;color:'+cat.color+';">'+cat.icon+' '+cat.name+'</span>';
-    csHtml+='<span style="font-size:11px;color:#888;font-weight:600;">'+cat.list.length+'건 / '+totalQty+'기</span>';
-    csHtml+='</div>';
-    csHtml+='<div style="flex:1;max-height:150px;overflow-y:auto;">';
-    if(cat.list.length===0){
-      csHtml+='<div style="font-size:11px;color:#bbb;text-align:center;padding:20px 0;">없음</div>';
+  // 담당자별 4분류 집계
+  var mgrCtSites={};
+  if(contractData&&contractData.rows){
+    var ch3=contractData.headers;
+    for(var i=0;i<contractData.rows.length;i++){
+      var cr=contractData.rows[i];
+      var status=(fv(cr,ch3,'진행사항')||'').trim();
+      if(status!=='계약')continue;
+      var type=(fv(cr,ch3,'설치구분')||'').trim();
+      var qty=parseInt(fv(cr,ch3,'충전기수량')||'0')||0;
+      var mgr=(fv(cr,ch3,'담당자')||'').trim();
+      if(!mgr)continue;
+      if(!mgrCtSites[mgr])mgrCtSites[mgr]={신규사이트:0,신규추가설치:0,제자리교체:0,이전설치:0,총qty:0};
+      if(type==='신규추가설치')mgrCtSites[mgr].신규추가설치++;
+      else if(type==='제자리교체')mgrCtSites[mgr].제자리교체++;
+      else if(type==='이전설치')mgrCtSites[mgr].이전설치++;
+      else mgrCtSites[mgr].신규사이트++;
+      mgrCtSites[mgr].총qty+=qty;
     }
-    for(var j=0;j<cat.list.length;j++){
-      csHtml+='<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid '+cat.color+'10;font-size:11px;">';
-      csHtml+='<span style="color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">'+esc(cat.list[j].site)+'</span>';
-      csHtml+='<span style="color:'+cat.color+';font-weight:700;margin-left:6px;white-space:nowrap;">'+cat.list[j].qty+'기</span>';
-      csHtml+='</div>';
-    }
-    csHtml+='</div></div>';
   }
 
+  var csLabel=(ctSelMgr==='all')?'전체':'👤 '+ctSelMgr;
+  var allCtTotal=ctSites.신규사이트.length+ctSites.신규추가설치.length+ctSites.제자리교체.length+ctSites.이전설치.length;
+  var csHtml='<div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;display:flex;flex-direction:column;">';
+  csHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
+  csHtml+='<h3 style="margin:0;font-size:15px;color:#333;">🏢 '+csLabel+' 계약 완료 사이트 ('+allCtTotal+'건)</h3>';
+  if(ctSelMgr!=='all')csHtml+='<button onclick="window._ctMgrOpen=\'all\';renderAllStats();" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
+  csHtml+='</div>';
+
+  // 4분류 막대그래프
+  var barCategories=[
+    {name:'신규사이트',color:'#667eea',count:ctSites.신규사이트.length},
+    {name:'신규추가설치',color:'#2ecc71',count:ctSites.신규추가설치.length},
+    {name:'제자리교체',color:'#e67e22',count:ctSites.제자리교체.length},
+    {name:'이전설치',color:'#9b59b6',count:ctSites.이전설치.length}
+  ];
+  var barMax=0;
+  for(var bi=0;bi<barCategories.length;bi++){if(barCategories[bi].count>barMax)barMax=barCategories[bi].count;}
+
+  csHtml+='<div style="margin-bottom:16px;">';
+  for(var bi=0;bi<barCategories.length;bi++){
+    var bc=barCategories[bi];
+    var bw=barMax>0?Math.max(Math.round(bc.count/barMax*100),5):5;
+    var pct=allCtTotal>0?Math.round(bc.count/allCtTotal*100):0;
+    csHtml+='<div style="margin-bottom:8px;">';
+    csHtml+='<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">';
+    csHtml+='<span style="font-weight:700;color:'+bc.color+';">'+bc.name+'</span>';
+    csHtml+='<span style="color:#888;font-weight:600;">'+bc.count+'건 ('+pct+'%)</span>';
+    csHtml+='</div>';
+    csHtml+='<div style="height:18px;background:#f0f0f0;border-radius:9px;overflow:hidden;">';
+    csHtml+='<div style="height:100%;width:'+bw+'%;background:'+bc.color+';border-radius:9px;transition:width 0.6s ease-out;"></div>';
+    csHtml+='</div></div>';
+  }
+  csHtml+='</div>';
+
+  // 담당자별 목록
+  csHtml+='<div style="border-top:1px solid #eee;padding-top:12px;flex:1;overflow-y:auto;">';
+  csHtml+='<div style="font-size:12px;font-weight:700;color:#333;margin-bottom:8px;">👤 담당자별 계약 현황</div>';
+  var mgrCtKeys=Object.keys(mgrCtSites).sort();
+  if(mgrCtKeys.length===0){
+    csHtml+='<div style="font-size:11px;color:#bbb;text-align:center;padding:12px 0;">데이터 없음</div>';
+  }else{
+    var mgrCtMax=0;
+    for(var mi=0;mi<mgrCtKeys.length;mi++){
+      var mc=mgrCtSites[mgrCtKeys[mi]];
+      var mTotal=mc.신규사이트+mc.신규추가설치+mc.제자리교체+mc.이전설치;
+      if(mTotal>mgrCtMax)mgrCtMax=mTotal;
+    }
+    for(var mi=0;mi<mgrCtKeys.length;mi++){
+      var mn=mgrCtKeys[mi];
+      var mc=mgrCtSites[mn];
+      var mTotal=mc.신규사이트+mc.신규추가설치+mc.제자리교체+mc.이전설치;
+      var mBarW=mgrCtMax>0?Math.max(Math.round(mTotal/mgrCtMax*100),5):5;
+      var isSel=(ctSelMgr===mn);
+      csHtml+='<div onclick="window._ctMgrOpen=\''+esc(mn)+'\';renderAllStats();" style="padding:6px 4px;cursor:pointer;border-radius:8px;'+(isSel?'background:#f0f4ff;':'')+'">';
+      csHtml+='<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;">';
+      csHtml+='<span style="font-weight:700;color:'+(isSel?'#667eea':'#333')+';">'+esc(mn)+'</span>';
+      csHtml+='<span style="color:#888;font-weight:600;">'+mTotal+'건 / '+mc.총qty+'기</span>';
+      csHtml+='</div>';
+      csHtml+='<div style="height:14px;background:#f0f0f0;border-radius:7px;overflow:hidden;display:flex;width:'+mBarW+'%;min-width:30px;">';
+      if(mc.신규사이트>0)csHtml+='<div style="width:'+Math.round(mc.신규사이트/mTotal*100)+'%;background:#667eea;"></div>';
+      if(mc.신규추가설치>0)csHtml+='<div style="width:'+Math.round(mc.신규추가설치/mTotal*100)+'%;background:#2ecc71;"></div>';
+      if(mc.제자리교체>0)csHtml+='<div style="width:'+Math.round(mc.제자리교체/mTotal*100)+'%;background:#e67e22;"></div>';
+      if(mc.이전설치>0)csHtml+='<div style="width:'+Math.round(mc.이전설치/mTotal*100)+'%;background:#9b59b6;"></div>';
+      csHtml+='</div>';
+      csHtml+='<div style="display:flex;gap:6px;margin-top:2px;font-size:9px;">';
+      if(mc.신규사이트>0)csHtml+='<span style="color:#667eea;">신규 '+mc.신규사이트+'</span>';
+      if(mc.신규추가설치>0)csHtml+='<span style="color:#2ecc71;">추가 '+mc.신규추가설치+'</span>';
+      if(mc.제자리교체>0)csHtml+='<span style="color:#e67e22;">교체 '+mc.제자리교체+'</span>';
+      if(mc.이전설치>0)csHtml+='<span style="color:#9b59b6;">이전 '+mc.이전설치+'</span>';
+      csHtml+='</div></div>';
+    }
+  }
   csHtml+='</div></div>';
   document.getElementById('allContractSites').innerHTML=csHtml;
 
@@ -2341,7 +2398,7 @@ pipHtml+='<div style="text-align:right;margin-top:8px;font-size:13px;color:#666;
   
     // 차트 모드 탭
   pdHtml+='<div style="display:flex;gap:4px;margin-bottom:12px;">';
-  var tabs=[{k:'pipe',n:'계약진행'},{k:'qty',n:'충전기수량'}];
+  var tabs=[{k:'pipe',n:'계약진행'}];
   for(var t=0;t<tabs.length;t++){
     var tb=tabs[t],isSel=(chartMode===tb.k);
     pdHtml+='<button onclick="window._ctMgrChart=\''+tb.k+'\';renderAllStats();" style="flex:1;padding:6px;border-radius:8px;border:1px solid '+(isSel?'#667eea':'#e0e0e0')+';background:'+(isSel?'#667eea':'#fff')+';color:'+(isSel?'#fff':'#666')+';font-size:11px;font-weight:600;cursor:pointer;">'+tb.n+'</button>';
