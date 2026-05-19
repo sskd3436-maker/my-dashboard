@@ -3148,7 +3148,12 @@ function toggleTlMode(mode){
   function toggleCtMgr(mgr){
   window._ctMgrOpen=(window._ctMgrOpen===mgr)?'all':mgr;
   renderAllStats();
+  setTimeout(function(){
+    var el=document.getElementById('allContractSites');
+    if(el)el.scrollIntoView({behavior:'smooth'});
+  },100);
 }
+
 
  
 // 일일
