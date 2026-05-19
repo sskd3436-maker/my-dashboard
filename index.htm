@@ -2272,8 +2272,7 @@ for(var gi=0;gi<=4;gi++){
       else if(status==='입대위')mgrPipe[mgr].입대위++;
       else if(status==='실사')mgrPipe[mgr].실사++;
       else if(status==='계약'){mgrPipe[mgr].계약++;mgrPipe[mgr].cnt++;mgrPipe[mgr].qty+=qty;ctTotal++;ctQtyTotal+=qty;}
-      var installType=(fv(cr,ch,'설치구분')||'').trim();
-mgrPipe[mgr].sites.push({site:site,qty:qty,type:type,mgr:mgr,status:status,installType:installType});
+      mgrPipe[mgr].sites.push({site:site,qty:qty,type:type,mgr:mgr,status:status});
       ctAllSites.push({site:site,qty:qty,type:type,mgr:mgr,status:status});
     }
   }
@@ -2431,7 +2430,7 @@ pipHtml+='<div style="text-align:right;margin-top:8px;font-size:13px;color:#666;
       pdHtml+='<span style="color:#9b59b6;">실사 '+pi.실사+'</span>';
       pdHtml+='<span style="color:#27ae60;">계약 '+pi.계약+'</span>';
       pdHtml+='</div>';
-        }else if(chartMode==='qty'){
+            }else if(chartMode==='qty'){
       var newQ=0,repQ=0;
       for(var j=0;j<pi.sites.length;j++){
         if(pi.sites[j].status==='계약'){
@@ -2442,34 +2441,6 @@ pipHtml+='<div style="text-align:right;margin-top:8px;font-size:13px;color:#666;
       pdHtml+='<span style="color:#667eea;">신규 '+newQ+'기</span>';
       pdHtml+='<span style="color:#e67e22;">교체 '+repQ+'기</span>';
       pdHtml+='</div>';
-    }
-    // 설치구분별 막대 (계약진행 모드일 때만)
-    if(chartMode==='pipe'){
-      var inst={신규사이트:0,신규추가설치:0,제자리교체:0,이전설치:0};
-      for(var j=0;j<pi.sites.length;j++){
-        if(pi.sites[j].status==='계약'){
-          var iType=(pi.sites[j].installType||'').trim();
-          if(iType==='신규추가설치')inst.신규추가설치++;
-          else if(iType==='제자리교체')inst.제자리교체++;
-          else if(iType==='이전설치')inst.이전설치++;
-          else inst.신규사이트++;
-        }
-      }
-      var instT=inst.신규사이트+inst.신규추가설치+inst.제자리교체+inst.이전설치;
-      if(instT>0){
-        pdHtml+='<div style="height:12px;background:#f0f0f0;border-radius:6px;overflow:hidden;display:flex;margin-top:3px;width:'+barW+'%;min-width:20px;">';
-        if(inst.신규사이트>0)pdHtml+='<div style="width:'+Math.round(inst.신규사이트/instT*100)+'%;background:#667eea;"></div>';
-        if(inst.신규추가설치>0)pdHtml+='<div style="width:'+Math.round(inst.신규추가설치/instT*100)+'%;background:#2ecc71;"></div>';
-        if(inst.제자리교체>0)pdHtml+='<div style="width:'+Math.round(inst.제자리교체/instT*100)+'%;background:#e67e22;"></div>';
-        if(inst.이전설치>0)pdHtml+='<div style="width:'+Math.round(inst.이전설치/instT*100)+'%;background:#9b59b6;"></div>';
-        pdHtml+='</div>';
-        pdHtml+='<div style="display:flex;gap:6px;margin-top:2px;font-size:9px;">';
-        if(inst.신규사이트>0)pdHtml+='<span style="color:#667eea;">신규 '+inst.신규사이트+'</span>';
-        if(inst.신규추가설치>0)pdHtml+='<span style="color:#2ecc71;">추가 '+inst.신규추가설치+'</span>';
-        if(inst.제자리교체>0)pdHtml+='<span style="color:#e67e22;">교체 '+inst.제자리교체+'</span>';
-        if(inst.이전설치>0)pdHtml+='<span style="color:#9b59b6;">이전 '+inst.이전설치+'</span>';
-        pdHtml+='</div>';
-      }
     }
     pdHtml+='</div>';
   }
