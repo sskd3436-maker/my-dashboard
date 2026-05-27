@@ -2461,7 +2461,53 @@ pipHtml+='</div>';
 var notInCheck=0;if(contractData&&contractData.rows){for(var i=0;i<contractData.rows.length;i++){var sn=(contractData.rows[i]['사이트명']||'').trim();if(!siteCheck[sn])notInCheck++;}}console.log('siteCheck에없는 계약서사이트:', notInCheck);
 console.log('상단카드총:', totalSites, '파이프라인총:', ctTotal, '차이:', ctTotal-totalSites);
 console.log('파이프라인:', '상담:'+ct상담, '제안:'+ct제안, '입대위:'+ct입대위, '실사:'+ct실사, '계약:'+ct계약, '총:'+ctTotal);
+// 계약현황 도넛 옆에 설치구분 도넛 삽입
+var instCats2=[
+  {name:'신규사이트',color:'#667eea',count:mgrInstall2.신규사이트},
+  {name:'신규추가설치',color:'#2ecc71',count:mgrInstall2.신규추가설치},
+  {name:'제자리교체',color:'#e67e22',count:mgrInstall2.제자리교체},
+  {name:'이전설치',color:'#9b59b6',count:mgrInstall2.이전설치}
+];
+var dSize2=80,dStroke2=12,dRadius2=(dSize2-dStroke2)/2;
+var dCircum2=2*Math.PI*dRadius2;
+var instDonut='<div style="display:flex;gap:0;margin-top:16px;padding-top:16px;border-top:1px solid #eee;">';
+instDonut+='<div style="flex:1;display:flex;align-items:center;gap:10px;">';
+instDonut+='<div style="position:relative;width:'+dSize2+'px;height:'+dSize2+'px;flex-shrink:0;">';
+instDonut+='<svg width="'+dSize2+'" height="'+dSize2+'" viewBox="0 0 '+dSize2+' '+dSize2+'">';
+instDonut+='<circle cx="'+dSize2/2+'" cy="'+dSize2/2+'" r="'+dRadius2+'" fill="none" stroke="#eee" stroke-width="'+dStroke2+'"/>';
+var dOff2=0;
+for(var ii=0;ii<instCats2.length;ii++){
+  var ic2=instCats2[ii];
+  var pct3=instTotal2>0?(ic2.count/instTotal2):0;
+  var dash3=pct3*dCircum2;
+  var gap3=dCircum2-dash3;
+  if(ic2.count>0){
+    instDonut+='<circle cx="'+dSize2/2+'" cy="'+dSize2/2+'" r="'+dRadius2+'" fill="none" stroke="'+ic2.color+'" stroke-width="'+dStroke2+'" stroke-dasharray="'+dash3.toFixed(1)+' '+gap3.toFixed(1)+'" stroke-dashoffset="'+(-dOff2).toFixed(1)+'" transform="rotate(-90 '+dSize2/2+' '+dSize2/2+')" style="transition:stroke-dasharray 0.6s ease;"/>';
+  }
+  dOff2+=dash3;
+}
+instDonut+='</svg>';
+instDonut+='<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">';
+instDonut+='<div style="font-size:14px;font-weight:900;color:#333;">'+instTotal2+'</div>';
+instDonut+='<div style="font-size:8px;color:#888;">건</div>';
+instDonut+='</div></div>';
+instDonut+='<div style="display:flex;flex-direction:column;gap:3px;">';
+instDonut+='<div style="font-size:11px;font-weight:700;color:#333;margin-bottom:2px;">설치구분별</div>';
+for(var ii=0;ii<instCats2.length;ii++){
+  var ic2=instCats2[ii];
+  var iPct2=instTotal2>0?Math.round(ic2.count/instTotal2*100):0;
+  instDonut+='<div style="display:flex;align-items:center;gap:4px;">';
+  instDonut+='<div style="width:6px;height:6px;border-radius:50%;background:'+ic2.color+';"></div>';
+  instDonut+='<span style="font-size:10px;color:#333;">'+ic2.name+' <b style="color:'+ic2.color+';">'+ic2.count+'</b>건 '+iPct2+'%</span>';
+  instDonut+='</div>';
+}
+instDonut+='<div style="font-size:10px;color:#666;margin-top:2px;font-weight:600;">총 '+mgrInstall2.총qty+'기</div>';
+instDonut+='</div></div></div>';
+
+// allMgrBar 앞에 삽입
+pipHtml=pipHtml.replace('<div id="allMgrBar"',''+instDonut+'<div id="allMgrBar"');
 document.getElementById('allPipeline').innerHTML=pipHtml;
+
 
 
 
