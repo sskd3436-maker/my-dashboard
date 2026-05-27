@@ -2402,7 +2402,7 @@ if(pipSelMgr!=='all'&&contractData&&contractData.rows){
 var pipTotal=showPipe.입대위+showPipe.실사+showPipe.계약;
 var pipHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;">';
 pipHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
-pipHtml+='<h3 style="margin:0;font-size:16px;color:#333;">📋 '+(pipSelMgr==='all'?'전체':'👤 '+pipSelMgr)+' 계약 현황 &nbsp;|&nbsp; 📦 설치구분별 현황</h3>';
+pipHtml+='<h3 style="margin:0;font-size:16px;color:#333;">📋 '+(pipSelMgr==='all'?'전체':'👤 '+pipSelMgr)+' 계약 현황</h3>';
 if(pipSelMgr!=='all')pipHtml+='<button onclick="window._ctMgrOpen=\'all\';renderAllStats();" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
 pipHtml+='</div>';
 
@@ -2512,20 +2512,39 @@ for(var ii=0;ii<instCats2.length;ii++){
   instDonut+='</div>';
 }
 instDonut+='</div></div>';
-instDonut+='<div style="text-align:center;margin-top:8px;padding-top:8px;border-top:1px solid #eee;font-size:13px;color:#666;font-weight:600;">총 '+instTotal2+'건 / '+mgrInstall2.총qty+'기</div>';
+instDonut+='<div style="text-align:center;margin-top:auto;padding-top:8px;border-top:1px solid #eee;font-size:13px;color:#666;font-weight:600;">총 '+instTotal2+'건 / '+mgrInstall2.총qty+'기</div>';
+
 instDonut+='</div>';
 
 
-// 도넛+상세 영역을 가로 반반으로 감싸기
+// 왼쪽/오른쪽 도넛을 같은 높이로 맞추기
 var headerEnd=pipHtml.indexOf('</div>')+6;
 var header=pipHtml.substring(0,headerEnd);
 var body=pipHtml.substring(headerEnd);
 var mgrBarIdx=body.indexOf('<div id="allMgrBar"');
 var beforeMgr=body.substring(0,mgrBarIdx);
 var mgrBarHtml=body.substring(mgrBarIdx);
-pipHtml=header+'<div style="display:flex;gap:0;">'+
-  '<div style="flex:1;padding-right:16px;">'+beforeMgr+'</div>'+
-  instDonut+'</div>'+mgrBarHtml;
+
+// 하단요약 분리 (왼쪽)
+var summaryIdx=beforeMgr.lastIndexOf('<div style="text-align:center;');
+var leftBody=beforeMgr.substring(0,summaryIdx);
+var leftSummary=beforeMgr.substring(summaryIdx);
+
+pipHtml=header+'<div style="display:flex;gap:0;min-height:280px;">';
+// 왼쪽
+pipHtml+='<div style="flex:1;padding-right:16px;border-right:1px solid #eee;display:flex;flex-direction:column;">';
+pipHtml+='<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;">📋 계약 현황</div>';
+pipHtml+='<div style="flex:1;">'+leftBody+'</div>';
+pipHtml+=leftSummary;
+pipHtml+='</div>';
+// 오른쪽
+pipHtml+='<div style="flex:1;padding-left:16px;display:flex;flex-direction:column;">';
+pipHtml+='<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;">📦 설치구분별 현황</div>';
+pipHtml+='<div style="flex:1;">'+instDonut.replace(/<h3[^>]*>.*?<\/h3>/,'')+'</div>';
+pipHtml+='</div>';
+pipHtml+='</div>';
+pipHtml+=mgrBarHtml;
+
 document.getElementById('allPipeline').innerHTML=pipHtml;
 
 
