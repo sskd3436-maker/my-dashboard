@@ -2402,7 +2402,7 @@ if(pipSelMgr!=='all'&&contractData&&contractData.rows){
 var pipTotal=showPipe.입대위+showPipe.실사+showPipe.계약;
 var pipHtml='<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);height:100%;box-sizing:border-box;">';
 pipHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
-pipHtml+='<h3 style="margin:0;font-size:16px;color:#333;">📋 '+(pipSelMgr==='all'?'전체':'👤 '+pipSelMgr)+' 계약 현황</h3>';
+pipHtml+='<h3 style="margin:0;font-size:16px;color:#333;">📋 '+(pipSelMgr==='all'?'전체':'👤 '+pipSelMgr)+' 계약 현황 &nbsp;|&nbsp; 📦 설치구분별 현황</h3>';
 if(pipSelMgr!=='all')pipHtml+='<button onclick="window._ctMgrOpen=\'all\';renderAllStats();" style="background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:#888;">전체보기</button>';
 pipHtml+='</div>';
 
@@ -2479,7 +2479,7 @@ var instCats2=[
 var dSize2=donutSize,dStroke2=donutStroke,dRadius2=(dSize2-dStroke2)/2;
 var dCircum2=2*Math.PI*dRadius2;
 var instDonut='<div style="flex:1;padding-left:16px;border-left:1px solid #eee;">';
-instDonut+='<h3 style="margin:0 0 12px 0;font-size:16px;color:#333;">📦 설치구분별 현황</h3>';
+
 instDonut+='<div style="display:flex;align-items:center;gap:16px;">';
 instDonut+='<div style="position:relative;width:'+dSize2+'px;height:'+dSize2+'px;flex-shrink:0;">';
 instDonut+='<svg width="'+dSize2+'" height="'+dSize2+'" viewBox="0 0 '+dSize2+' '+dSize2+'">';
