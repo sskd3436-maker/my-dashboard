@@ -2709,73 +2709,35 @@ document.getElementById('allPipeline').innerHTML=pipHtml;
   pdHtml+='<span style="font-size:14px;font-weight:700;color:#333;">합계</span>';
   pdHtml+='<span style="font-size:15px;font-weight:800;color:#27ae60;">'+ctTotal+'건 / '+ctQtyTotal+'기</span>';
   pdHtml+='</div></div>';
- // 담당자별 영업실적 + 설치구분 통합
-var comboMgrHtml='<div style="display:flex;gap:16px;">';
+  document.getElementById('allMgrBar').innerHTML=pdHtml;
 
-// 왼쪽: 영업실적
-comboMgrHtml+='<div style="flex:1;display:flex;flex-direction:column;">';
-comboMgrHtml+='<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:8px;">📊 담당자별 영업 실적</div>';
-comboMgrHtml+='<div style="display:flex;gap:8px;margin-bottom:8px;">';
-var pipeLegend=[{n:'입대위',c:'#f39c12'},{n:'실사',c:'#9b59b6'},{n:'계약',c:'#27ae60'}];
-for(var pl=0;pl<pipeLegend.length;pl++){
-  comboMgrHtml+='<span style="font-size:9px;display:flex;align-items:center;gap:2px;white-space:nowrap;"><span style="width:6px;height:6px;border-radius:50%;background:'+pipeLegend[pl].c+';display:inline-block;"></span>'+pipeLegend[pl].n+'</span>';
-}
-comboMgrHtml+='</div>';
+  // 담당자별 설치구분 현황
+var instMgrHtml='<div style="display:flex;flex-direction:column;">';
+instMgrHtml+='<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;">📦 담당자별 설치구분 현황</div>';
 
-for(var i=0;i<mgrKeys.length;i++){
-  var mn=mgrKeys[i];
-  var pi=mgrPipe[mn]||{입대위:0,실사:0,계약:0,cnt:0,qty:0,sites:[]};
-  var totalVal=pi.입대위+pi.실사+pi.계약;
-  var mgrQty=0;
-  for(var j=0;j<pi.sites.length;j++){if(pi.sites[j].status==='계약')mgrQty+=pi.sites[j].qty;}
-  var segments=[{v:pi.입대위,c:'#f39c12'},{v:pi.실사,c:'#9b59b6'},{v:pi.계약,c:'#27ae60'}];
-  var maxVal=0;
-  for(var mi2=0;mi2<mgrKeys.length;mi2++){var mp2=mgrPipe[mgrKeys[mi2]];if(mp2){var tv=mp2.입대위+mp2.실사+mp2.계약;if(tv>maxVal)maxVal=tv;}}
-  var barW=maxVal>0?Math.max(Math.round(totalVal/maxVal*100),3):3;
-
-  comboMgrHtml+='<div onclick="toggleCtMgr(\''+esc(mn)+'\')" style="padding:3px 0;cursor:pointer;">';
-  comboMgrHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1px;">';
-  comboMgrHtml+='<span style="font-weight:700;font-size:11px;color:#333;">'+esc(mn)+'</span>';
-  comboMgrHtml+='<span style="font-size:10px;color:#888;font-weight:600;">'+totalVal+'건 / '+mgrQty+'기</span>';
-  comboMgrHtml+='</div>';
-  comboMgrHtml+='<div style="height:10px;background:#f0f0f0;border-radius:5px;overflow:hidden;display:flex;width:'+barW+'%;min-width:20px;">';
-  for(var s=0;s<segments.length;s++){
-    var sPct=totalVal>0?Math.round(segments[s].v/totalVal*100):0;
-    if(segments[s].v>0)comboMgrHtml+='<div style="width:'+sPct+'%;background:'+segments[s].c+';"></div>';
-  }
-  comboMgrHtml+='</div>';
-  comboMgrHtml+='<div style="display:flex;gap:6px;margin-top:1px;">';
-  comboMgrHtml+='<span style="font-size:9px;color:#f39c12;font-weight:600;">입대위 '+pi.입대위+'</span>';
-  comboMgrHtml+='<span style="font-size:9px;color:#9b59b6;font-weight:600;">실사 '+pi.실사+'</span>';
-  comboMgrHtml+='<span style="font-size:9px;color:#27ae60;font-weight:600;">계약 '+pi.계약+'</span>';
-  comboMgrHtml+='</div></div>';
-}
-
-comboMgrHtml+='<div style="margin-top:auto;padding-top:8px;border-top:2px solid #eee;display:flex;justify-content:space-between;align-items:center;">';
-comboMgrHtml+='<span style="font-size:12px;font-weight:700;color:#333;">합계</span>';
-comboMgrHtml+='<span style="font-size:13px;font-weight:800;color:#27ae60;">'+ctTotal+'건 / '+ctQtyTotal+'기</span>';
-comboMgrHtml+='</div></div>';
-
-// 오른쪽: 설치구분
 var instColors={신규사이트:'#667eea',신규추가설치:'#2ecc71',제자리교체:'#e67e22',이전설치:'#9b59b6'};
 var instLegend=['신규사이트','신규추가설치','제자리교체','이전설치'];
-var shortLegend2={신규사이트:'신규',신규추가설치:'추가설치',제자리교체:'제자리',이전설치:'이전'};
 
-comboMgrHtml+='<div style="flex:1;display:flex;flex-direction:column;">';
-comboMgrHtml+='<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:8px;">📦 담당자별 설치구분 현황</div>';
-comboMgrHtml+='<div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:nowrap;">';
+// 범례
+instMgrHtml+='<div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;">';
 for(var li=0;li<instLegend.length;li++){
-  comboMgrHtml+='<span style="font-size:9px;display:flex;align-items:center;gap:2px;white-space:nowrap;"><span style="width:6px;height:6px;border-radius:50%;background:'+instColors[instLegend[li]]+';display:inline-block;"></span>'+(shortLegend2[instLegend[li]]||instLegend[li])+'</span>';
+  var shortLegend={신규사이트:'신규',신규추가설치:'추가설치',제자리교체:'제자리',이전설치:'이전'};
+instMgrHtml+='<span style="font-size:9px;display:flex;align-items:center;gap:2px;white-space:nowrap;"><span style="width:6px;height:6px;border-radius:50%;background:'+instColors[instLegend[li]]+';display:inline-block;"></span>'+(shortLegend[instLegend[li]]||instLegend[li])+'</span>';
 }
-comboMgrHtml+='</div>';
+instMgrHtml+='</div>';
 
+// 담당자별 막대
 var instMgrMax=0;
 for(var mi=0;mi<mgrKeys.length;mi++){
   var mk=mgrKeys[mi],mp=mgrPipe[mk];
   if(!mp)continue;
   var mTotal=0;
+  var mInst={신규사이트:0,신규추가설치:0,제자리교체:0,이전설치:0};
   for(var si=0;si<mp.sites.length;si++){
-    if(mp.sites[si].status==='계약')mTotal++;
+    if(mp.sites[si].status!=='계약')continue;
+    var tp=(mp.sites[si].installType||'').trim();
+    if(mInst[tp]!==undefined){mInst[tp]++;mTotal++;}
+    else{mTotal++;}
   }
   if(mTotal>instMgrMax)instMgrMax=mTotal;
 }
@@ -2793,49 +2755,53 @@ for(var mi=0;mi<mgrKeys.length;mi++){
     mQty+=mp.sites[si].qty||0;
   }
 
-  comboMgrHtml+='<div style="padding:3px 0;">';
-  comboMgrHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1px;">';
-  comboMgrHtml+='<span style="font-size:11px;font-weight:700;color:#333;">'+mk+'</span>';
-  comboMgrHtml+='<span style="font-size:10px;color:#888;font-weight:600;">'+mTotal+'건 / '+mQty+'기</span>';
-  comboMgrHtml+='</div>';
+  instMgrHtml+='<div style="margin-bottom:10px;">';
+  instMgrHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">';
+  instMgrHtml+='<span style="font-size:12px;font-weight:700;color:#333;">'+mk+'</span>';
+  instMgrHtml+='<span style="font-size:11px;color:#888;">'+mTotal+'건 / '+mQty+'기</span>';
+  instMgrHtml+='</div>';
 
-  var barW2=instMgrMax>0?Math.max(Math.round(mTotal/instMgrMax*100),3):3;
-  comboMgrHtml+='<div style="display:flex;height:10px;background:#f0f0f0;border-radius:5px;overflow:hidden;width:'+barW2+'%;min-width:20px;">';
+  // 스택 막대
+  instMgrHtml+='<div style="display:flex;height:10px;background:#f0f0f0;border-radius:5px;overflow:hidden;">';
   for(var li=0;li<instLegend.length;li++){
     var iName=instLegend[li];
-    var iPct=mTotal>0?Math.round(mInst[iName]/mTotal*100):0;
+    var iW=instMgrMax>0?Math.round(mInst[iName]/instMgrMax*100):0;
     if(mInst[iName]>0){
-      comboMgrHtml+='<div style="width:'+iPct+'%;background:'+instColors[iName]+';"></div>';
+      instMgrHtml+='<div style="width:'+iW+'%;background:'+instColors[iName]+';transition:width 0.6s;" title="'+iName+' '+mInst[iName]+'건"></div>';
     }
   }
-  comboMgrHtml+='</div>';
+  instMgrHtml+='</div>';
 
-  comboMgrHtml+='<div style="display:flex;gap:6px;margin-top:1px;">';
+  // 각 수치
+  instMgrHtml+='<div style="display:flex;gap:6px;margin-top:2px;">';
   for(var li=0;li<instLegend.length;li++){
     var iName=instLegend[li];
-    comboMgrHtml+='<span style="font-size:9px;color:'+instColors[iName]+';font-weight:600;">'+(shortLegend2[iName]||iName)+' '+mInst[iName]+'</span>';
+    instMgrHtml+='<span style="font-size:9px;color:'+instColors[iName]+';font-weight:600;">'+iName.replace('신규','').replace('사이트','신규')+' '+mInst[iName]+'</span>';
   }
-  comboMgrHtml+='</div></div>';
+  instMgrHtml+='</div></div>';
 }
 
+// 합계
 var instAllTotal=0,instAllQty=0;
+var instAllCounts={신규사이트:0,신규추가설치:0,제자리교체:0,이전설치:0};
 for(var mi=0;mi<mgrKeys.length;mi++){
   var mp=mgrPipe[mgrKeys[mi]];
   if(!mp)continue;
   for(var si=0;si<mp.sites.length;si++){
     if(mp.sites[si].status!=='계약')continue;
+    var tp=(mp.sites[si].type||'').trim();
+    if(instAllCounts[tp]!==undefined)instAllCounts[tp]++;
     instAllTotal++;
     instAllQty+=mp.sites[si].qty||0;
   }
 }
-comboMgrHtml+='<div style="margin-top:auto;padding-top:8px;border-top:2px solid #eee;display:flex;justify-content:space-between;align-items:center;">';
-comboMgrHtml+='<span style="font-size:12px;font-weight:700;color:#333;">합계</span>';
-comboMgrHtml+='<span style="font-size:13px;font-weight:800;color:#27ae60;">'+instAllTotal+'건 / '+instAllQty+'기</span>';
-comboMgrHtml+='</div></div>';
+instMgrHtml+='<div style="margin-top:auto;padding-top:10px;border-top:2px solid #eee;display:flex;justify-content:space-between;align-items:center;">';
+instMgrHtml+='<span style="font-size:14px;font-weight:700;color:#333;">합계</span>';
+instMgrHtml+='<span style="font-size:15px;font-weight:800;color:#27ae60;">'+instAllTotal+'건 / '+instAllQty+'기</span>';
+instMgrHtml+='</div></div>';
 
-comboMgrHtml+='</div>';
-
-document.getElementById('allMgrBar').innerHTML=comboMgrHtml;
+  console.log('설치구분테스트:', mgrKeys.map(function(mk){var mp=mgrPipe[mk];if(!mp)return mk+':없음';var c={};for(var i=0;i<mp.sites.length;i++){if(mp.sites[i].status==='계약'){var tp=mp.sites[i].installType||'빈값';c[tp]=(c[tp]||0)+1;}}return mk+':'+JSON.stringify(c);}));
+document.getElementById('allInstallByMgr').innerHTML=instMgrHtml;
 
 
 
