@@ -2751,7 +2751,7 @@ for(var mi=0;mi<mgrKeys.length;mi++){
   var mTotal=0,mQty=0;
   for(var si=0;si<mp.sites.length;si++){
     if(mp.sites[si].status!=='계약')continue;
-    var tp=(mp.sites[si].type||'').trim();
+    var tp=(mp.sites[si].installType||'').trim();
     if(mInst[tp]!==undefined)mInst[tp]++;
     mTotal++;
     mQty+=mp.sites[si].qty||0;
