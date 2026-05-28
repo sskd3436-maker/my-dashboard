@@ -2535,7 +2535,7 @@ instDonut+='</div>';
 var headerEnd=pipHtml.indexOf('</div>')+6;
 var header=pipHtml.substring(0,headerEnd);
 var body=pipHtml.substring(headerEnd);
-var mgrBarIdx=body.indexOf('<div id="allMgrBar"');
+var mgrBarIdx=body.indexOf('<div style="margin-top:16px;border-top:1px solid #eee;padding-top:16px;display:flex;');
 var beforeMgr=body.substring(0,mgrBarIdx);
 var mgrBarHtml=body.substring(mgrBarIdx);
 
