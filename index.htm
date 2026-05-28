@@ -2722,7 +2722,8 @@ var instLegend=['신규사이트','신규추가설치','제자리교체','이전
 // 범례
 instMgrHtml+='<div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;">';
 for(var li=0;li<instLegend.length;li++){
-  instMgrHtml+='<span style="font-size:10px;display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:50%;background:'+instColors[instLegend[li]]+';display:inline-block;"></span>'+instLegend[li]+'</span>';
+  var shortLegend={신규사이트:'신규',신규추가설치:'추가설치',제자리교체:'제자리',이전설치:'이전'};
+instMgrHtml+='<span style="font-size:9px;display:flex;align-items:center;gap:2px;white-space:nowrap;"><span style="width:6px;height:6px;border-radius:50%;background:'+instColors[instLegend[li]]+';display:inline-block;"></span>'+(shortLegend[instLegend[li]]||instLegend[li])+'</span>';
 }
 instMgrHtml+='</div>';
 
