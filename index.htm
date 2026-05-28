@@ -2713,6 +2713,96 @@ document.getElementById('allPipeline').innerHTML=pipHtml;
   pdHtml+='</div></div>';
   document.getElementById('allMgrBar').innerHTML=pdHtml;
 
+  // 담당자별 설치구분 현황
+var instMgrHtml='<div style="display:flex;flex-direction:column;">';
+instMgrHtml+='<h3 style="margin:0 0 10px 0;font-size:16px;color:#333;">📦 담당자별 설치구분 현황</h3>';
+
+var instColors={신규사이트:'#667eea',신규추가설치:'#2ecc71',제자리교체:'#e67e22',이전설치:'#9b59b6'};
+var instLegend=['신규사이트','신규추가설치','제자리교체','이전설치'];
+
+// 범례
+instMgrHtml+='<div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;">';
+for(var li=0;li<instLegend.length;li++){
+  instMgrHtml+='<span style="font-size:10px;display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:50%;background:'+instColors[instLegend[li]]+';display:inline-block;"></span>'+instLegend[li]+'</span>';
+}
+instMgrHtml+='</div>';
+
+// 담당자별 막대
+var instMgrMax=0;
+for(var mi=0;mi<mgrKeys.length;mi++){
+  var mk=mgrKeys[mi],mp=mgrPipe[mk];
+  if(!mp)continue;
+  var mTotal=0;
+  var mInst={신규사이트:0,신규추가설치:0,제자리교체:0,이전설치:0};
+  for(var si=0;si<mp.sites.length;si++){
+    if(mp.sites[si].status!=='계약')continue;
+    var tp=(mp.sites[si].type||'').trim();
+    if(mInst[tp]!==undefined){mInst[tp]++;mTotal++;}
+    else{mTotal++;}
+  }
+  if(mTotal>instMgrMax)instMgrMax=mTotal;
+}
+
+for(var mi=0;mi<mgrKeys.length;mi++){
+  var mk=mgrKeys[mi],mp=mgrPipe[mk];
+  if(!mp)continue;
+  var mInst={신규사이트:0,신규추가설치:0,제자리교체:0,이전설치:0};
+  var mTotal=0,mQty=0;
+  for(var si=0;si<mp.sites.length;si++){
+    if(mp.sites[si].status!=='계약')continue;
+    var tp=(mp.sites[si].type||'').trim();
+    if(mInst[tp]!==undefined)mInst[tp]++;
+    mTotal++;
+    mQty+=mp.sites[si].qty||0;
+  }
+
+  instMgrHtml+='<div style="margin-bottom:10px;">';
+  instMgrHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">';
+  instMgrHtml+='<span style="font-size:12px;font-weight:700;color:#333;">'+mk+'</span>';
+  instMgrHtml+='<span style="font-size:11px;color:#888;">'+mTotal+'건 / '+mQty+'기</span>';
+  instMgrHtml+='</div>';
+
+  // 스택 막대
+  instMgrHtml+='<div style="display:flex;height:18px;background:#f0f0f0;border-radius:9px;overflow:hidden;">';
+  for(var li=0;li<instLegend.length;li++){
+    var iName=instLegend[li];
+    var iW=instMgrMax>0?Math.round(mInst[iName]/instMgrMax*100):0;
+    if(mInst[iName]>0){
+      instMgrHtml+='<div style="width:'+iW+'%;background:'+instColors[iName]+';transition:width 0.6s;" title="'+iName+' '+mInst[iName]+'건"></div>';
+    }
+  }
+  instMgrHtml+='</div>';
+
+  // 각 수치
+  instMgrHtml+='<div style="display:flex;gap:6px;margin-top:2px;">';
+  for(var li=0;li<instLegend.length;li++){
+    var iName=instLegend[li];
+    instMgrHtml+='<span style="font-size:9px;color:'+instColors[iName]+';font-weight:600;">'+iName.replace('신규','').replace('사이트','신규')+' '+mInst[iName]+'</span>';
+  }
+  instMgrHtml+='</div></div>';
+}
+
+// 합계
+var instAllTotal=0,instAllQty=0;
+var instAllCounts={신규사이트:0,신규추가설치:0,제자리교체:0,이전설치:0};
+for(var mi=0;mi<mgrKeys.length;mi++){
+  var mp=mgrPipe[mgrKeys[mi]];
+  if(!mp)continue;
+  for(var si=0;si<mp.sites.length;si++){
+    if(mp.sites[si].status!=='계약')continue;
+    var tp=(mp.sites[si].type||'').trim();
+    if(instAllCounts[tp]!==undefined)instAllCounts[tp]++;
+    instAllTotal++;
+    instAllQty+=mp.sites[si].qty||0;
+  }
+}
+instMgrHtml+='<div style="margin-top:auto;padding-top:10px;border-top:2px solid #eee;display:flex;justify-content:space-between;align-items:center;">';
+instMgrHtml+='<span style="font-size:14px;font-weight:700;color:#333;">합계</span>';
+instMgrHtml+='<span style="font-size:15px;font-weight:800;color:#27ae60;">'+instAllTotal+'건 / '+instAllQty+'기</span>';
+instMgrHtml+='</div></div>';
+
+document.getElementById('allInstallByMgr').innerHTML=instMgrHtml;
+
 
 
 
