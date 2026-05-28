@@ -2512,16 +2512,14 @@ instDonut+='<div style="position:absolute;top:50%;left:50%;transform:translate(-
 instDonut+='<div style="font-size:20px;font-weight:900;color:#333;">'+instTotal2+'</div>';
 instDonut+='<div style="font-size:9px;color:#888;">총 건수</div>';
 instDonut+='</div></div>';
-instDonut+='<div style="flex:1;display:flex;flex-direction:column;gap:4px;">';
+instDonut+='<div style="flex:1;font-size:12px;">';
 for(var ii=0;ii<instCats2.length;ii++){
   var ic2=instCats2[ii];
   var iPct2=instTotal2>0?Math.round(ic2.count/instTotal2*100):0;
-  instDonut+='<div onclick="window._ctListStatus=\'계약\';window._ctListPage=1;renderAllStats();setTimeout(function(){document.getElementById(\'allSheetTable\').scrollIntoView({behavior:\'smooth\'});},100);" style="display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:8px;background:'+ic2.color+'10;cursor:pointer;transition:transform 0.15s;" onmouseover="this.style.transform=\'scale(1.02)\'" onmouseout="this.style.transform=\'scale(1)\'">';
-    instDonut+='<div style="width:8px;height:8px;border-radius:50%;background:'+ic2.color+';flex-shrink:0;"></div>';
-    instDonut+='<span style="font-size:10px;font-weight:700;color:#333;white-space:nowrap;">'+ic2.name+'</span>';
-  instDonut+='<span style="font-size:11px;font-weight:800;color:'+ic2.color+';white-space:nowrap;margin-left:auto;">'+ic2.count+'건 '+iPct2+'%</span>';
-
-
+  var borderStyle2=(ii<instCats2.length-1)?'border-bottom:1px solid #f0f0f0;':'';
+  instDonut+='<div onclick="window._ctListStatus=\'계약\';window._ctListPage=1;renderAllStats();setTimeout(function(){document.getElementById(\'allSheetTable\').scrollIntoView({behavior:\'smooth\'});},100);" style="display:flex;justify-content:space-between;padding:3px 0;'+borderStyle2+'cursor:pointer;" onmouseover="this.style.background=\'#f9f9f9\'" onmouseout="this.style.background=\'none\'">';
+  instDonut+='<span style="color:'+ic2.color+';font-weight:600;">'+ic2.name+'</span>';
+  instDonut+='<span style="font-weight:800;color:'+ic2.color+';">'+ic2.count+'건 '+iPct2+'%</span>';
   instDonut+='</div>';
 }
 instDonut+='</div></div>';
