@@ -2547,10 +2547,10 @@ var leftSummary=beforeMgr.substring(summaryIdx);
 
 pipHtml=header+'<div style="display:flex;gap:0;min-height:280px;">';
 // 왼쪽
-pipHtml+='<div style="flex:1;width:50%;max-width:50%;padding-right:16px;border-right:1px solid #eee;display:flex;flex-direction:column;box-sizing:border-box;overflow:hidden;">';
+pipHtml+='<div style="flex:1;width:50%;max-width:50%;padding-right:16px;display:flex;flex-direction:column;box-sizing:border-box;overflow:hidden;">';
 pipHtml+='<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;">📋 계약 현황</div>';
 pipHtml+='<div style="flex:1;">'+leftBody+'</div>';
-pipHtml+=leftSummary;
+pipHtml+='<div style="text-align:center;margin-top:auto;padding-top:8px;border-top:1px solid #eee;font-size:13px;color:#666;font-weight:600;">총 '+pipTotal+'건 / '+showPipe.qty+'기</div>';
 pipHtml+='</div>';
 // 오른쪽
 pipHtml+='<div style="flex:1;width:50%;max-width:50%;padding-left:16px;display:flex;flex-direction:column;box-sizing:border-box;overflow:hidden;">';
