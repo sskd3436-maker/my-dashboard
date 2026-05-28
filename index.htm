@@ -2802,6 +2802,7 @@ instMgrHtml+='<span style="font-size:14px;font-weight:700;color:#333;">합계</s
 instMgrHtml+='<span style="font-size:15px;font-weight:800;color:#27ae60;">'+instAllTotal+'건 / '+instAllQty+'기</span>';
 instMgrHtml+='</div></div>';
 
+  console.log('설치구분테스트:', mgrKeys.map(function(mk){var mp=mgrPipe[mk];if(!mp)return mk+':없음';var c={};for(var i=0;i<mp.sites.length;i++){if(mp.sites[i].status==='계약'){var tp=mp.sites[i].installType||'빈값';c[tp]=(c[tp]||0)+1;}}return mk+':'+JSON.stringify(c);}));
 document.getElementById('allInstallByMgr').innerHTML=instMgrHtml;
 
 
