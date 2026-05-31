@@ -2376,22 +2376,30 @@ if(visitTab==='chart'){
     chartHtml+='<div style="display:flex;padding:4px 0;border-bottom:1px solid #ddd;font-size:10px;color:#888;font-weight:600;">';
     chartHtml+='<div style="width:38px;">날짜</div>';
     chartHtml+='<div style="flex:1;min-width:0;">내용</div>';
-    chartHtml+='<div style="width:28px;text-align:center;">감정</div>';
+    chartHtml+='<div style="width:44px;text-align:center;">감정</div>';
     chartHtml+='<div style="width:36px;text-align:center;">담당</div>';
     chartHtml+='</div>';
 
     for(var vi=0;vi<pageData.length;vi++){
       var v=pageData[vi];
       var vDate=(v.date.getMonth()+1)+'/'+v.date.getDate();
-      var emotionMap={'긍정':'😊','보통':'😐','부정':'😞'};
-      var emotionIcon=emotionMap[v.emotion]||v.emotion||'-';
+       var sentMap={'positive':'긍정','neutral':'중립','negative':'부정'};
+      var emoLabel=sentMap[v.sent]||'';
+      var emoBg=v.sent==='positive'?'#2ecc71':v.sent==='negative'?'#e74c3c':'#f1c40f';
+      var emoText=v.sent==='positive'||v.sent==='negative'?'#fff':'#333';
       var contentShort=(v.content||'-');
       if(contentShort.length>12)contentShort=contentShort.substring(0,12)+'…';
 
       chartHtml+='<div onclick="showVisitDetail('+vi+')" style="display:flex;align-items:center;padding:5px 0;border-bottom:1px solid #f5f5f5;cursor:pointer;" onmouseover="this.style.background=\'#f0f4ff\'" onmouseout="this.style.background=\'none\'">';
       chartHtml+='<div style="width:38px;font-size:10px;color:#555;flex-shrink:0;">'+vDate+'</div>';
       chartHtml+='<div style="flex:1;min-width:0;font-size:11px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+contentShort+'</div>';
-      chartHtml+='<div style="width:28px;text-align:center;flex-shrink:0;">'+emotionIcon+'</div>';
+      chartHtml+='<div style="width:44px;text-align:center;flex-shrink:0;">';
+      if(emoLabel){
+        chartHtml+='<span style="display:inline-block;padding:1px 6px;border-radius:10px;background:'+emoBg+';color:'+emoText+';font-size:9px;font-weight:700;">'+emoLabel+'</span>';
+      } else {
+        chartHtml+='<span style="color:#ccc;">-</span>';
+      }
+      chartHtml+='</div>';
       chartHtml+='<div style="width:36px;text-align:center;font-size:10px;color:#555;flex-shrink:0;">'+v.mgr+'</div>';
       chartHtml+='</div>';
     }
@@ -3436,16 +3444,35 @@ function showVisitDetail(idx){
   var list=window._visitFiltered||[];
   var v=list[idx];
   if(!v)return;
-  var emotionMap={'긍정':'😊','보통':'😐','부정':'😞'};
-  var ei=emotionMap[v.emotion]||v.emotion||'-';
-  var html='<div style="padding:6px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;font-size:11px;">날짜</span><div style="font-weight:700;color:#333;">'+v.date.getFullYear()+'.'+(v.date.getMonth()+1)+'.'+v.date.getDate()+'</div></div>';
-  html+='<div style="padding:6px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;font-size:11px;">사이트</span><div style="font-weight:700;color:#333;">'+v.site+'</div></div>';
-  html+='<div style="padding:6px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;font-size:11px;">담당자</span><div style="font-weight:700;color:#333;">'+v.mgr+'</div></div>';
-  html+='<div style="padding:6px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;font-size:11px;">감정상태</span><div style="font-size:18px;">'+ei+'</div></div>';
-  html+='<div style="padding:6px 0;"><span style="color:#888;font-size:11px;">영업내용</span><div style="font-weight:600;color:#333;white-space:pre-wrap;line-height:1.5;">'+(v.content||'-')+'</div></div>';
+  var sentMap={'positive':'긍정','neutral':'중립','negative':'부정'};
+  var ei=sentMap[v.sent]||'-';
+  var eiBg=v.sent==='positive'?'#2ecc71':v.sent==='negative'?'#e74c3c':'#f1c40f';
+  var eiColor=(v.sent==='positive'||v.sent==='negative')?'#fff':'#333';
+  var html='';
+  html+='<div style="padding:6px 0;border-bottom:1px solid #f0f0f0;">';
+  html+='<span style="color:#888;font-size:11px;">날짜</span>';
+  html+='<div style="font-weight:700;color:#333;">'+v.date.getFullYear()+'.'+(v.date.getMonth()+1)+'.'+v.date.getDate()+'</div>';
+  html+='</div>';
+  html+='<div style="padding:6px 0;border-bottom:1px solid #f0f0f0;">';
+  html+='<span style="color:#888;font-size:11px;">사이트</span>';
+  html+='<div style="font-weight:700;color:#333;">'+v.site+'</div>';
+  html+='</div>';
+  html+='<div style="padding:6px 0;border-bottom:1px solid #f0f0f0;">';
+  html+='<span style="color:#888;font-size:11px;">담당자</span>';
+  html+='<div style="font-weight:700;color:#333;">'+v.mgr+'</div>';
+  html+='</div>';
+  html+='<div style="padding:6px 0;border-bottom:1px solid #f0f0f0;">';
+  html+='<span style="color:#888;font-size:11px;">감정상태</span>';
+  html+='<div style="margin-top:2px;"><span style="display:inline-block;padding:2px 10px;border-radius:10px;background:'+eiBg+';color:'+eiColor+';font-size:13px;font-weight:700;">'+ei+'</span></div>';
+  html+='</div>';
+  html+='<div style="padding:6px 0;">';
+  html+='<span style="color:#888;font-size:11px;">영업내용</span>';
+  html+='<div style="font-weight:600;color:#333;white-space:pre-wrap;line-height:1.5;margin-top:2px;">'+(v.content||'-')+'</div>';
+  html+='</div>';
   document.getElementById('visitDetailBody').innerHTML=html;
   document.getElementById('visitDetailPopup').style.display='flex';
 }
+
 
   
 function toggleTlMode(mode){
