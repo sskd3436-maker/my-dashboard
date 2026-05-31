@@ -2367,8 +2367,8 @@ if(visitTab==='chart'){
 
      // 테이블 (반응형 컴팩트)
   window._visitFiltered=pageData;
-  chartHtml+='<div style="flex:1;overflow-y:auto;">';
-  chartHtml+='<table style="width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed;">';
+  chartHtml+='<div style="flex:1;overflow-y:auto;overflow-x:hidden;width:100%;min-width:0;">';
+  chartHtml+='<table style="width:100%;max-width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed;">';
   chartHtml+='<colgroup><col style="width:42px;"><col><col style="width:32px;"><col style="width:40px;"></colgroup>';
   chartHtml+='<thead><tr style="background:#f8f9fa;position:sticky;top:0;">';
   chartHtml+='<th style="padding:3px 2px;text-align:left;color:#666;font-weight:600;border-bottom:1px solid #eee;font-size:10px;">날짜</th>';
