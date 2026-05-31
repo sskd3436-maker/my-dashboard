@@ -2303,12 +2303,12 @@ if(visitTab==='chart'){
   // 월별 감정별 집계
   var monthSent=[];
   for(var mi=0;mi<months.length;mi++){
-    var first=new Date(months[mi].y,months[mi].m,1);
-    var last=new Date(months[mi].y,months[mi].m+1,0);
+    var first2=new Date(months[mi].y,months[mi].m,1);
+    var last2=new Date(months[mi].y,months[mi].m+1,0);
     var pos=0,neu=0,neg=0;
     for(var i=0;i<flatNoContract.length;i++){
       var f=flatNoContract[i];
-      if(!f.date||f.date<first||f.date>last)continue;
+      if(!f.date||f.date<first2||f.date>last2)continue;
       if(selR){
         var sn=(f.site||'').trim();
         var fRegion=(siteCheck[sn]&&siteCheck[sn].region)||'';
@@ -2327,43 +2327,80 @@ if(visitTab==='chart'){
   var maxBar=0;
   for(var mi=0;mi<monthSent.length;mi++){if(monthSent[mi].total>maxBar)maxBar=monthSent[mi].total;}
   if(maxBar===0)maxBar=1;
+  // Y축 눈금 올림
+  var yStep=Math.ceil(maxBar/4/50)*50;if(yStep===0)yStep=50;
+  var yMax=yStep*4;
 
   // 범례
-  chartHtml+='<div style="display:flex;gap:10px;margin-bottom:8px;justify-content:flex-end;">';
+  chartHtml+='<div style="display:flex;gap:10px;margin-bottom:6px;justify-content:flex-end;">';
   chartHtml+='<span style="font-size:9px;display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#2ecc71;display:inline-block;"></span>긍정</span>';
   chartHtml+='<span style="font-size:9px;display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#f1c40f;display:inline-block;"></span>중립</span>';
   chartHtml+='<span style="font-size:9px;display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#e74c3c;display:inline-block;"></span>부정</span>';
   chartHtml+='</div>';
 
-  // 막대 그래프
-  chartHtml+='<div style="display:flex;align-items:flex-end;gap:8px;height:120px;padding:0 4px;">';
+  var chartH=130;
+  // 차트 영역 (Y축 + 막대)
+  chartHtml+='<div style="display:flex;height:'+chartH+'px;">';
+
+  // Y축
+  chartHtml+='<div style="width:32px;display:flex;flex-direction:column;justify-content:space-between;padding-right:4px;">';
+  for(var gi=0;gi<=4;gi++){
+    var gVal=Math.round(yMax-(yMax/4)*gi);
+    chartHtml+='<div style="font-size:9px;color:#ccc;text-align:right;line-height:1;">'+gVal+'</div>';
+  }
+  chartHtml+='</div>';
+
+  // 막대 영역
+  chartHtml+='<div style="flex:1;position:relative;">';
+
+  // 가로 눈금선
+  for(var gi=0;gi<=4;gi++){
+    var lineTop=Math.round((gi/4)*chartH);
+    chartHtml+='<div style="position:absolute;top:'+lineTop+'px;left:0;right:0;height:1px;background:#f0f0f0;"></div>';
+  }
+
+  // 막대들
+  chartHtml+='<div style="display:flex;align-items:flex-end;height:100%;gap:4px;position:relative;z-index:1;">';
   for(var mi=0;mi<months.length;mi++){
     var ms=monthSent[mi];
-    var barH=Math.round((ms.total/maxBar)*100);
+    var barH=Math.round((ms.total/yMax)*chartH);
+    if(ms.total>0&&barH<3)barH=3;
     var posH=ms.total>0?Math.round((ms.pos/ms.total)*barH):0;
     var negH=ms.total>0?Math.round((ms.neg/ms.total)*barH):0;
     var neuH=barH-posH-negH;
     if(neuH<0)neuH=0;
     var isThis=(months[mi].y===now.getFullYear()&&months[mi].m===now.getMonth());
     var mY=months[mi].y,mM=months[mi].m;
+    var posPct=ms.total>0?Math.round(ms.pos/ms.total*100):0;
 
-    chartHtml+='<div onclick="window._calY='+mY+';window._calM='+mM+';window._calSelDay=0;window._calWeek=0;window._visitListPage=1;window._monthClicked=true;renderAllStats();" style="flex:1;display:flex;flex-direction:column;align-items:center;cursor:pointer;" onmouseover="this.querySelector(\'.bar-wrap\').style.opacity=\'0.8\'" onmouseout="this.querySelector(\'.bar-wrap\').style.opacity=\'1\'">';
+    chartHtml+='<div onclick="window._calY='+mY+';window._calM='+mM+';window._calSelDay=0;window._calWeek=0;window._visitListPage=1;window._monthClicked=true;renderAllStats();" style="flex:1;display:flex;flex-direction:column;align-items:center;cursor:pointer;">';
 
-    // 총 건수 라벨
-    chartHtml+='<div style="font-size:10px;font-weight:700;color:'+(isThis?'#667eea':'#888')+';margin-bottom:3px;">'+ms.total+'</div>';
-
-    // 누적 막대
-    chartHtml+='<div class="bar-wrap" style="width:100%;max-width:40px;height:'+barH+'px;min-height:2px;border-radius:6px 6px 4px 4px;overflow:hidden;display:flex;flex-direction:column;transition:opacity 0.2s;">';
-    if(posH>0)chartHtml+='<div style="height:'+posH+'px;background:#2ecc71;transition:height 0.6s;"></div>';
-    if(neuH>0)chartHtml+='<div style="height:'+neuH+'px;background:#f1c40f;transition:height 0.6s;"></div>';
-    if(negH>0)chartHtml+='<div style="height:'+negH+'px;background:#e74c3c;transition:height 0.6s;"></div>';
+    // 총 건수 + 긍정률
+    chartHtml+='<div style="text-align:center;margin-bottom:2px;">';
+    chartHtml+='<div style="font-size:11px;font-weight:800;color:'+(isThis?'#667eea':'#555')+';">'+ms.total+'</div>';
+    if(ms.total>0)chartHtml+='<div style="font-size:8px;color:#2ecc71;font-weight:600;">긍정 '+posPct+'%</div>';
     chartHtml+='</div>';
 
-    // 월 라벨
-    chartHtml+='<div style="font-size:10px;color:'+(isThis?'#667eea':'#aaa')+';font-weight:'+(isThis?'700':'400')+';margin-top:4px;">'+monthLabels[mi]+'</div>';
+    // 누적 막대
+    chartHtml+='<div style="width:80%;max-width:45px;height:'+barH+'px;border-radius:4px 4px 2px 2px;overflow:hidden;display:flex;flex-direction:column;">';
+    if(posH>0)chartHtml+='<div style="height:'+posH+'px;background:#2ecc71;"></div>';
+    if(neuH>0)chartHtml+='<div style="height:'+neuH+'px;background:#f1c40f;"></div>';
+    if(negH>0)chartHtml+='<div style="height:'+negH+'px;background:#e74c3c;"></div>';
+    chartHtml+='</div>';
+
     chartHtml+='</div>';
   }
   chartHtml+='</div>';
+  chartHtml+='</div></div>';
+
+  // 월 라벨 (아래)
+  chartHtml+='<div style="display:flex;margin-left:32px;margin-top:4px;">';
+  for(var mi=0;mi<months.length;mi++){
+    var isThis=(months[mi].y===now.getFullYear()&&months[mi].m===now.getMonth());
+    chartHtml+='<div style="flex:1;text-align:center;font-size:10px;color:'+(isThis?'#667eea':'#aaa')+';font-weight:'+(isThis?'700':'400')+';">'+monthLabels[mi]+'</div>';
+  }
+  chartHtml+='</div>';
+
 } else {
   // 방문목록 탭
   var calY=window._calY||now.getFullYear();
