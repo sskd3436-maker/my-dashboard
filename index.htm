@@ -2388,7 +2388,7 @@ if(visitTab==='chart'){
       var emoBg=v.sent==='positive'?'#2ecc71':v.sent==='negative'?'#e74c3c':'#f1c40f';
       var emoText=v.sent==='positive'||v.sent==='negative'?'#fff':'#333';
       var contentShort=(v.content||'-');
-      if(contentShort.length>12)contentShort=contentShort.substring(0,12)+'…';
+      if(contentShort.length>25)contentShort=contentShort.substring(0,25)+'…';
 
       chartHtml+='<div onclick="showVisitDetail('+vi+')" style="display:flex;align-items:center;padding:5px 0;border-bottom:1px solid #f5f5f5;cursor:pointer;" onmouseover="this.style.background=\'#f0f4ff\'" onmouseout="this.style.background=\'none\'">';
       chartHtml+='<div style="width:38px;font-size:10px;color:#555;flex-shrink:0;">'+vDate+'</div>';
