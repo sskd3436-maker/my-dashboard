@@ -2300,7 +2300,7 @@ chartHtml+='</div></div>';
 
 if(visitTab==='chart'){
  if(visitTab==='chart'){
-   // 기존 차트 그대로
+  // 기존 차트 그대로
   chartHtml+='<svg viewBox="0 0 '+svgW+' '+svgH+'" style="width:100%;height:auto;">';
   for(var gi=0;gi<=4;gi++){
     var gy=padT+(drawH/4)*gi;
@@ -2329,7 +2329,7 @@ if(visitTab==='chart'){
   }
   chartHtml+='</svg>';
 
-   } else {
+} else {
   // 방문목록 탭
   var calY=window._calY||now.getFullYear();
   var calM=(window._calM!==undefined)?window._calM:now.getMonth();
