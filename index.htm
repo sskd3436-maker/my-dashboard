@@ -2365,21 +2365,21 @@ if(visitTab==='chart'){
   var dateLabel=(calM+1)+'월'+(calDay>0?' '+calDay+'일':'');
   chartHtml+='<div style="font-size:12px;color:#888;margin-bottom:6px;">'+calY+'년 '+dateLabel+' 방문기록 (총 '+filtered.length+'건)</div>';
 
-     // 테이블 (반응형 컴팩트)
+      // 방문목록 (div 기반)
   window._visitFiltered=pageData;
-  chartHtml+='<div style="flex:1;overflow-y:auto;overflow-x:hidden;width:100%;min-width:0;">';
-  chartHtml+='<table style="width:100%;max-width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed;">';
-  chartHtml+='<colgroup><col style="width:38px;"><col style="width:calc(100% - 38px - 30px - 38px);"><col style="width:30px;"><col style="width:38px;"></colgroup>';
-  chartHtml+='<thead><tr style="background:#f8f9fa;position:sticky;top:0;">';
-  chartHtml+='<th style="padding:3px 2px;text-align:left;color:#666;font-weight:600;border-bottom:1px solid #eee;font-size:10px;">날짜</th>';
-  chartHtml+='<th style="padding:3px 2px;text-align:left;color:#666;font-weight:600;border-bottom:1px solid #eee;font-size:10px;">내용</th>';
-  chartHtml+='<th style="padding:3px 2px;text-align:center;color:#666;font-weight:600;border-bottom:1px solid #eee;font-size:10px;">감정</th>';
-  chartHtml+='<th style="padding:3px 2px;text-align:center;color:#666;font-weight:600;border-bottom:1px solid #eee;font-size:10px;">담당</th>';
-  chartHtml+='</tr></thead><tbody>';
+  chartHtml+='<div style="flex:1;overflow-y:auto;">';
 
   if(pageData.length===0){
-    chartHtml+='<tr><td colspan="4" style="padding:20px;text-align:center;color:#bbb;">방문기록이 없습니다</td></tr>';
+    chartHtml+='<div style="padding:20px;text-align:center;color:#bbb;">방문기록이 없습니다</div>';
   } else {
+    // 헤더
+    chartHtml+='<div style="display:flex;padding:4px 0;border-bottom:1px solid #ddd;font-size:10px;color:#888;font-weight:600;">';
+    chartHtml+='<div style="width:38px;">날짜</div>';
+    chartHtml+='<div style="flex:1;min-width:0;">내용</div>';
+    chartHtml+='<div style="width:28px;text-align:center;">감정</div>';
+    chartHtml+='<div style="width:36px;text-align:center;">담당</div>';
+    chartHtml+='</div>';
+
     for(var vi=0;vi<pageData.length;vi++){
       var v=pageData[vi];
       var vDate=(v.date.getMonth()+1)+'/'+v.date.getDate();
@@ -2387,15 +2387,17 @@ if(visitTab==='chart'){
       var emotionIcon=emotionMap[v.emotion]||v.emotion||'-';
       var contentShort=(v.content||'-');
       if(contentShort.length>12)contentShort=contentShort.substring(0,12)+'…';
-      chartHtml+='<tr onclick="showVisitDetail('+vi+')" style="border-bottom:1px solid #f5f5f5;cursor:pointer;" onmouseover="this.style.background=\'#f0f4ff\'" onmouseout="this.style.background=\'none\'">';
-      chartHtml+='<td style="padding:3px 2px;white-space:nowrap;color:#555;font-size:10px;">'+vDate+'</td>';
-      chartHtml+='<td style="padding:3px 2px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+contentShort+'</td>';
-      chartHtml+='<td style="padding:3px 2px;text-align:center;">'+emotionIcon+'</td>';
-      chartHtml+='<td style="padding:3px 2px;text-align:center;color:#555;font-size:10px;">'+v.mgr+'</td>';
-      chartHtml+='</tr>';
+
+      chartHtml+='<div onclick="showVisitDetail('+vi+')" style="display:flex;align-items:center;padding:5px 0;border-bottom:1px solid #f5f5f5;cursor:pointer;" onmouseover="this.style.background=\'#f0f4ff\'" onmouseout="this.style.background=\'none\'">';
+      chartHtml+='<div style="width:38px;font-size:10px;color:#555;flex-shrink:0;">'+vDate+'</div>';
+      chartHtml+='<div style="flex:1;min-width:0;font-size:11px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+contentShort+'</div>';
+      chartHtml+='<div style="width:28px;text-align:center;flex-shrink:0;">'+emotionIcon+'</div>';
+      chartHtml+='<div style="width:36px;text-align:center;font-size:10px;color:#555;flex-shrink:0;">'+v.mgr+'</div>';
+      chartHtml+='</div>';
     }
   }
-  chartHtml+='</tbody></table></div>';
+  chartHtml+='</div>';
+
 
 
   // 페이지네이션
