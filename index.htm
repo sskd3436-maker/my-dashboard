@@ -15,6 +15,15 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #f0f2f5; color: #1a1a2e; display: block; min-height: 100vh; }
 
+    @keyframes barGrow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+.bar-grow {
+  animation: barGrow 0.6s ease-out forwards;
+  transform-origin: bottom;
+}
+
     /* 사이드바 */
     .sidebar {
       width: 230px; background: #1a1a2e; color: white;
@@ -2382,7 +2391,7 @@ if(visitTab==='chart'){
     chartHtml+='</div>';
 
     // 누적 막대
-    chartHtml+='<div style="width:80%;max-width:45px;height:'+barH+'px;border-radius:4px 4px 2px 2px;overflow:hidden;display:flex;flex-direction:column;">';
+    chartHtml+='<div class="bar-grow" style="width:80%;max-width:45px;height:'+barH+'px;border-radius:4px 4px 2px 2px;overflow:hidden;display:flex;flex-direction:column;animation-delay:'+(mi*0.1)+'s;">';
     if(posH>0)chartHtml+='<div style="height:'+posH+'px;background:#2ecc71;"></div>';
     if(neuH>0)chartHtml+='<div style="height:'+neuH+'px;background:#f1c40f;"></div>';
     if(negH>0)chartHtml+='<div style="height:'+negH+'px;background:#e74c3c;"></div>';
