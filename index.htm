@@ -2287,7 +2287,8 @@ for(var mi=0;mi<months.length;mi++){
   points.push({x:x,y:y,cnt:monthCounts[mi],mi:mi});
 }
 
-var chartHtml='<div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);box-sizing:border-box;height:100%;display:flex;flex-direction:column;">';
+var chartPad=visitTab==='list'?'12px':'20px';
+var chartHtml='<div style="background:#fff;border-radius:16px;padding:'+chartPad+';box-shadow:0 2px 12px rgba(0,0,0,0.08);box-sizing:border-box;height:100%;display:flex;flex-direction:column;">';
 
 // 탭 버튼
 chartHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">';
@@ -2367,12 +2368,12 @@ if(visitTab==='chart'){
     // 테이블 (반응형 컴팩트)
   chartHtml+='<div style="flex:1;overflow-y:auto;overflow-x:auto;">';
   chartHtml+='<table style="width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed;">';
-  chartHtml+='<colgroup><col style="width:13%;"><col style="width:47%;"><col style="width:15%;"><col style="width:25%;"></colgroup>';
+  chartHtml+='<colgroup><col style="width:42px;"><col style="width:auto;"><col style="width:36px;"><col style="width:42px;"></colgroup>';
   chartHtml+='<thead><tr style="background:#f8f9fa;position:sticky;top:0;">';
   chartHtml+='<th style="padding:4px 2px;text-align:left;color:#666;font-weight:600;border-bottom:1px solid #eee;">날짜</th>';
-  chartHtml+='<th style="padding:4px 2px;text-align:left;color:#666;font-weight:600;border-bottom:1px solid #eee;">영업내용</th>';
-  chartHtml+='<th style="padding:4px 2px;text-align:center;color:#666;font-weight:600;border-bottom:1px solid #eee;">감정</th>';
-  chartHtml+='<th style="padding:4px 2px;text-align:center;color:#666;font-weight:600;border-bottom:1px solid #eee;">담당</th>';
+  chartHtml+='<th style="padding:3px 1px;text-align:left;color:#666;font-weight:600;border-bottom:1px solid #eee;font-size:10px;">내용</th>';
+  chartHtml+='<th style="padding:3px 1px;text-align:center;color:#666;font-weight:600;border-bottom:1px solid #eee;font-size:10px;">감정</th>';
+  chartHtml+='<th style="padding:3px 1px;text-align:center;color:#666;font-weight:600;border-bottom:1px solid #eee;font-size:10px;">담당</th>';
   chartHtml+='</tr></thead><tbody>';
 
   if(pageData.length===0){
