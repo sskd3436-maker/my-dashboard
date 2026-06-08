@@ -3365,59 +3365,7 @@ function drawKoreaMap(geo){
   });
 }
 
-    // 증설사이트 별 마커
-  var augData=(window.allSheetsData&&window.allSheetsData['증설사이트'])||null;
-  if(augData&&augData.rows){
-    var augRows=augData.rows;
-    for(var ai=0;ai<augRows.length;ai++){
-      var ar=augRows[ai];
-      var aLat=parseFloat(ar['Y좌표'])||0;
-      var aLng=parseFloat(ar['X좌표'])||0;
-      if(!aLat||!aLng)continue;
-      var ax=toX(aLng),ay=toY(aLat);
-
-      // 이글이글 불꽃 테두리 애니메이션
-      svg.append('circle').attr('cx',ax).attr('cy',ay).attr('r',6)
-        .attr('fill','none').attr('stroke','#ff4500').attr('stroke-width',2)
-        .attr('opacity',0.7).attr('class','fire-glow');
-
-      svg.append('circle').attr('cx',ax).attr('cy',ay).attr('r',8)
-        .attr('fill','none').attr('stroke','#ff6600').attr('stroke-width',1)
-        .attr('opacity',0.4).attr('class','fire-glow2');
-
-      // 별 모양
-      var starSize=4;
-      var starPts='';
-      for(var si=0;si<10;si++){
-        var angle=Math.PI/2+si*Math.PI/5;
-        var r2=si%2===0?starSize:starSize*0.4;
-        starPts+=(ax+r2*Math.cos(angle))+','+(ay-r2*Math.sin(angle))+' ';
-      }
-      (function(siteName,addr,mgr,region,rowData){
-        svg.append('polygon').attr('points',starPts.trim())
-          .attr('fill','#FFD700').attr('stroke','#ff4500').attr('stroke-width',0.8)
-          .style('cursor','pointer').attr('class','star-marker')
-          .on('click',function(){
-            var popHtml='<div style="padding:12px;max-width:250px;">';
-            popHtml+='<div style="font-weight:800;font-size:14px;color:#ff4500;margin-bottom:8px;">⭐ '+siteName+'</div>';
-            popHtml+='<div style="font-size:11px;color:#555;margin-bottom:4px;">📍 '+(addr||'-')+'</div>';
-            popHtml+='<div style="font-size:11px;color:#555;margin-bottom:4px;">👤 담당: '+(mgr||'-')+'</div>';
-            popHtml+='<div style="font-size:11px;color:#555;">🗂 권역: '+(region||'-')+'</div>';
-            popHtml+='</div>';
-            var pop=document.getElementById('mapPopup');
-            if(!pop){
-              pop=document.createElement('div');
-              pop.id='mapPopup';
-              pop.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.3);z-index:9999;';
-              document.body.appendChild(pop);
-            }
-            pop.innerHTML=popHtml+'<div style="text-align:center;padding:8px;"><button onclick="document.getElementById(\'mapPopup\').style.display=\'none\'" style="padding:4px 16px;border:none;background:#ff4500;color:#fff;border-radius:6px;cursor:pointer;">닫기</button></div>';
-            pop.style.display='block';
-          });
-      })(ar['사이트명']||'',ar['주소']||'',ar['담당자']||'',ar['권역별']||'',ar);
-    }
-  }
-
+    
 
 
 function renderAllCalendar(){
