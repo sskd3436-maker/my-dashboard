@@ -932,7 +932,12 @@ function getDistance(lat1,lng1,lat2,lng2){
     var ar=augData.rows[ai];
     var aLat=parseFloat(ar['Y좌표'])||0;
     var aLng=parseFloat(ar['X좌표'])||0;
-    if(!aLat||!aLng)continue;
+     if(!aLat||!aLng)continue;
+    var isExisting=false;
+    for(var ei=0;ei<allFlat.length;ei++){
+      if((allFlat[ei].site||'').trim()===aSite){isExisting=true;break;}
+    }
+    if(isExisting)continue;
     var aSite=(ar['사이트명']||'').trim();
     var existItem=existingSites[aSite]||null;
     var visitColor='#777';
@@ -1645,6 +1650,14 @@ window._actMap.setView([myLat,myLng],12);
 if(window._actMarkers){for(var mi=0;mi<window._actMarkers.length;mi++)window._actMap.removeLayer(window._actMarkers[mi]);}
 window._actMarkers=[];
 var mapBounds=[];
+var augSiteMap={};
+var augData2=(window.allSheetsData&&window.allSheetsData['증설사이트'])||null;
+if(augData2&&augData2.rows){
+  for(var ag=0;ag<augData2.rows.length;ag++){
+    var agr=augData2.rows[ag];
+    augSiteMap[(agr['사이트명']||'').trim()]=agr;
+  }
+}
 for(var i=0;i<list.length;i++){
   var it=list[i];
   var lat=parseFloat(fv(it.row,it.headers,'Y좌표'));
@@ -1664,11 +1677,23 @@ if(visited){
    var site=it.site||'';
   var mgr=it.mgr||'';
   var addr=(fv(it.row,it.headers,'주소')||'').replace(/\(.*?\)/g,'').trim();
-   var matched=getChargerInfo(lat,lng)!=null;
-  var markerHtml=matched?
-    '<div style="width:14px;height:14px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>':
-    '<div style="width:14px;height:14px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;">❓</div>';
-  var icon=L.divIcon({className:'',html:markerHtml,iconSize:[14,14],iconAnchor:[7,7]});
+    var matched=getChargerInfo(lat,lng)!=null;
+  var isAug=augSiteMap[site.trim()]?true:false;
+  var markerHtml;
+  if(isAug){
+    markerHtml='<div style="position:relative;width:26px;height:26px;display:flex;align-items:center;justify-content:center;">'
+      +'<div class="fire-ring" style="position:absolute;width:24px;height:24px;border-radius:50%;border:2px solid #ff4500;animation:fireRing 1.2s ease-in-out infinite;"></div>'
+      +'<div style="font-size:15px;line-height:1;filter:drop-shadow(0 0 3px #ff4500);">⭐</div>'
+      +'<div style="position:absolute;bottom:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:'+color+';border:1px solid #fff;"></div>'
+      +'</div>';
+  } else {
+    markerHtml=matched?
+      '<div style="width:14px;height:14px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>':
+      '<div style="width:14px;height:14px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;">❓</div>';
+  }
+  var iconSize=isAug?[26,26]:[14,14];
+  var iconAnchor=isAug?[13,13]:[7,7];
+  var icon=L.divIcon({className:'',html:markerHtml,iconSize:iconSize,iconAnchor:iconAnchor});
   var marker=L.marker([lat,lng],{icon:icon}).addTo(window._actMap);
 var mapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr||it.site||'');
 var pcVisitedTxt=visited?'<span style="color:#27ae60;">방문완료</span>':'<span style="color:#e74c3c;">미방문</span>';
