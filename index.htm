@@ -1678,7 +1678,10 @@ if(visited){
   var mgr=it.mgr||'';
   var addr=(fv(it.row,it.headers,'주소')||'').replace(/\(.*?\)/g,'').trim();
     var matched=getChargerInfo(lat,lng)!=null;
-  var isAug=augSiteMap[site.trim()]?true:false;
+    var isAug=augSiteMap[site.trim()]?true:false;
+  if(isAug&&augSiteMap[site.trim()]==='done'){isAug=false;}
+  if(isAug){augSiteMap[site.trim()]='done';}
+
   var markerHtml;
   if(isAug){
     markerHtml='<div style="position:relative;width:26px;height:26px;display:flex;align-items:center;justify-content:center;">'
