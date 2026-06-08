@@ -1044,7 +1044,7 @@ m.on('click', function(e){
         +'<div style="position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:'+visitColor+';border:1px solid #fff;"></div>'
         +'</div>';
       var starIcon=L.divIcon({className:'',html:starHtml,iconSize:[30,30],iconAnchor:[15,15]});
-      var sm=L.marker([aLat,aLng],{icon:starIcon,zIndexOffset:1000}).addTo(window._mobileMap);
+      var sm=L.marker([aLat,aLng],{icon:starIcon,zIndexOffset:1000}).addTo(window._actMap);
       var aAddr=(ar['주소']||'').replace(/\(.*?\)/g,'').trim();
       var aMgr=ar['담당자']||'-';
       var aRegion=ar['권역별']||'-';
@@ -1063,7 +1063,7 @@ m.on('click', function(e){
         +'</div>'
       );
       sm.on('click',function(e){
-        window._mobileMap.setView(e.latlng,window._mobileMap.getZoom());
+        window._actMap.setView(e.latlng,window._actMap.getZoom());
       });
       window._mobileMarkers.push(sm);
     }
