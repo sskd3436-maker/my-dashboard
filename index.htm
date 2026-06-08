@@ -45,6 +45,12 @@
 .fire-glow { animation: fireGlow 1.2s ease-in-out infinite; }
 .fire-glow2 { animation: fireGlow2 1.5s ease-in-out infinite; }
 .star-marker:hover { transform-origin: center; filter: brightness(1.3); }
+
+    @keyframes fireRing {
+  0% { transform: scale(1); opacity: 0.7; border-color: #ff4500; }
+  50% { transform: scale(1.3); opacity: 0.2; border-color: #ff6600; }
+  100% { transform: scale(1); opacity: 0.7; border-color: #ff4500; }
+}
     
     /* 사이드바 */
     .sidebar {
@@ -1002,8 +1008,67 @@ m.on('click', function(e){
   renderMobileList();
 });
 
-      window._mobileMarkers.push(m);
+       window._mobileMarkers.push(m);
   }
+
+  // 증설사이트 별 마커
+  var augData=(window.allSheetsData&&window.allSheetsData['증설사이트'])||null;
+  if(augData&&augData.rows){
+    var existingSites={};
+    for(var ei=0;ei<allFlat.length;ei++){
+      existingSites[(allFlat[ei].site||'').trim()]=allFlat[ei];
+    }
+    for(var ai=0;ai<augData.rows.length;ai++){
+      var ar=augData.rows[ai];
+      var aLat=parseFloat(ar['Y좌표'])||0;
+      var aLng=parseFloat(ar['X좌표'])||0;
+      if(!aLat||!aLng)continue;
+      var aSite=(ar['사이트명']||'').trim();
+      var existItem=existingSites[aSite]||null;
+      var visitColor='#777';
+      if(existItem){
+        var ev=existItem.date||fv(existItem.row,existItem.headers,'방문일자')||'';
+        if(ev){
+          var ep=fv(existItem.row,existItem.headers,'긍정')||'';
+          var en=fv(existItem.row,existItem.headers,'중립')||'';
+          var eng=fv(existItem.row,existItem.headers,'부정')||'';
+          if(ep)visitColor='#27ae60';
+          else if(en)visitColor='#f1c40f';
+          else if(eng)visitColor='#e74c3c';
+          else visitColor='#27ae60';
+        }
+      }
+      var starHtml='<div class="fire-glow-wrap" style="position:relative;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">'
+        +'<div class="fire-ring" style="position:absolute;width:28px;height:28px;border-radius:50%;border:2px solid #ff4500;animation:fireRing 1.2s ease-in-out infinite;"></div>'
+        +'<div style="font-size:18px;line-height:1;filter:drop-shadow(0 0 3px #ff4500);">⭐</div>'
+        +'<div style="position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:'+visitColor+';border:1px solid #fff;"></div>'
+        +'</div>';
+      var starIcon=L.divIcon({className:'',html:starHtml,iconSize:[30,30],iconAnchor:[15,15]});
+      var sm=L.marker([aLat,aLng],{icon:starIcon,zIndexOffset:1000}).addTo(window._mobileMap);
+      var aAddr=(ar['주소']||'').replace(/\(.*?\)/g,'').trim();
+      var aMgr=ar['담당자']||'-';
+      var aRegion=ar['권역별']||'-';
+      var aQty=ar['충전기수량']||'-';
+      var aBiz=ar['사업구분']||'-';
+      var aKind=ar['종류']||'-';
+      var existTxt=existItem?'<span style="color:#27ae60;">✅ 기존 사이트 있음</span>':'<span style="color:#e74c3c;">🆕 신규 증설대상</span>';
+      sm.bindPopup(
+        '<div style="min-width:200px;">'
+        +'<div style="font-size:14px;font-weight:800;color:#ff4500;">⭐ '+esc(aSite)+'</div>'
+        +'<div style="font-size:10px;color:#ff4500;margin-bottom:6px;">증설사이트</div>'
+        +'<div style="color:#666;font-size:12px;">📍 '+esc(aAddr||'-')+'</div>'
+        +'<div style="color:#666;font-size:12px;">👤 담당: '+esc(aMgr)+' | 🗂 '+esc(aRegion)+'</div>'
+        +'<div style="color:#666;font-size:12px;">🔌 충전기: '+esc(aQty+'')+'기 | '+esc(aBiz)+' | '+esc(aKind)+'</div>'
+        +'<div style="margin-top:4px;">'+existTxt+'</div>'
+        +'</div>'
+      );
+      sm.on('click',function(e){
+        window._mobileMap.setView(e.latlng,window._mobileMap.getZoom());
+      });
+      window._mobileMarkers.push(sm);
+    }
+  }
+
   renderMobileList();
 }
 
