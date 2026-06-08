@@ -989,6 +989,14 @@ function renderMobileMarkers(){
     for(var i=0;i<window._mobileMarkers.length;i++)window._mobileMap.removeLayer(window._mobileMarkers[i]);
   }
   window._mobileMarkers=[];
+  var augSiteMap3={};
+  var augData3=(window.allSheetsData&&window.allSheetsData['증설사이트'])||null;
+  if(augData3&&augData3.rows){
+    for(var ag=0;ag<augData3.rows.length;ag++){
+      var agr=augData3.rows[ag];
+      augSiteMap3[(agr['사이트명']||'').trim()]=agr;
+    }
+  }
  for(var i=0;i<allFlat.length;i++){
     var it=allFlat[i];
     if(window._mobileMode&&window._loginUser&&(it.mgr||'')!==window._loginUser)continue;
@@ -1025,9 +1033,18 @@ for(var pi=0;pi<allFlat.length;pi++){
 }
 
           var addr=(fv(it.row,it.headers,'주소')||'').replace(/\(.*?\)/g,'').trim();
-   var matched=getChargerInfo(lat,lng)!=null;
+      var matched=getChargerInfo(lat,lng)!=null;
+    var isAug3=augSiteMap3[(it.site||'').trim()]?true:false;
+    if(isAug3&&augSiteMap3[(it.site||'').trim()]==='done'){isAug3=false;}
+    if(isAug3){augSiteMap3[(it.site||'').trim()]='done';}
     var markerHtml;
-    if(color26!=='#ddd'){
+    if(isAug3){
+      markerHtml='<div style="position:relative;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">'
+        +'<div class="fire-ring" style="position:absolute;width:28px;height:28px;border-radius:50%;border:2px solid #ff4500;animation:fireRing 1.2s ease-in-out infinite;"></div>'
+        +'<div style="font-size:18px;line-height:1;filter:drop-shadow(0 0 3px #ff4500);">⭐</div>'
+        +'<div style="position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:'+color27+';border:1px solid #fff;"></div>'
+        +'</div>';
+    } else if(color26!=='#ddd'){
       markerHtml='<div style="width:20px;height:20px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.3);overflow:hidden;display:flex;">'
         +'<div style="width:50%;background:'+color26+';"></div>'
         +'<div style="width:50%;background:'+color27+';display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;">'+(matched?'':'❓')+'</div></div>';
@@ -1036,7 +1053,10 @@ for(var pi=0;pi<allFlat.length;pi++){
         '<div style="width:20px;height:20px;border-radius:50%;background:'+color27+';border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>':
         '<div style="width:20px;height:20px;border-radius:50%;background:'+color27+';border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;">❓</div>';
     }
-    var icon=L.divIcon({className:'',html:markerHtml,iconSize:[20,20],iconAnchor:[10,10]});
+    var iconSize3=isAug3?[30,30]:[20,20];
+    var iconAnchor3=isAug3?[15,15]:[10,10];
+    var icon=L.divIcon({className:'',html:markerHtml,iconSize:iconSize3,iconAnchor:iconAnchor3});
+
     var m=L.marker([lat,lng],{icon:icon}).addTo(window._mobileMap);
     var webUrl='https://map.naver.com/v5/search/'+encodeURIComponent(addr||it.site||'');
 var mapUrl='nmap://search?query='+encodeURIComponent(addr||it.site||'')+'&appname=com.mydashboard';
@@ -1052,6 +1072,21 @@ var bizColor=bizColors[biz]||'#888';
 var kindColor=kind==='아파트'?'#6c5ce7':kind==='빌딩'?'#00b894':kind==='공공기관'?'#fdcb6e':'#888';
     window._mobileData.push(it);
     var dataIdx=window._mobileData.length-1;
+
+ var augInfo3='';
+    if(isAug3){
+      var augRow3=augData3&&augData3.rows?augData3.rows.find(function(r){return (r['사이트명']||'').trim()===(it.site||'').trim();}):null;
+      augInfo3='<div style="margin-top:6px;padding:6px;background:#fff5f0;border:1px solid #ff4500;border-radius:6px;">'
+        +'<div style="font-weight:700;color:#ff4500;font-size:12px;">⭐ 증설대상 사이트</div>';
+      if(augRow3){
+        var augQty3=augRow3['충전기수량']||'-';
+        var augContent3=augRow3['영업내용']||'';
+        augInfo3+='<div style="font-size:11px;color:#555;margin-top:2px;">🔌 증설 충전기: '+esc(augQty3+'')+'기</div>';
+        if(augContent3)augInfo3+='<div style="font-size:11px;color:#555;">📄 '+esc(augContent3)+'</div>';
+      }
+      augInfo3+='</div>';
+    }
+   
  m.bindPopup(
   '<div style="min-width:180px;"><b style="font-size:14px;">'+esc(it.site||'')+'</b>'+
   '<br><span style="color:#666;">주소: '+(addr||'-')+'</span>'+
@@ -1063,6 +1098,7 @@ var kindColor=kind==='아파트'?'#6c5ce7':kind==='빌딩'?'#00b894':kind==='공
   (fv(it.row,it.headers,'비고')?'<br><span style="font-size:11px;color:#e67e22;">📝 '+esc(fv(it.row,it.headers,'비고'))+'</span>':'')+
   chargerPopupHtml(lat,lng)+
   prevVisitHtml(it.site)+
+   augInfo3+
   '<div style="margin-top:6px;display:flex;gap:6px;">'+
   '<a href="'+mapUrl+'" onclick="var w=\''+webUrl+'\';setTimeout(function(){window.open(w,\'_blank\');},1500);return true;" style="display:inline-block;background:#2db400;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">📍 네이버지도</a>'+
   '<button onclick="openMobileEdit('+dataIdx+')" style="background:#1a73e8;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✏️ 수정</button>'+
