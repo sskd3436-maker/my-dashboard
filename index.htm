@@ -819,7 +819,6 @@ function init(){
 apiGet({action:'getData',sheet:'증설사이트'},function(d2){
   allSheetsData['증설사이트']=d2;
   console.log('증설사이트 로드완료:',(d2.rows&&d2.rows.length)||0);
-  renderAugMarkers();
 });
         
         localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
