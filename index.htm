@@ -1092,7 +1092,7 @@ var kindColor=kind==='아파트'?'#6c5ce7':kind==='빌딩'?'#00b894':kind==='공
       if(augRow3){
         var augQty3=augRow3['충전기수량']||'-';
         var augContent3=augRow3['영업내용']||'';
-        augInfo3+='<div style="font-size:11px;color:#555;margin-top:2px;">🔌 증설 충전기: '+esc(augQty3+'')+'기</div>';
+        augInfo3+='<div style="font-size:11px;color:#555;margin-top:2px;">🔌 에버온 충전기: '+esc(augQty3+'')+'기</div>';
         if(augContent3)augInfo3+='<div style="font-size:11px;color:#555;">📄 '+esc(augContent3)+'</div>';
       }
       augInfo3+='</div>';
@@ -1802,7 +1802,7 @@ if(isAug){
     var augBiz=augRow['사업구분']||'-';
     var augKind=augRow['종류']||'-';
     var augContent=augRow['영업내용']||'';
-    augInfo+='<div style="font-size:11px;color:#555;margin-top:2px;">🔌 증설 충전기: '+esc(augQty+'')+'기</div>';
+    augInfo+='<div style="font-size:11px;color:#555;margin-top:2px;">🔌 에버온 충전기: '+esc(augQty+'')+'기</div>';
     if(augBiz!=='-')augInfo+='<div style="font-size:11px;color:#555;">📋 사업구분: '+esc(augBiz)+'</div>';
     if(augContent)augInfo+='<div style="font-size:11px;color:#555;">📄 '+esc(augContent)+'</div>';
   }
