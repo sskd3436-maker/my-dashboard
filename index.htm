@@ -3301,7 +3301,7 @@ function drawKoreaMap(geo){
 }
 
     // 증설사이트 별 마커
-  var augData=window.allSheetsData?.['증설사이트'];
+  var augData=(window.allSheetsData&&window.allSheetsData['증설사이트'])||null;
   if(augData&&augData.rows){
     var augRows=augData.rows;
     for(var ai=0;ai<augRows.length;ai++){
