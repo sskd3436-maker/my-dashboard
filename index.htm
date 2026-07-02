@@ -1250,7 +1250,25 @@ function renderMobileList(){
   var mapBounds=map?map.getBounds():null;
   var myLoc=window._mobileMyLoc;
   var q=(document.getElementById('mobileSearch').value||'').toLowerCase().trim();
-  var list=[];
+ var list=[];
+  if(window._smartOnly){
+    var smartData=(window.allSheetsData&&window.allSheetsData['스마트제어충전기 사이트'])||null;
+    if(smartData&&smartData.rows){
+      for(var si=0;si<smartData.rows.length;si++){
+        var sr=smartData.rows[si];
+        var sLat=parseFloat(sr['Y좌표'])||0;
+        var sLng=parseFloat(sr['X좌표'])||0;
+        if(!sLat||!sLng)continue;
+        var sSite=(sr['사이트명']||'').trim();
+        if(q&&sSite.toLowerCase().indexOf(q)<0)continue;
+        if(mapBounds&&map.getZoom()<14&&!mapBounds.contains([sLat,sLng]))continue;
+        var sDist=0;
+        if(myLoc)sDist=getDistance(myLoc[0],myLoc[1],sLat,sLng);
+        var sVisited=!!(sr['방문일자']||'').toString().trim();
+        list.push({it:{site:sSite,mgr:sr['담당자']||'',date:sr['방문일자']||'',sent:sVisited?'positive':'',row:sr,headers:smartData.headers},lat:sLat,lng:sLng,dist:sDist});
+      }
+    }
+  } else {
   for(var i=0;i<allFlat.length;i++){
     var it=allFlat[i];
     if(window._mobileMode&&window._loginUser&&(it.mgr||'')!==window._loginUser)continue;
@@ -1262,6 +1280,7 @@ function renderMobileList(){
     var dist=0;
     if(myLoc)dist=getDistance(myLoc[0],myLoc[1],lat,lng);
     list.push({it:it,lat:lat,lng:lng,dist:dist});
+  }
   }
     var selLat=window._mobileSelectedLat||0;
   var selLng=window._mobileSelectedLng||0;
