@@ -480,6 +480,8 @@
     <div id="mobileStatVisited" style="color:#27ae60;">방문: -</div>
     <div id="mobileStatUnvisited" style="color:#e74c3c;">미방문: -</div>
     <button onclick="toggleUnvisitedFilter()" id="mobileUnvisitedBtn" style="margin-top:4px;padding:3px 8px;border:1px solid #e74c3c;background:#fff;color:#e74c3c;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;width:100%;">미방문만 보기</button>
+    <button onclick="toggleSmartFilter()" id="mobileSmartBtn" style="margin-top:3px;padding:3px 8px;border:1px solid #1a73e8;background:#fff;color:#1a73e8;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;width:100%;">📋만 보기</button>
+  </div>
   </div>
 </div>
         <button onclick="mobileGoMyLoc()" style="position:absolute;right:12px;z-index:1000;background:#fff;border:none;border-radius:50%;width:40px;height:40px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:18px;cursor:pointer;bottom:42%;">📍</button>
@@ -1158,7 +1160,9 @@ m.on('click', function(e){
         else smartColor='#27ae60';
       }
       var smartEmoji=sVisited?'📋':'📄';
+      var fireRingHtml=sVisited?'':'<div class="fire-ring" style="position:absolute;width:26px;height:26px;border-radius:50%;border:2px solid #e74c3c;animation:fireRing 1.2s ease-in-out infinite;"></div>';
       var smartHtml='<div style="position:relative;width:28px;height:28px;display:flex;align-items:center;justify-content:center;">'
+        +fireRingHtml
         +'<div style="font-size:20px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3));">'+smartEmoji+'</div>'
         +'<div style="position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:'+smartColor+';border:1px solid #fff;"></div>'
         +'</div>';
@@ -1170,15 +1174,26 @@ m.on('click', function(e){
       var sQty=sr['충전기수량']||'-';
       var sContent=sr['영업내용']||'';
       var sVisitTxt=sVisited?'<span style="color:#27ae60;font-weight:600;">✅ 방문완료</span>':'<span style="color:#e74c3c;font-weight:600;">❌ 미방문</span>';
+      var webUrl2='https://map.naver.com/v5/search/'+encodeURIComponent(sAddr||sSite||'');
+      var sVisitTxt=sVisited?'<span style="color:#27ae60;font-weight:600;">✅ 방문완료</span>':'<span style="color:#e74c3c;font-weight:600;">❌ 미방문</span>';
+      var sBiz=sr['사업구분']||'';
+      var sKind=sr['종류']||'';
+      var sCStart=sr['계약시작']||'';
+      var sCEnd=sr['계약종료']||'';
+      var bizColors2={'(투자20)':'#e74c3c','(투자21)':'#e67e22','(투자22)':'#f1c40f','(투자23)':'#2ecc71','(투자24)':'#1abc9c','(투자25)':'#3498db','(투자26)':'#9b59b6','(투자27)':'#00bcd4'};
+      var sBizColor=bizColors2[sBiz]||'#888';
+      var sKindColor=sKind==='아파트'?'#6c5ce7':sKind==='빌딩'?'#00b894':sKind==='공공기관'?'#fdcb6e':'#888';
       sm2.bindPopup(
-        '<div style="min-width:200px;">'
-        +'<div style="font-size:14px;font-weight:800;color:#1a73e8;">📋 '+esc(sSite)+'</div>'
-        +'<div style="font-size:10px;color:#1a73e8;margin-bottom:6px;">스마트제어충전기</div>'
-        +'<div style="color:#666;font-size:12px;">📍 '+esc(sAddr||'-')+'</div>'
-        +'<div style="color:#666;font-size:12px;">👤 담당: '+esc(sMgr)+' | 🗂 '+esc(sRegion)+'</div>'
-        +'<div style="color:#666;font-size:12px;">🔌 충전기: '+esc(sQty+'')+'기</div>'
-        +'<div style="margin-top:4px;">'+sVisitTxt+'</div>'
-        +(sContent?'<div style="font-size:11px;color:#555;margin-top:4px;">📄 '+esc(sContent)+'</div>':'')
+        '<div style="min-width:180px;"><b style="font-size:14px;">📋 '+esc(sSite)+'</b>'
+        +'<div style="font-size:10px;color:#1a73e8;margin-bottom:4px;">스마트제어충전기</div>'
+        +'<br>주소: '+(sAddr||'-')
+        +'<br><span style="display:inline-block;background:'+sBizColor+';color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin-top:3px;">'+esc(sBiz||'-')+'</span> '
+        +'<span style="display:inline-block;background:'+sKindColor+';color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">'+esc(sKind||'-')+'</span>'
+        +'<br>계약: '+esc(sCStart||'-')+' ~ '+esc(sCEnd||'-')
+        +'<br>'+sVisitTxt
+        +'<br>🔌 충전기: '+esc(sQty+'')+'기'
+        +(sContent?'<br><span style="font-size:11px;color:#555;">📄 '+esc(sContent)+'</span>':'')
+        +'<br><a href="'+webUrl2+'" target="_blank" style="color:#1a73e8;font-weight:600;">네이버 지도 열기</a>'
         +'</div>'
       );
       window._mobileMarkers.push(sm2);
@@ -1211,22 +1226,23 @@ function updateMobileStat(){
   if(el3)el3.textContent='미방문: '+unvisited+'개';
 }
 
-window._unvisitedOnly=false;
-function toggleUnvisitedFilter(){
-  window._unvisitedOnly=!window._unvisitedOnly;
-  var btn=document.getElementById('mobileUnvisitedBtn');
-  if(window._unvisitedOnly){
-    btn.style.background='#e74c3c';
+window._smartOnly=false;
+function toggleSmartFilter(){
+  window._smartOnly=!window._smartOnly;
+  var btn=document.getElementById('mobileSmartBtn');
+  if(window._smartOnly){
+    btn.style.background='#1a73e8';
     btn.style.color='#fff';
     btn.textContent='전체 보기';
   } else {
     btn.style.background='#fff';
-    btn.style.color='#e74c3c';
-    btn.textContent='미방문만 보기';
+    btn.style.color='#1a73e8';
+    btn.textContent='📋만 보기';
   }
   renderMobileMarkers();
 }
 
+  
   
 function renderMobileList(){
   var map=window._mobileMap;
