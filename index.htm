@@ -474,7 +474,7 @@
         </div>
         <div style="position:absolute;top:8px;left:8px;right:8px;z-index:1000;display:flex;gap:6px;align-items:flex-start;">
   <input type="text" id="mobileSearch" placeholder="🔍 검색..." oninput="mobileSearchFilter()" style="flex:1;min-width:0;padding:8px 12px;border:none;border-radius:10px;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,0.2);box-sizing:border-box;">
-  <div id="mobileStatBox" style="background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.2);padding:8px 10px;font-size:11px;line-height:1.6;white-space:nowrap;">
+   <div id="mobileStatBox" style="background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.2);padding:8px 10px;font-size:11px;line-height:1.6;white-space:nowrap;">
     <div style="font-weight:700;color:#333;">📊 방문현황</div>
     <div id="mobileStatTotal" style="color:#555;">총: -</div>
     <div id="mobileStatVisited" style="color:#27ae60;">방문: -</div>
@@ -1013,6 +1013,7 @@ function renderMobileMarkers(){
     }
   }
  for(var i=0;i<allFlat.length;i++){
+    if(window._smartOnly)continue;
     var it=allFlat[i];
     if(window._mobileMode&&window._loginUser&&(it.mgr||'')!==window._loginUser)continue;
     if(window._unvisitedOnly){
@@ -1140,8 +1141,8 @@ m.on('click', function(e){
 
 
  // 스마트제어충전기 마커
-  var smartData=(window.allSheetsData&&window.allSheetsData['스마트제어충전기 사이트'])||null;
-  if(smartData&&smartData.rows){
+ var smartData=(window.allSheetsData&&window.allSheetsData['스마트제어충전기 사이트'])||null;
+  if(window._smartOnly&&smartData&&smartData.rows){
     for(var si=0;si<smartData.rows.length;si++){
       var sr=smartData.rows[si];
       var sLat=parseFloat(sr['Y좌표'])||0;
