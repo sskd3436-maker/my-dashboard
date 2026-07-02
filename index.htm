@@ -827,6 +827,12 @@ apiGet({action:'getData',sheet:'증설사이트'},function(d2){
   allSheetsData['증설사이트']=d2;
   console.log('증설사이트 로드완료:',(d2.rows&&d2.rows.length)||0);
 });
+
+        apiGet({action:'getData',sheet:'스마트제어충전기 사이트'},function(d3){
+  allSheetsData['스마트제어충전기 사이트']=d3;
+  console.log('스마트제어 로드완료:',(d3.rows&&d3.rows.length)||0);
+  if(window._mobileMode&&typeof renderMobileMarkers==='function')renderMobileMarkers();
+});
         
         localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
         buildFlat();
@@ -1129,6 +1135,56 @@ m.on('click', function(e){
 
        window._mobileMarkers.push(m);
   }
+
+
+ // 스마트제어충전기 마커
+  var smartData=(window.allSheetsData&&window.allSheetsData['스마트제어충전기 사이트'])||null;
+  if(smartData&&smartData.rows){
+    for(var si=0;si<smartData.rows.length;si++){
+      var sr=smartData.rows[si];
+      var sLat=parseFloat(sr['Y좌표'])||0;
+      var sLng=parseFloat(sr['X좌표'])||0;
+      if(!sLat||!sLng)continue;
+      var sSite=(sr['사이트명']||'').trim();
+      var sVisited=(sr['방문일자']||'').toString().trim();
+      var sPos=sr['긍정']||'';
+      var sNeu=sr['중립']||'';
+      var sNeg=sr['부정']||'';
+      var smartColor='#e74c3c';
+      if(sVisited){
+        if(sNeg)smartColor='#e74c3c';
+        else if(sNeu)smartColor='#f1c40f';
+        else if(sPos)smartColor='#27ae60';
+        else smartColor='#27ae60';
+      }
+      var smartEmoji=sVisited?'📋':'📄';
+      var smartHtml='<div style="position:relative;width:28px;height:28px;display:flex;align-items:center;justify-content:center;">'
+        +'<div style="font-size:20px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3));">'+smartEmoji+'</div>'
+        +'<div style="position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:'+smartColor+';border:1px solid #fff;"></div>'
+        +'</div>';
+      var smartIcon=L.divIcon({className:'',html:smartHtml,iconSize:[28,28],iconAnchor:[14,14]});
+      var sm2=L.marker([sLat,sLng],{icon:smartIcon,zIndexOffset:500}).addTo(window._mobileMap);
+      var sAddr=(sr['주소']||'').replace(/\(.*?\)/g,'').trim();
+      var sMgr=sr['담당자']||'-';
+      var sRegion=sr['권역별']||'-';
+      var sQty=sr['충전기수량']||'-';
+      var sContent=sr['영업내용']||'';
+      var sVisitTxt=sVisited?'<span style="color:#27ae60;font-weight:600;">✅ 방문완료</span>':'<span style="color:#e74c3c;font-weight:600;">❌ 미방문</span>';
+      sm2.bindPopup(
+        '<div style="min-width:200px;">'
+        +'<div style="font-size:14px;font-weight:800;color:#1a73e8;">📋 '+esc(sSite)+'</div>'
+        +'<div style="font-size:10px;color:#1a73e8;margin-bottom:6px;">스마트제어충전기</div>'
+        +'<div style="color:#666;font-size:12px;">📍 '+esc(sAddr||'-')+'</div>'
+        +'<div style="color:#666;font-size:12px;">👤 담당: '+esc(sMgr)+' | 🗂 '+esc(sRegion)+'</div>'
+        +'<div style="color:#666;font-size:12px;">🔌 충전기: '+esc(sQty+'')+'기</div>'
+        +'<div style="margin-top:4px;">'+sVisitTxt+'</div>'
+        +(sContent?'<div style="font-size:11px;color:#555;margin-top:4px;">📄 '+esc(sContent)+'</div>':'')
+        +'</div>'
+      );
+      window._mobileMarkers.push(sm2);
+    }
+  }
+  
   updateMobileStat();
   renderMobileList();
 }
