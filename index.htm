@@ -884,7 +884,7 @@ function doLogin(){
   if(!window._mobileMap){
     window._mobileMap=L.map('mobileMap',{zoomControl:false}).setView([36.5,127.5],7);
    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'OSM'}).addTo(window._actMap);
-    window._actMap.on('moveend',function(){renderActivity();});
+    window._actMap.on('moveend',function(){clearTimeout(window._actMoveTimer);window._actMoveTimer=setTimeout(function(){renderActivity();},300);});
     L.control.zoom({position:'bottomleft'}).addTo(window._mobileMap);
     if(navigator.geolocation){
       navigator.geolocation.getCurrentPosition(function(pos){
