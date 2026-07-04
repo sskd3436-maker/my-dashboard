@@ -1740,7 +1740,7 @@ window._actMap.setView([myLat,myLng],12);
 if(window._actMarkers){for(var mi=0;mi<window._actMarkers.length;mi++)window._actMap.removeLayer(window._actMarkers[mi]);}
 window._actMarkers=[];
 var mapBounds=[];
-var viewBounds=window._actMap.getBounds();
+var viewBounds=(window._actMap&&window._actMap.getBounds)?window._actMap.getBounds():null;
 var augSiteMap={};
 var augData2=(window.allSheetsData&&window.allSheetsData['증설사이트'])||null;
 if(augData2&&augData2.rows){
