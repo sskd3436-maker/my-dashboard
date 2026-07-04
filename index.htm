@@ -883,7 +883,8 @@ function doLogin(){
   
   if(!window._mobileMap){
     window._mobileMap=L.map('mobileMap',{zoomControl:false}).setView([36.5,127.5],7);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(window._mobileMap);
+   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'OSM'}).addTo(window._actMap);
+    window._actMap.on('moveend',function(){renderActivity();});
     L.control.zoom({position:'bottomleft'}).addTo(window._mobileMap);
     if(navigator.geolocation){
       navigator.geolocation.getCurrentPosition(function(pos){
@@ -1739,6 +1740,7 @@ window._actMap.setView([myLat,myLng],12);
 if(window._actMarkers){for(var mi=0;mi<window._actMarkers.length;mi++)window._actMap.removeLayer(window._actMarkers[mi]);}
 window._actMarkers=[];
 var mapBounds=[];
+var viewBounds=window._actMap.getBounds();
 var augSiteMap={};
 var augData2=(window.allSheetsData&&window.allSheetsData['증설사이트'])||null;
 if(augData2&&augData2.rows){
@@ -1751,7 +1753,8 @@ for(var i=0;i<list.length;i++){
   var it=list[i];
   var lat=parseFloat(fv(it.row,it.headers,'Y좌표'));
   var lng=parseFloat(fv(it.row,it.headers,'X좌표'));
-  if(!lat||!lng||isNaN(lat)||isNaN(lng))continue;
+ if(!lat||!lng||isNaN(lat)||isNaN(lng))continue;
+if(viewBounds&&!viewBounds.contains([lat,lng]))continue;
   var visited=!!(it.date||fv(it.row,it.headers,'방문일자'));
  var posVal=fv(it.row,it.headers,'긍정')||'';
 var neuVal=fv(it.row,it.headers,'중립')||'';
