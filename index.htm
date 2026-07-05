@@ -480,6 +480,7 @@
     <div id="mobileStatVisited" style="color:#27ae60;">방문: -</div>
     <div id="mobileStatUnvisited" style="color:#e74c3c;">미방문: -</div>
     <button onclick="toggleUnvisitedFilter()" id="mobileUnvisitedBtn" style="margin-top:4px;padding:3px 8px;border:1px solid #e74c3c;background:#fff;color:#e74c3c;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;width:100%;">미방문만 보기</button>
+  <button onclick="toggleSmartFilter()" id="mobileSmartBtn" style="display:block;margin-top:3px;padding:3px 8px;border:1px solid #1a73e8;background:#fff;color:#1a73e8;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;width:100%;">📋 스마트충전기</button>
   </div>
 </div>
         <button onclick="mobileGoMyLoc()" style="position:absolute;right:12px;z-index:1000;background:#fff;border:none;border-radius:50%;width:40px;height:40px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:18px;cursor:pointer;bottom:42%;">📍</button>
@@ -827,6 +828,11 @@ apiGet({action:'getData',sheet:'증설사이트'},function(d2){
   allSheetsData['증설사이트']=d2;
   console.log('증설사이트 로드완료:',(d2.rows&&d2.rows.length)||0);
 });
+
+apiGet({action:'getData',sheet:'스마트제어충전기 사이트'},function(d3){
+  allSheetsData['스마트제어충전기 사이트']=d3;
+  console.log('스마트제어 로드완료:',(d3.rows&&d3.rows.length)||0);
+});
         
         localStorage.setItem('dashCache',JSON.stringify(allSheetsData));
         buildFlat();
@@ -1005,6 +1011,7 @@ function renderMobileMarkers(){
     }
   }
  for(var i=0;i<allFlat.length;i++){
+    if(window._smartOnly)continue;
     var it=allFlat[i];
     if(window._mobileMode&&window._loginUser&&(it.mgr||'')!==window._loginUser)continue;
     if(window._unvisitedOnly){
@@ -1129,6 +1136,55 @@ m.on('click', function(e){
 
        window._mobileMarkers.push(m);
   }
+
+  // 스마트제어충전기 마커
+  if(window._smartOnly){
+    var smartData=(window.allSheetsData&&window.allSheetsData['스마트제어충전기 사이트'])||null;
+    if(smartData&&smartData.rows){
+      for(var si=0;si<smartData.rows.length;si++){
+        var sr=smartData.rows[si];
+        var sLat=parseFloat(sr['Y좌표'])||0;
+        var sLng=parseFloat(sr['X좌표'])||0;
+        if(!sLat||!sLng)continue;
+        var sSite=(sr['사이트명']||'').trim();
+        var sVisited=!!(sr['방문일자']||'').toString().trim();
+        var smartColor=sVisited?'#27ae60':'#e74c3c';
+        var smartEmoji=sVisited?'📋':'📄';
+        var fireHtml=sVisited?'':'<div class="fire-ring" style="position:absolute;width:26px;height:26px;border-radius:50%;border:2px solid #e74c3c;animation:fireRing 1.2s ease-in-out infinite;"></div>';
+        var smartHtml='<div style="position:relative;width:28px;height:28px;display:flex;align-items:center;justify-content:center;">'+fireHtml+'<div style="font-size:20px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3));">'+smartEmoji+'</div><div style="position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:'+smartColor+';border:1px solid #fff;"></div></div>';
+        var smartIcon=L.divIcon({className:'',html:smartHtml,iconSize:[28,28],iconAnchor:[14,14]});
+        var sm2=L.marker([sLat,sLng],{icon:smartIcon,zIndexOffset:900}).addTo(window._mobileMap);
+        var sAddr=(sr['주소']||'').replace(/\(.*?\)/g,'').trim();
+        var sMgr=sr['담당자']||'-';
+        var sBiz=sr['사업구분']||'-';
+        var sKind=sr['종류']||'-';
+        var sCStart=sr['계약시작']||'-';
+        var sCEnd=sr['계약종료']||'-';
+        var sQty=sr['충전기수량']||'-';
+        var sContent=sr['영업내용']||'';
+        var sVisitTxt=sVisited?'<span style="color:#27ae60;">방문완료</span>':'<span style="color:#e74c3c;">미방문</span>';
+        var webUrl='https://map.naver.com/v5/search/'+encodeURIComponent(sAddr||sSite||'');
+        sm2.bindPopup(
+          '<div style="min-width:200px;">'+
+          '<div style="font-size:14px;font-weight:800;">📋 '+esc(sSite)+'</div>'+
+          '<div style="font-size:11px;color:#888;margin-bottom:6px;">스마트제어충전기</div>'+
+          '<div style="color:#666;font-size:12px;">📍 '+esc(sAddr||'-')+'</div>'+
+          '<div style="color:#666;font-size:12px;">👤 담당: '+esc(sMgr)+' | 🗂 '+esc(sBiz)+'</div>'+
+          '<div style="color:#666;font-size:12px;">🔌 충전기: '+esc(sQty+'')+'기 | '+esc(sKind)+'</div>'+
+          '<div style="color:#666;font-size:12px;">📅 계약: '+esc(sCStart)+' ~ '+esc(sCEnd)+'</div>'+
+          '<div style="margin-top:4px;">'+sVisitTxt+'</div>'+
+          (sContent?'<div style="margin-top:4px;padding:4px;background:#f8f9fa;border-radius:4px;font-size:11px;color:#555;">'+esc(sContent)+'</div>':'')+
+          '<div style="margin-top:6px;"><a href="'+webUrl+'" target="_blank" style="color:#1a73e8;font-size:12px;">🗺 네이버지도</a></div>'+
+          '</div>'
+        );
+        sm2.on('click',function(e){window._mobileMap.setView(e.latlng,window._mobileMap.getZoom());});
+        window._mobileMarkers.push(sm2);
+      }
+    }
+  }
+
+
+  
   updateMobileStat();
   renderMobileList();
 }
@@ -1171,6 +1227,21 @@ function toggleUnvisitedFilter(){
   renderMobileMarkers();
 }
 
+  window._smartOnly=false;
+function toggleSmartFilter(){
+  window._smartOnly=!window._smartOnly;
+  var btn=document.getElementById('mobileSmartBtn');
+  if(window._smartOnly){
+    btn.style.background='#1a73e8';
+    btn.style.color='#fff';
+    btn.textContent='원래대로';
+  }else{
+    btn.style.background='#fff';
+    btn.style.color='#1a73e8';
+    btn.textContent='📋 스마트충전기';
+  }
+  renderMobileMarkers();
+}
   
 function renderMobileList(){
   var map=window._mobileMap;
