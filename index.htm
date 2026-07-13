@@ -1164,19 +1164,32 @@ m.on('click', function(e){
         var sContent=sr['영업내용']||'';
         var sVisitTxt=sVisited?'<span style="color:#27ae60;">방문완료</span>':'<span style="color:#e74c3c;">미방문</span>';
         var webUrl='https://map.naver.com/v5/search/'+encodeURIComponent(sAddr||sSite||'');
+                var bizColors2={'환경부':'#27ae60','한전':'#2980b9','차지비':'#8e44ad','GS':'#d35400','SK':'#e74c3c','LG':'#f39c12'};
+        var kindColors2={'완속':'#3498db','급속':'#e74c3c','콘센트':'#2ecc71'};
+        var sBizColor=bizColors2[sBiz]||'#888';
+        var sKindColor=kindColors2[sKind]||'#888';
+        var sVisitDate=(sr['방문일자']||'').toString().trim();
+        var sVisitTxt2=sVisitDate?'<span style="color:#27ae60;">✅ 방문완료 ('+esc(sVisitDate)+')</span>':'<span style="color:#e74c3c;">❌ 미방문</span>';
+        var sMapUrl='https://map.naver.com/v5/search/'+encodeURIComponent(sAddr||sSite||'');
+        var sBigo=sr['비고']||'';
+        window._mobileData.push({site:sSite,mgr:sMgr,row:sr,headers:smartData.headers,sheet:'스마트제어충전기 사이트'});
+        var sDataIdx=window._mobileData.length-1;
         sm2.bindPopup(
-          '<div style="min-width:200px;">'+
-          '<div style="font-size:14px;font-weight:800;">📋 '+esc(sSite)+'</div>'+
-          '<div style="font-size:11px;color:#888;margin-bottom:6px;">스마트제어충전기</div>'+
-          '<div style="color:#666;font-size:12px;">📍 '+esc(sAddr||'-')+'</div>'+
-          '<div style="color:#666;font-size:12px;">👤 담당: '+esc(sMgr)+' | 🗂 '+esc(sBiz)+'</div>'+
-          '<div style="color:#666;font-size:12px;">🔌 충전기: '+esc(sQty+'')+'기 | '+esc(sKind)+'</div>'+
-          '<div style="color:#666;font-size:12px;">📅 계약: '+esc(sCStart)+' ~ '+esc(sCEnd)+'</div>'+
-          '<div style="margin-top:4px;">'+sVisitTxt+'</div>'+
-          (sContent?'<div style="margin-top:4px;padding:4px;background:#f8f9fa;border-radius:4px;font-size:11px;color:#555;">'+esc(sContent)+'</div>':'')+
-          '<div style="margin-top:6px;"><a href="'+webUrl+'" target="_blank" style="color:#1a73e8;font-size:12px;">🗺 네이버지도</a></div>'+
-          '</div>'
+          '<div style="min-width:180px;"><b style="font-size:14px;">'+esc(sSite)+'</b>'+
+          '<br><span style="color:#666;">주소: '+esc(sAddr||'-')+'</span>'+
+          '<br><span style="display:inline-block;background:'+sBizColor+';color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin-top:3px;">'+esc(sBiz||'-')+'</span> '+
+          '<span style="display:inline-block;background:'+sKindColor+';color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">'+esc(sKind||'-')+'</span>'+
+          '<br><span style="color:#666;">계약: '+esc(sCStart)+' ~ '+esc(sCEnd)+'</span>'+
+          '<br>'+sVisitTxt2+
+          (sContent?'<br><span style="font-size:11px;color:#555;">📄 '+esc(sContent)+'</span>':'')+
+          (sBigo?'<br><span style="font-size:11px;color:#e67e22;">📝 '+esc(sBigo)+'</span>':'')+
+          chargerPopupHtml(sLat,sLng)+
+          '<div style="margin-top:6px;display:flex;gap:6px;">'+
+          '<a href="'+sMapUrl+'" target="_blank" style="display:inline-block;background:#2db400;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">📍 네이버지도</a>'+
+          '<button onclick="openMobileEdit('+sDataIdx+')" style="background:#1a73e8;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✏️ 수정</button>'+
+          '</div></div>'
         );
+
         sm2.on('click',function(e){window._mobileMap.setView(e.latlng,window._mobileMap.getZoom());});
         window._mobileMarkers.push(sm2);
       }
