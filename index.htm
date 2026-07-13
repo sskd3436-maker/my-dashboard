@@ -1206,6 +1206,23 @@ m.on('click', function(e){
 
 function updateMobileStat(){
   var total=0,visited=0,unvisited=0;
+  if(window._smartOnly){
+    var smartData=(window.allSheetsData&&window.allSheetsData['스마트제어충전기 사이트'])||null;
+    if(smartData&&smartData.rows){
+      for(var si=0;si<smartData.rows.length;si++){
+        var sr=smartData.rows[si];
+        var sLat=parseFloat(sr['Y좌표'])||0;
+        var sLng=parseFloat(sr['X좌표'])||0;
+        if(!sLat||!sLng)continue;
+        var sMgr2=(sr['담당자']||'').trim();
+        if(window._mobileMode&&window._loginUser&&sMgr2!==window._loginUser)continue;
+        total++;
+        var sv=(sr['방문일자']||'').toString().trim();
+        if(sv)visited++;
+        else unvisited++;
+      }
+    }
+  } else {
   for(var i=0;i<allFlat.length;i++){
     var it=allFlat[i];
     if(window._mobileMode&&window._loginUser&&(it.mgr||'')!==window._loginUser)continue;
@@ -1218,6 +1235,8 @@ function updateMobileStat(){
     if(v)visited++;
     else unvisited++;
   }
+  }
+
   var el1=document.getElementById('mobileStatTotal');
   var el2=document.getElementById('mobileStatVisited');
   var el3=document.getElementById('mobileStatUnvisited');
