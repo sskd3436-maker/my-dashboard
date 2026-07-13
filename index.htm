@@ -1147,6 +1147,8 @@ m.on('click', function(e){
         var sLng=parseFloat(sr['X좌표'])||0;
         if(!sLat||!sLng)continue;
         var sSite=(sr['사이트명']||'').trim();
+        var sMgrCheck=(sr['담당자']||'').trim();
+        if(window._mobileMode&&window._loginUser&&sMgrCheck!==window._loginUser)continue;
         var sVisited=!!(sr['방문일자']||'').toString().trim();
         var smartColor=sVisited?'#27ae60':'#e74c3c';
         var smartEmoji='📘';
