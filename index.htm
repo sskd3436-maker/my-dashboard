@@ -1160,8 +1160,8 @@ m.on('click', function(e){
         var sMgr=sr['담당자']||'-';
         var sBiz=sr['사업구분']||'-';
         var sKind=sr['종류']||'-';
-        var sCStart=sr['계약시작']||'-';
-        var sCEnd=sr['계약종료']||'-';
+         var sCStart=fmtDate(sr['계약시작']||'')||'-';
+        var sCEnd=fmtDate(sr['계약종료']||'')||'-';
         var sQty=sr['충전기수량']||'-';
         var sContent=sr['영업내용']||'';
         var sVisitTxt=sVisited?'<span style="color:#27ae60;">방문완료</span>':'<span style="color:#e74c3c;">미방문</span>';
