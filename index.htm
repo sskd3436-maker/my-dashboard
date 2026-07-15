@@ -1132,7 +1132,7 @@ var kindColor=kind==='아파트'?'#6c5ce7':kind==='빌딩'?'#00b894':kind==='공
       augInfo3+='</div>';
     }
    
-m.on('click',function(e){setTimeout(function(){var popup=m.getPopup();if(popup&&popup.isOpen()){var popNode=popup.getElement();if(popNode){var rect=popNode.getBoundingClientRect();var mapRect=document.getElementById('mobileMapArea').getBoundingClientRect();var offsetY=0;if(rect.top<mapRect.top+10)offsetY=rect.top-mapRect.top-60;if(rect.bottom>mapRect.bottom-10)offsetY=rect.bottom-mapRect.bottom+60;if(offsetY!==0)window._mobileMap.panBy([0,offsetY],{animate:true});}}},300);});
+m.on('click',function(e){var mapH=document.getElementById('mobileMapArea').offsetHeight;var targetY=mapH*0.35;var point=window._mobileMap.latLngToContainerPoint(e.latlng);window._mobileMap.panBy([0,point.y-targetY],{animate:true});});
  m.bindPopup(
   '<div style="min-width:180px;"><b style="font-size:14px;">'+esc(it.site||'')+'</b>'+
   '<br><span style="color:#666;">주소: '+(addr||'-')+'</span>'+
@@ -1201,7 +1201,7 @@ m.on('click', function(e){
         var sBigo=sr['비고']||'';
         window._mobileData.push({site:sSite,mgr:sMgr,row:sr,headers:smartData.headers,sheet:'스마트제어충전기 사이트'});
         var sDataIdx=window._mobileData.length-1;
-        sm2.on('click',function(e){setTimeout(function(){var popup=sm2.getPopup();if(popup&&popup.isOpen()){var popNode=popup.getElement();if(popNode){var rect=popNode.getBoundingClientRect();var mapRect=document.getElementById('mobileMapArea').getBoundingClientRect();var offsetY=0;if(rect.top<mapRect.top+10)offsetY=rect.top-mapRect.top-60;if(rect.bottom>mapRect.bottom-10)offsetY=rect.bottom-mapRect.bottom+60;if(offsetY!==0)window._mobileMap.panBy([0,offsetY],{animate:true});}}},300);});
+        sm2.on('click',function(e){var mapH=document.getElementById('mobileMapArea').offsetHeight;var targetY=mapH*0.35;var point=window._mobileMap.latLngToContainerPoint(e.latlng);window._mobileMap.panBy([0,point.y-targetY],{animate:true});});
         sm2.bindPopup(
 
           '<div style="min-width:180px;"><b style="font-size:14px;">'+esc(sSite)+'</b>'+
