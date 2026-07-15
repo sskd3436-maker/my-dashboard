@@ -16,7 +16,23 @@
 .leaflet-popup-content {
   user-select: text !important;
   -webkit-user-select: text !important;
+  -ms-user-select: text !important;
 }
+.leaflet-popup-content * {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+.leaflet-popup {
+  pointer-events: auto !important;
+}
+.leaflet-popup-content b,
+.leaflet-popup-content span,
+.leaflet-popup-content div {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  cursor: text;
+}
+
     
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #f0f2f5; color: #1a1a2e; display: block; min-height: 100vh; }
