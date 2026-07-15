@@ -1116,6 +1116,7 @@ var kindColor=kind==='아파트'?'#6c5ce7':kind==='빌딩'?'#00b894':kind==='공
       augInfo3+='</div>';
     }
    
+ m.on('click',function(e){var px=window._mobileMap.latLngToContainerPoint(e.latlng);var newPoint=L.point(px.x,px.y-100);var newLatLng=window._mobileMap.containerPointToLatLng(newPoint);window._mobileMap.panTo(newLatLng);});
  m.bindPopup(
   '<div style="min-width:180px;"><b style="font-size:14px;">'+esc(it.site||'')+'</b>'+
   '<br><span style="color:#666;">주소: '+(addr||'-')+'</span>'+
@@ -1184,7 +1185,9 @@ m.on('click', function(e){
         var sBigo=sr['비고']||'';
         window._mobileData.push({site:sSite,mgr:sMgr,row:sr,headers:smartData.headers,sheet:'스마트제어충전기 사이트'});
         var sDataIdx=window._mobileData.length-1;
+        sm2.on('click',function(e){var px=window._mobileMap.latLngToContainerPoint(e.latlng);var newPoint=L.point(px.x,px.y-100);var newLatLng=window._mobileMap.containerPointToLatLng(newPoint);window._mobileMap.panTo(newLatLng);});
         sm2.bindPopup(
+
           '<div style="min-width:180px;"><b style="font-size:14px;">'+esc(sSite)+'</b>'+
           '<br><span style="color:#666;">주소: '+esc(sAddr||'-')+'</span>'+
           '<br><span style="display:inline-block;background:'+sBizColor+';color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin-top:3px;">'+esc(sBiz||'-')+'</span> '+
