@@ -4580,7 +4580,7 @@ function renderContract(){
     tb+='<td>'+esc(r['설치유형']||'')+'</td>';
     tb+='<td>'+esc(r['설치금액']||'')+'</td>';
     tb+='<td>'+statusBadge+'</td>';
-        tb+='<td><button class="btn btn-sm btn-primary" onclick="editContract('+r._rowIndex+')">수정</button> <button class="btn btn-sm btn-blue" onclick="generateContract(\'contract\','+(r._rowIndex-4)+')">계약서</button> <button class="btn btn-sm btn-red" onclick="delContract('+r._rowIndex+')">삭제</button></td>';
+    tb+='<td><button class="btn btn-sm btn-primary" onclick="editContract('+r._rowIndex+')">수정</button> <button class="btn btn-sm btn-blue" onclick="generateContract(\'contract\','+r._rowIndex+')">계약서</button> <button class="btn btn-sm btn-red" onclick="delContract('+r._rowIndex+')">삭제</button></td>';
     tb+='</tr>';
   }
   if(filtered.length===0)tb='<tr><td colspan="9"><div class="empty-msg">데이터가 없습니다</div></td></tr>';
@@ -5108,8 +5108,10 @@ function generateContract(source, idx) {
 
   if(source==='contract'){
     var d=contractData;
-    if(!d||!d.rows||!d.rows[idx])return;
-    var row=d.rows[idx],h=d.headers;
+    if(!d||!d.rows)return;
+    var row=null,h=d.headers;
+    for(var ri=0;ri<d.rows.length;ri++){if(d.rows[ri]._rowIndex===idx){row=d.rows[ri];break;}}
+    if(!row)return;
     site=fv(row,h,'사이트명')||'';name=fv(row,h,'입대위명')||'';addr=fv(row,h,'주소')||'';
     biz=fv(row,h,'사업자번호')||'';year=fv(row,h,'계약년수')||'';
     qty=fv(row,h,'충전기수량')||'';type=fv(row,h,'설치유형')||'';price=fv(row,h,'충전기단가')||'';
